@@ -48,7 +48,7 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 
 ## The leaderboard
 
-Seasons has no leaderboard yet. Boneyard's Firebase project keeps Boneyard's scores, so Seasons wants a project of its own, and until `js/firebase-config.js` names one, the game shows no leaderboard. With one, the Long Night's card lists the best scores at each hour, and for the whole night: each player's bests added up. The first time a player clears a board, its card offers to put them on it under a name of their choosing, and from then on their bests go up as they make them. Free play doesn't count.
+The leaderboard, on the Long Night's card, lists the best scores at each hour, and for the whole night: each player's bests added up. The first time a player clears a board, its card offers to put them on it under a name of their choosing, and from then on their bests go up as they make them. Their name can be changed, or taken off with their scores, from the leaderboard's card. Free play doesn't count. Seasons has a Firebase project of its own, `seasons-mahjong`, as Boneyard's keeps Boneyard's scores; `js/firebase-config.js` names it, and without a project there, the game shows no leaderboard.
 
 Players sign in anonymously, which gives each browser an id of its own and no account to make, and the scores are kept in Firestore, at `boards/{board}/scores/{player}`, one entry a player on each board, holding their best. The game speaks to both through their REST APIs (`js/firebase.js`), so it needs no Firebase library.
 
@@ -60,7 +60,7 @@ Setting up the project, in the [Firebase console](https://console.firebase.googl
 2. Authentication (`authentication/providers`): Get started, then under Sign-in method turn on Anonymous. Leave its automatic clean-up off: a player whose anonymous account had been deleted could no longer change their own entries.
 3. Firestore Database (`firestore`): Create database, keeping the id `(default)` and the Standard edition, in a location near your players, in production mode.
 4. In Firestore Database, under Rules: replace what's there with the whole of `firestore.rules`, and Publish.
-5. Project settings (`settings/general`), Your apps: add a Web app (no Firebase Hosting; npm or a script tag, it doesn't matter, as the game uses neither) and copy its `apiKey` and `projectId` into `js/firebase-config.js`. Neither is a secret: every web app sends them from the browser, and the rules decide what anyone can do.
+5. Project settings (`settings/general`), Your apps: add a Web app (no Firebase Hosting; npm or a script tag, it doesn't matter, as the game uses neither) and copy its `apiKey` and `projectId` into `js/firebase-config.js`. The key begins `AIza`; the `appId` beside it, `1:` and a long number, is something else. Neither is a secret: every web app sends them from the browser, and the rules decide what anyone can do.
 
 ## Online
 

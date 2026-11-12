@@ -45,7 +45,6 @@ Themed levels for the nine holidays still to come. For each, to decide:
 
 - The icon, the cover and the screenshots: Halloween's jack-o'-lantern and tiles.
 - The colour a phone gives the page and the installed app: Boneyard's purple.
-- The leaderboard: off until Seasons has a Firebase project of its own.
 
 ## What came from Boneyard
 
@@ -57,7 +56,7 @@ Themed levels for the nine holidays still to come. For each, to decide:
 
 ## Milestones
 
-**Wed 11 Nov:** forked from Boneyard Mah Jong. The ten holidays, the card to choose them on a first visit, Your holidays in the menu, and each holiday's colours, sky and lettering. Halloween plays as the Long Night, and the other nine say their boards are on their way. Online the same day, at https://swilliamson24060.github.io/seasons-mahjong/, beside Boneyard, which stays a game of its own.
+**Wed 11 Nov:** forked from Boneyard Mah Jong. The ten holidays, the card to choose them on a first visit, Your holidays in the menu, and each holiday's colours, sky and lettering. Halloween plays as the Long Night, and the other nine say their boards are on their way. Online the same day, at https://swilliamson24060.github.io/seasons-mahjong/, beside Boneyard, which stays a game of its own, and with a leaderboard in a Firebase project of its own.
 
 ## Parked for later
 
