@@ -14,7 +14,7 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 | Labor Day | the first Monday in September | amber, on slate | next |
 | Start of Fall | September 22, the usual day of the equinox | orange, on russet | next |
 | Halloween | October 31 | Boneyard's orange, on purple | the Long Night: thirteen boards |
-| Thanksgiving | the fourth Thursday in November | squash, on brown | a week of eight, all made |
+| Thanksgiving | the fourth Thursday in November | squash, on brown | Thanksgiving week: eight boards, in the menu |
 | Christmas | December 25 | red, on pine green | next |
 
 ## Choosing them
@@ -45,6 +45,10 @@ Themed levels for the nine holidays still to come. For each, to decide:
 
 Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after it, each with a theme of its own. `js/thanksgiving.js` holds them.
 
+- Thanksgiving's card in the menu is the week's, as the Long Night's is Halloween's: its eight days in order, each with its theme, or its best score once played, and the week score, the bests added up. Each day reached can be played again, and clearing a board opens the next. The second Sunday cleared, the week is seen through.
+- The week's board in play is kept, as the night's is, so a player can go between the week, the Long Night and the turtle without losing any of them. A reload opens on the holiday chosen last: the week's board in play, or its card.
+- The days aren't on the leaderboard yet: its rules know only the Long Night's hours.
+
 | Day | Theme | Board | Twist |
 |---|---|---|---|
 | First Sunday | Traffic | the highway: six lanes in two carriageways and an overpass, 84 tiles on three layers, nine across | none: the gentle start |
@@ -59,7 +63,7 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 ### The first Sunday
 
 - The gentle start, as the Long Night's 6 pm is: the week's fewest tiles, 32 of them free from the start, and no twist. Its card tells the free-tile rule as traffic: a tile can pull out only when nothing is on it and its lane is clear at one end.
-- Until the week is in the menu, it plays by its address, `#play/highway`.
+- It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/highway`.
 
 ### Frozen
 
@@ -67,7 +71,7 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 - On Monday the turkey thaws from the outside in: its outline is thawed from the start, the next ring thaws after 8 matches, and the middle after 16, of the board's 45.
 - A deal plays the board through taking a frozen tile only once it has thawed, so every deal can be won; the hints, the solver and the safe shuffle go by the same rule. An undo freezes the tiles again, and a skeleton key can't thaw ice.
 - In trials of 200 deals, the ice doesn't make the board harder by luck: a player taking pairs at random clears it about as often as with no ice. What it changes is the order to play in. At the start, 8 tiles that would be free are frozen, and the outside of the bird has to last until the middle thaws.
-- Until the week is in the menu, Monday's board plays by its address, `#play/turkey`, and shows its day's card first. Its tiles are still Boneyard's.
+- It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/turkey`, and shows its day's card first. Its tiles are still Boneyard's.
 
 ### The shopping list
 
@@ -75,7 +79,7 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 - Taking a pair of a thing on the list crosses it off, up to and including the match at checkout, halfway through the board: 25 points each, and 100 more for the whole list. Then the list closes. An undo puts a thing back on it.
 - Every list can be finished in time: its four things are pairs the deal's own winning order takes before checkout. They are worth looking for, too: none has a pair free from the start, or is taken in the deal's first third of the way to checkout, unless there are too few others. In 300 trial deals, a pair of 0.05 of the four things was free at the start, on average.
 - Only things of one face go on the list, not the flowers or the moons, any two of which match, so that what to find is plain.
-- Until the week is in the menu, Tuesday's board plays by its address, `#play/cart`, and its card says what is on the list.
+- It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/cart`, and its card says what is on the list.
 
 ### Potluck
 
@@ -83,7 +87,7 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 - The dishes are the three faces that stand where a set's dragons do: until Thanksgiving has tiles of its own, the jack-o'-lantern, the witch's brew and the ghost. An undo never earns a second gift.
 - It is the week's breather, between Tuesday's list and Thursday: in 200 trial deals, a board brought 4.2 gifts.
 - The gifts are Halloween's treats under other names and icons (💬, 🪑, 🎶), so each board says which set it gives. A Thanksgiving board with no treats has no treat buttons.
-- Until the week is in the menu, Wednesday's board plays by its address, `#play/potluck`.
+- It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/potluck`.
 
 ### Leftovers, and the nap
 
@@ -91,7 +95,7 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 - The containers are places of their own, after the table's tiles, with nothing on them or beside them. A saved tile moves into one, so a deal, the solver, the hints and the safe shuffle treat it as any tile: every deal can still be won, the hints take tiles from the fridge, and a shuffle deals the ones in it too.
 - A board with a fridge is stuck only when nothing can be taken and nothing more can go in the fridge.
 - The nap: halfway through, after 27 of the 54 matches, everyone dozes off, and the clock stops for the next 10. Beside the clock, 😴 says how far off the nap is and 💤 how long it has left. An undo back into it stops the clock again, and it holds through a reload. The time napped never counts against par.
-- Until the week is in the menu, Thursday's board plays by its address, `#play/feast`.
+- It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/feast`.
 
 ### Doorbusters
 
@@ -100,21 +104,21 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 - It stays fair: each doorbuster is a pair the deal's own winning order takes together, so a grab, early or late, never stops the board being won. None is free from the start, and they come from between an eighth and two thirds of the way through the order, so there is a race for each.
 - A grab belongs to the match that brought it, so an undo of that match brings the grabbed pair back. A shuffle moves the tags with the tiles, each open doorbuster becoming a pair of the new deal.
 - In 200 trial deals, a player who only followed the hints bought 1.2 of the four, and other shoppers grabbed 2.8: going after the tags pays.
-- Until the week is in the menu, Friday's board plays by its address, `#play/sale`.
+- It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/sale`.
 
 ### Touchdowns
 
 - The board is the field, the ball stood on end so that it runs from the end zone at the top to the one at the bottom, as suits a phone held upright. Each end zone is the three rows at its tip, on every layer: 14 tiles each, with its team's pennant, blue at the top and red at the bottom.
 - A pair taken with a tile in each end zone is a touchdown, for 60 points: six, as in football, times ten. The top bar counts them (🏈), and an undo takes one back.
 - Every deal can score one: a deal is made again until its own winning order holds a touchdown. In 200 trial deals, that order scored 2.2, and 5 at most.
-- Until the week is in the menu, Saturday's board plays by its address, `#play/football`.
+- It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/football`.
 
 ### Sundown
 
 - The second Sunday's twist is the Long Night's midnight, told as the dread of Monday. Halfway through, after 26 of the 51 matches, the sun goes down and every tile turns over to its Monday side; holding the moon, or Space, shows Monday coming.
 - Before sundown, pairs that match on both sides are the ones to take. A tile left without a partner wakes as a worry, and worries match each other; sundown with no worries earns 150, and each worry costs 10.
 - Its words are its own: 🌇 counts down to sundown, 😟 counts the worries, the alarm clock rings at the turn, and the sky goes dark for Monday. Every deal can be won through sundown with no worries, as every Midnight deal can.
-- Until the week is in the menu, its board plays by its address, `#play/alarm`.
+- It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/alarm`.
 
 ## Still Boneyard's
 
@@ -130,6 +134,8 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 - Plain HTML, CSS and ES modules, with no build step and no libraries; offline play, and installing as an app; a zip, a cover and screenshots for itch.io; and a leaderboard in Firebase.
 
 ## Milestones
+
+**Thu 12 Nov:** Thanksgiving week in the menu, the second holiday ready to play: its card lists the eight days, reached in turn, with their best scores, and the week's board in play is kept beside the night's.
 
 **Wed 11 Nov, evening:** Thanksgiving week planned as eight boards, from the first Sunday, traffic, to the second, the Sunday Scaries. Monday's is made: the frozen turkey, and with it the Frozen twist. So is Tuesday's: the grocery run, on a shopping cart, with the shopping list. And Wednesday's: Friendsgiving, at the potluck table, with friends' gifts. And Thursday's: the feast, with the fridge for leftovers and the nap after. And Friday's: Black Friday, on a sale tag, with doorbusters to race other shoppers for. And Saturday's: rivalry football, on a football, with touchdowns from end zone to end zone. And the first Sunday's: traffic, on the highway, the week's gentle start with no twist. And the second Sunday's: the Sunday Scaries, on an alarm clock, turning over to Monday at sundown. The week's eight boards are all made.
 

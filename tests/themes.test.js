@@ -4,14 +4,14 @@ import { THEMES, theme, when, calendar } from '../js/themes.js';
 const day = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 const ids = (list) => list.map((e) => e.theme.id).join(' ');
 
-test('there are the ten holidays and seasons, each once, with Halloween ready to play', () => {
+test('there are the ten holidays and seasons, each once, with Halloween and Thanksgiving ready to play', () => {
   equal(THEMES.length, 10, 'themes');
   equal(new Set(THEMES.map((t) => t.id)).size, 10, 'different themes');
   const names = THEMES.map((t) => t.name);
   for (const name of ['Thanksgiving', 'Christmas', "New Year's", "Valentine's Day", 'Start of Spring', 'Summer Beach Season', 'Independence Day', 'Labor Day', 'Start of Fall', 'Halloween']) {
     check(names.includes(name), `${name} is missing`);
   }
-  equal(THEMES.filter((t) => t.ready).map((t) => t.id).join(), 'halloween', 'the ones ready');
+  equal(THEMES.filter((t) => t.ready).map((t) => t.id).join(), 'halloween,thanksgiving', 'the ones ready');
 });
 
 test('the holidays that move fall on their weekdays', () => {

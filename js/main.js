@@ -1,7 +1,7 @@
 import { Game } from './engine/game.js';
 import * as layouts from './engine/layouts.js';
 import { HOURS, gameOptions } from './night.js';
-import { dayOf, dayOptions } from './thanksgiving.js';
+import { DAYS, dayOf, dayOptions } from './thanksgiving.js';
 import { KINDS, MATCH } from './engine/tiles.js';
 import { sprite, symbolId } from './ui/faces.js';
 import { Board } from './ui/board.js';
@@ -86,7 +86,8 @@ const sound = new Sound();
 
 let game = null;
 let board = null;
-let hour = -1; // the hour of the Long Night being played, or -1 for free play
+let hour = -1; // the hour of the Long Night being played, or -1
+let weekDay = -1; // the day of Thanksgiving week being played, or -1; both -1 for free play
 let moves = []; // what has been done on this board, to play it back after a reload
 let elapsed = 0; // seconds played before the clock last started
 let started = 0; // when the clock last started, or 0 while it is held
@@ -98,16 +99,30 @@ let prompted = false;
 // What is kept between visits: the holidays the player chose, and the one
 // whose card the menu opens; the latest hour of the Long Night reached, the
 // best time and the best score for each hour, with the time that score took;
-// the boards in play, the night's and the one outside it, each as its seed
-// and its moves; and the player's name on the leaderboard, with what has
-// been posted there.
-let saved = { holidays: null, theme: 'halloween', reached: 0, best: {}, scores: {}, times: {}, playing: null, free: null, name: '', declined: false, posted: {} };
+// the same for Thanksgiving week, by the day; the boards in play, the
+// night's, the week's and the one outside both, each as its seed and its
+// moves; and the player's name on the leaderboard, with what has been
+// posted there.
+let saved = {
+  holidays: null,
+  theme: 'halloween',
+  reached: 0,
+  best: {},
+  scores: {},
+  times: {},
+  playing: null,
+  week: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
+  free: null,
+  name: '',
+  declined: false,
+  posted: {},
+};
 try {
   saved = { ...saved, ...JSON.parse(localStorage.getItem('seasons.night')) };
 } catch {}
 
 function store() {
-  const onTable = hour >= 0 ? saved.playing : saved.free; // while it is not yet cleared
+  const onTable = hour >= 0 ? saved.playing : weekDay >= 0 ? saved.week.playing : saved.free; // while it is not yet cleared
   if (onTable) onTable.elapsed = played();
   try {
     localStorage.setItem('seasons.night', JSON.stringify(saved));
@@ -140,10 +155,11 @@ const leaderboard = new Leaderboard();
 // Sets up a board: deals it from its seed, plays back any moves already
 // made on it, and puts it on the page. The board it takes the place of is
 // kept first, with all the time played on it.
-function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, treatSet = 'halloween', treatBar = true, napAt = null, turnSet = 'midnight' }) {
+function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDay = -1, treatSet = 'halloween', treatBar = true, napAt = null, turnSet = 'midnight' }) {
   if (game && !finished) store();
   hideCard();
   hour = at;
+  weekDay = onDay;
   nap = napAt;
   turnWords = TURNS[turnSet] || TURNS.midnight;
   $('moon').title = turnWords.moon;
@@ -276,23 +292,160 @@ function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
   if (!FREE[key]) key = 'turtle';
   freeKey = key;
   freeTurn = turnAt;
-  const day = dayOf(FREE[key]); // a Thanksgiving day's board plays by its day's rules, and gives its own treats or none
-  const options = { ...(day ? dayOptions(day) : {}), ...(turnAt ? { turnAt } : {}) };
-  const treats = { treatSet: (day && day.gifts) || 'halloween', treatBar: !day || Boolean(options.treats) };
-  const napFrom = day && day.nap ? Math.round((FREE[key].count / 2) * day.nap.by) : 0;
-  const napAt = napFrom ? { from: napFrom, to: napFrom + day.nap.matches } : null;
-  play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...treats, napAt, turnSet: (day && day.words) || 'midnight' });
+  const today = dayOf(FREE[key]); // a Thanksgiving day's board plays by its day's rules, and gives its own treats or none
+  const { options, ...rest } = today ? dayPlay(today) : { options: {} };
+  if (turnAt) options.turnAt = turnAt;
+  play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...rest });
   saved.free = { key, seed, turnAt, moves, elapsed };
   store();
   history.replaceState(null, '', `#play/${key}/${seed}${turnAt ? `/${turnAt}` : ''}`);
   const fresh = !(keep && keep.moves.length);
-  if (day && fresh) {
-    let text = day.text;
-    if (game.list) text += ` Today's list: ${listNames(game.list.kinds)}.`;
-    if (game.busters) text += ` Today's doorbusters: ${listNames(game.busters.map((d) => MATCH[game.faces[d.tiles[0]]]))}.`;
-    showCard(`${day.name}: ${day.title}`, text, [['Play', () => (hideCard(), run())]]); // what is new, before it starts
-  } else run();
+  if (today && fresh) dayCard(today);
+  else run();
   if (!fresh) toast(`Back to your ${game.layout.name.toLowerCase()}.`);
+}
+
+// -------------------------------------------------------- Thanksgiving week
+
+// What play() wants for a day's board: its options, the treats it gives or
+// none, its nap, and the words its turning over is told in.
+function dayPlay(d) {
+  const options = { ...dayOptions(d) };
+  const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;
+  return {
+    options,
+    treatSet: d.gifts || 'halloween',
+    treatBar: Boolean(options.treats),
+    napAt: napFrom ? { from: napFrom, to: napFrom + d.nap.matches } : null,
+    turnSet: d.words || 'midnight',
+  };
+}
+
+// A day's card, before its board: what is new, and today's list or
+// doorbusters, on a board with them.
+function dayCard(d) {
+  let text = d.text;
+  if (game.list) text += ` Today's list: ${listNames(game.list.kinds)}.`;
+  if (game.busters) text += ` Today's doorbusters: ${listNames(game.busters.map((b) => MATCH[game.faces[b.tiles[0]]]))}.`;
+  showCard(`${d.name}: ${d.title}`, text, [['Play', () => (hideCard(), run())]]);
+}
+
+// Starts a day of Thanksgiving week, or goes on with one from where it was
+// left, as beginHour does an hour of the night.
+function beginDay(at, keep = null) {
+  const d = DAYS[at];
+  const seed = keep ? keep.seed : newSeed();
+  play({ layout: d.layout, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, onDay: at, ...dayPlay(d) });
+  saved.week.playing = { day: at, seed, moves, elapsed };
+  saved.theme = 'thanksgiving';
+  store();
+  history.replaceState(null, '', location.pathname + location.search);
+  if (keep) {
+    run();
+    toast(`Back to ${d.name}.`);
+  } else dayCard(d);
+}
+
+// The week's board in play: come to, or begun, and not yet cleared.
+function weekInPlay() {
+  const p = saved.week.playing;
+  return p && DAYS[p.day] && (p.day > 0 || p.moves.length > 0) ? p : null;
+}
+
+// A day from the week's card: the week's board in play, if it is that day's,
+// or else the day dealt afresh, once the player has agreed to give up a
+// board begun on another day.
+function toDay(i) {
+  const w = weekInPlay();
+  if (w && w.day === i) {
+    if (weekDay === i) {
+      hideCard();
+      run();
+    } else beginDay(i, w);
+    return;
+  }
+  if (w && w.moves.length) {
+    askToLose({ which: `your board on ${DAYS[w.day].name}`, then: `${DAYS[i].name} begins`, go: () => beginDay(i), back: () => weekMenu(), keep: 'Keep it' });
+    return;
+  }
+  beginDay(i);
+}
+
+// Back to Thanksgiving week: its board in play, or the latest day reached.
+function toWeek() {
+  const p = saved.week.playing;
+  if (p && DAYS[p.day]) beginDay(p.day, p);
+  else beginDay(saved.week.reached);
+}
+
+// The week score: the best score on each day, added up.
+function weekScore() {
+  const scores = Object.values(saved.week.scores);
+  if (!scores.length) return '';
+  return `Your week's score, your best each day added up, is ${signed(scores.reduce((a, b) => a + b, 0), '')}.`;
+}
+
+// Thanksgiving week's card, as the Long Night's is Halloween's: back to the
+// board or give it up, on to the next day or back to the week, the turtle,
+// and any day reached so far. On a first visit it opens over the week's
+// first board, not yet begun.
+function weekMenu(opening = false) {
+  if (opening === true && weekDay < 0) beginDay(saved.week.reached); // a board of the week to look at behind its card
+  hold();
+  wear(theme('thanksgiving'));
+  sky();
+  if (opening === true) cover(false);
+  const playing = game && !finished && opening !== true;
+  const week = weekInPlay();
+  const reached = saved.week.reached;
+  const onward = [reached > 0 ? `On to ${DAYS[reached].name}` : 'Begin on the first Sunday', () => beginDay(reached)];
+  const actions = [];
+  if (playing) actions.push(['Back to the board', () => (hideCard(), run())]);
+  if (playing && moves.length) actions.push(['Give up this board', giveUp]);
+  if (weekDay < 0) actions.push(saved.week.playing ? ['Back to the week', toWeek] : onward);
+  else if (!week) actions.push(onward);
+  if (weekDay >= 0) actions.push(['Play the turtle', toTurtle]);
+  actions.push(['Your holidays', showHolidays]);
+  const days = DAYS.map((d, i) => ({
+    label: d.name,
+    sub: saved.week.scores[i] !== undefined ? `★ ${signed(saved.week.scores[i], '')}` : d.title,
+    act: () => toDay(i),
+    disabled: i > reached,
+    on: Boolean(week) && week.day === i,
+  }));
+  const intro = 'Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after. Each day you reach can be played again.';
+  showCard(`${theme('thanksgiving').icon} Thanksgiving week`, `${intro} ${weekScore()}`.trim(), actions, days);
+  $('card-grid').classList.add('themes'); // room for the days' names
+  showOptions();
+}
+
+// A day of the week cleared: its best kept, the next day reached, and on
+// the second Sunday, the week seen through.
+function wonDay(total, time, lines, timing) {
+  const w = saved.week;
+  const at = weekDay;
+  const best = w.scores[at];
+  const better = best === undefined || total > best;
+  if (better) {
+    w.scores[at] = total;
+    w.times[at] = Math.floor(time);
+  }
+  if (!w.best[at] || time < w.best[at]) w.best[at] = time;
+  w.reached = Math.max(w.reached, Math.min(at + 1, DAYS.length - 1));
+  w.playing = null;
+  store();
+  const note = best === undefined ? '' : better ? ' Your best yet.' : ` Your best is ${signed(best, '')}.`;
+  if (at === DAYS.length - 1) {
+    showCard('The week is over', `You have seen Thanksgiving week through, from the traffic there to the Sunday Scaries. ${weekScore()}`, [
+      ['Begin again', () => beginDay(0)],
+      ['Play the turtle', toTurtle],
+    ], [], lines);
+  } else {
+    showCard(`${DAYS[at].name}: cleared`, `${timing}${note}`, [
+      [`On to ${DAYS[at + 1].name}`, () => beginDay(at + 1)],
+      ['Play it again', () => beginDay(at)],
+    ], [], lines);
+  }
 }
 
 function turned({ souls }) {
@@ -314,6 +467,7 @@ function won() {
   const lines = [...rows, ['Score', '', total]];
   const timing = `In ${clock(time)}, against a par of ${clock(par(game))}.`;
   update();
+  if (weekDay >= 0) return wonDay(total, time, lines, timing);
   if (hour < 0) {
     saved.free = null;
     store();
@@ -370,7 +524,7 @@ function stuck() {
 // turtle's are both kept, so that going from one to the other loses neither.
 function menu(opening = false) {
   hold();
-  applyTheme(); // after another holiday's card, the board's own colours
+  wear(theme('halloween'));
   sky();
   if (opening === true) cover(false); // a first board to look at, dealt afresh before it is played
   const playing = game && !finished && opening !== true;
@@ -446,12 +600,13 @@ function toTurtle() {
 }
 
 // Gives up the board in play, once the player has said so: the same hour of
-// the night deals again, or the same board outside it.
+// the night or day of the week deals again, or the same board outside them.
 function giveUp() {
+  const at = weekDay;
   askToLose({
     which: 'this board',
-    then: hour >= 0 ? `${HOURS[hour].name} deals again` : 'a new one is dealt',
-    go: hour >= 0 ? () => beginHour(hour) : () => freePlay(freeKey, newSeed(), freeTurn),
+    then: hour >= 0 ? `${HOURS[hour].name} deals again` : at >= 0 ? `${DAYS[at].name} deals again` : 'a new one is dealt',
+    go: hour >= 0 ? () => beginHour(hour) : at >= 0 ? () => beginDay(at) : () => freePlay(freeKey, newSeed(), freeTurn),
     back: () => (hideCard(), run()),
   });
 }
@@ -473,9 +628,10 @@ function askToLose({ which, then, go, back, keep = 'Keep playing' }) {
 // ----------------------------------------------------------- the holidays
 
 // The holiday whose look the page wears: Halloween's while the Long Night
-// is on the table, and otherwise the one chosen last.
+// is on the table, Thanksgiving's while its week is, and otherwise the one
+// chosen last.
 function applyTheme() {
-  wear(theme(hour >= 0 ? 'halloween' : saved.theme) || theme('halloween'));
+  wear(theme(hour >= 0 ? 'halloween' : weekDay >= 0 ? 'thanksgiving' : saved.theme) || theme('halloween'));
 }
 
 // A holiday's look: its colour as the accent, and Halloween its own
@@ -500,7 +656,7 @@ const mine = () => calendar().filter((e) => (saved.holidays || []).includes(e.th
 
 // Choosing the holidays to play, on a first visit and later from the menu:
 // all the year's, in the order they come round from today, any number of
-// them. Their boards are all to come but Halloween's.
+// them. Their boards are all to come but Halloween's and Thanksgiving's.
 function chooseHolidays(first = false) {
   hold();
   wear(null);
@@ -535,19 +691,21 @@ function chooseHolidays(first = false) {
     show();
   };
   const grid = entries.map((e) => ({ label: `${e.theme.icon} ${e.theme.name}`, sub: dated(e), act: () => toggle(e.theme.id) }));
-  const text = "Pick the holidays and seasons you'd like to play, as many as you like. Halloween's boards are ready, and the rest are on their way. You can change them from the menu.";
+  const text = "Pick the holidays and seasons you'd like to play, as many as you like. Halloween's and Thanksgiving's boards are ready, and the rest are on their way. You can change them from the menu.";
   showCard('Choose your holidays', text, [[first === true ? 'Start' : 'Done', done], ['All of them', all]], grid);
   $('card-grid').classList.add('themes');
   show();
   if (!chosen.size) buttons()[0].focus(); // not Start, which waits for a choice
 }
 
-// A holiday's own card: the Long Night's for Halloween, and for the others,
-// whose boards are to come, a card to say so.
+// A holiday's own card: the Long Night's for Halloween, the week's for
+// Thanksgiving, and for the others, whose boards are to come, a card to say
+// so.
+const MENUS = { halloween: (opening) => menu(opening), thanksgiving: (opening) => weekMenu(opening) };
 function openTheme(opening = false) {
   if (!saved.holidays) return chooseHolidays(opening);
   const t = theme(saved.theme);
-  if (t.ready) menu(opening);
+  if (MENUS[t.id]) MENUS[t.id](opening);
   else comingSoon(t, opening);
 }
 
@@ -583,17 +741,20 @@ function comingSoon(t, opening = false) {
   const comes = e.now ? (t.until ? `is on ${day}` : 'is today') : t.until ? `runs ${day}` : `falls on ${day}`;
   const actions = [];
   if (game && !finished && opening !== true) actions.push(['Back to the board', () => (hideCard(), run())]);
-  actions.push([
-    "Halloween's Long Night",
-    () => {
-      saved.theme = 'halloween';
-      store();
-      menu(opening);
-    },
-  ]);
-  if (hour >= 0) actions.push(['Play the turtle', toTurtle]);
+  // The holidays ready to play meanwhile, each to its own card.
+  for (const [id, words] of [['halloween', "Halloween's Long Night"], ['thanksgiving', 'Thanksgiving week']]) {
+    actions.push([
+      words,
+      () => {
+        saved.theme = id;
+        store();
+        MENUS[id](opening);
+      },
+    ]);
+  }
+  if (hour >= 0 || weekDay >= 0) actions.push(['Play the turtle', toTurtle]);
   actions.push(['Your holidays', showHolidays]);
-  const text = `${t.name} ${comes}. Its boards are on their way; until they come, there's Halloween's Long Night, and the classic turtle.`;
+  const text = `${t.name} ${comes}. Its boards are on their way; until they come, there are Halloween's Long Night and Thanksgiving week, and the classic turtle.`;
   showCard(`${t.icon} ${t.name}`, text, actions);
   showOptions();
 }
@@ -779,9 +940,14 @@ function ordinal(n) {
 
 function update() {
   const g = game;
-  $('where').innerHTML = hour >= 0 ? `${theme('halloween').icon} <b>${HOURS[hour].name}</b> ${HOURS[hour].layout.name}` : `<b>Free play</b> ${g.layout.name}`;
+  $('where').innerHTML =
+    hour >= 0
+      ? `${theme('halloween').icon} <b>${HOURS[hour].name}</b> ${HOURS[hour].layout.name}`
+      : weekDay >= 0
+        ? `${theme('thanksgiving').icon} <b>${DAYS[weekDay].name}</b> ${DAYS[weekDay].title}`
+        : `<b>Free play</b> ${g.layout.name}`;
   applyTheme();
-  $('new').hidden = hour >= 0;
+  $('new').hidden = hour >= 0 || weekDay >= 0; // the night's and the week's boards deal by their own cards
   $('left').innerHTML = `<b>${g.left}</b> tiles`;
   $('score').innerHTML = `★ <b>${signed(scoreOf(g, played(), turnWords.score).total, '')}</b>`;
   const turns = g.sides.length > 1;
@@ -821,15 +987,16 @@ function update() {
 }
 
 // The sky behind the board: the hour's own, or the dawn once the sun is up;
-// and outside the night, the sky of the holiday chosen last, but for the
-// night sky of the page's styles once the tiles turn over.
+// on Thanksgiving week, the day's; and outside them, the sky of the holiday
+// chosen last; but for the night sky of the page's styles once the tiles
+// turn over.
 function sky() {
   const s = document.body.style;
   let colours = null;
   if (hour >= 0) {
     const spec = HOURS[hour];
     colours = spec.dawn && game.sideName === 'day' ? spec.dawn : spec.sky;
-  } else if (game.sideName !== 'night') colours = (theme(saved.theme) || theme('halloween')).sky;
+  } else if (game.sideName !== 'night') colours = weekDay >= 0 ? DAYS[weekDay].sky : (theme(saved.theme) || theme('halloween')).sky;
   if (colours) {
     s.setProperty('--sky-top', colours[0]);
     s.setProperty('--sky-low', colours[1]);
@@ -1143,7 +1310,7 @@ document.addEventListener('keydown', (e) => {
   }
   const act = { h: 'hint', u: 'undo', z: 'undo', s: 'shuffle' }[e.key.toLowerCase()];
   if (act) help(act);
-  else if (e.key.toLowerCase() === 'n' && hour < 0) $('new').click();
+  else if (e.key.toLowerCase() === 'n' && hour < 0 && weekDay < 0) $('new').click();
   else if (e.key.toLowerCase() === 'm') toggleSound();
   else if (e.key.toLowerCase() === 'p') {
     if (paused) {
@@ -1184,16 +1351,26 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // An address of #play/name/seed plays that board freely, going on with it if
-// it is the one kept (as it is when the page is reloaded); otherwise the
-// night goes on where it was left, or begins, as it does for a visitor who
-// only looked at the first board last time.
+// it is the one kept (as it is when the page is reloaded). Otherwise, for a
+// player whose holiday is Thanksgiving, the week goes on where it was left,
+// or opens on its card; and for the rest the night goes on where it was
+// left, or begins, as it does for a visitor who only looked at the first
+// board last time.
 const [mode, key, seed, turnAt] = location.hash.slice(1).split('/');
 const p = saved.playing;
 const f = saved.free;
+const w = saved.week.playing;
 const goingOn = p && HOURS[p.hour] && (saved.reached > 0 || p.hour > 0 || p.moves.length > 0);
+const weekGoingOn = w && DAYS[w.day] && (saved.week.reached > 0 || w.day > 0 || w.moves.length > 0);
 if (mode === 'play') {
   const kept = f && f.key === key && (!seed || f.seed === Number(seed)) && f.turnAt === (Number(turnAt) || 0) ? f : null;
   freePlay(key, kept ? kept.seed : Number(seed) || newSeed(), Number(turnAt) || 0, kept);
+} else if (saved.holidays && saved.theme === 'thanksgiving') {
+  if (weekGoingOn) beginDay(w.day, w);
+  else {
+    beginDay(saved.week.reached);
+    weekMenu(true);
+  }
 } else if (goingOn) beginHour(p.hour, p);
 else {
   beginHour(0);
