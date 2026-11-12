@@ -1,6 +1,6 @@
 # Seasons Mah Jong
 
-Mah Jong solitaire through the year, with boards for the holidays and seasons each player chooses. It began as a fork of Boneyard Mah Jong, the Halloween game, whose Long Night is its Halloween; the other holidays' boards come next. [PLAN.md](PLAN.md) has the design and what is still to do.
+Mah Jong solitaire through the year, with boards for the holidays and seasons each player chooses. It began as a fork of Boneyard Mah Jong, the Halloween game, which goes on as a game of its own; Boneyard's Long Night is Seasons' Halloween too, and the other holidays' boards come next. [PLAN.md](PLAN.md) has the design and what is still to do.
 
 ## Run it locally
 
@@ -64,9 +64,9 @@ Setting up the project, in the [Firebase console](https://console.firebase.googl
 
 ## Online
 
-Seasons isn't online yet. It is made for GitHub Pages, as Boneyard is: a repository of its own, `seasons-mahjong`, served from its `main` branch as it is (`.nojekyll` keeps GitHub from processing it), at https://swilliamson24060.github.io/seasons-mahjong/, the address `index.html` already gives for links to it. Once it is there, pushing `main` puts a new version online within a minute or two, and players get it the next time they load the game with a network.
+The game lives at https://swilliamson24060.github.io/seasons-mahjong/, served by GitHub Pages from the `main` branch of this repository, as it is: `.nojekyll` keeps GitHub from processing it. Pushing `main` puts a new version online within a minute or two, and players get it the next time they load the game with a network.
 
-The two games would share a site, swilliamson24060.github.io, and with it a browser's storage. So Seasons keeps its saves under names that begin `seasons.` and its offline copy in caches named `seasons-`, and neither game touches the other's.
+Boneyard lives beside it, as a game of its own, at https://swilliamson24060.github.io/boneyard-mahjong/. The two share a site, swilliamson24060.github.io, and with it a browser's storage, so Seasons keeps its saves under names that begin `seasons.` and its offline copy in caches named `seasons-`, and neither game touches the other's.
 
 ## On itch.io
 

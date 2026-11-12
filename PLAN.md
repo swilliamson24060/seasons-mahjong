@@ -1,6 +1,6 @@
 # Seasons Mah Jong: plan
 
-Mah Jong solitaire through the year: boards for each of the year's holidays and seasons, of which each player plays the ones they choose. It was forked from Boneyard Mah Jong, the Halloween game, on Wednesday 11 November 2026, and Boneyard's Long Night is its Halloween. Boneyard's own plan, in its repository and in this one's history, gives the reasons for everything that came from it.
+Mah Jong solitaire through the year: boards for each of the year's holidays and seasons, of which each player plays the ones they choose. It was forked from Boneyard Mah Jong, the Halloween game, on Wednesday 11 November 2026. Boneyard goes on as a game of its own, and its Long Night is Seasons' Halloween too, so the two games both have it. Boneyard's own plan, in its repository and in this one's history, gives the reasons for everything that came from it.
 
 ## The holidays
 
@@ -46,7 +46,6 @@ Themed levels for the nine holidays still to come. For each, to decide:
 - The icon, the cover and the screenshots: Halloween's jack-o'-lantern and tiles.
 - The colour a phone gives the page and the installed app: Boneyard's purple.
 - The leaderboard: off until Seasons has a Firebase project of its own.
-- Online: Seasons wants a GitHub repository of its own, with Pages, at https://swilliamson24060.github.io/seasons-mahjong/.
 
 ## What came from Boneyard
 
@@ -58,7 +57,7 @@ Themed levels for the nine holidays still to come. For each, to decide:
 
 ## Milestones
 
-**Wed 11 Nov:** forked from Boneyard Mah Jong. The ten holidays, the card to choose them on a first visit, Your holidays in the menu, and each holiday's colours, sky and lettering. Halloween plays as the Long Night, and the other nine say their boards are on their way.
+**Wed 11 Nov:** forked from Boneyard Mah Jong. The ten holidays, the card to choose them on a first visit, Your holidays in the menu, and each holiday's colours, sky and lettering. Halloween plays as the Long Night, and the other nine say their boards are on their way. Online the same day, at https://swilliamson24060.github.io/seasons-mahjong/, beside Boneyard, which stays a game of its own.
 
 ## Parked for later
 
