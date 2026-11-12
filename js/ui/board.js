@@ -84,6 +84,8 @@ export class Board {
       button.className = 'tile';
       button.dataset.i = i;
       button.style.zIndex = L.z[i] * 10000 + L.y[i] * 100 + (99 - L.x[i]);
+      // On a football board, each end zone's tiles carry its team's pennant.
+      if (this.game.zones && this.game.zones[i]) button.classList.add(this.game.zones[i] < 0 ? 'zone-top' : 'zone-bottom');
       const svg = document.createElementNS(SVG, 'svg');
       svg.setAttribute('viewBox', '0 0 60 80');
       svg.setAttribute('aria-hidden', 'true');

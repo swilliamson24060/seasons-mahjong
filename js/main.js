@@ -41,6 +41,42 @@ const GIFTS = {
 };
 let gifts = GIFTS.halloween; // the board in play's
 
+// How a board's turning over is told: Halloween's midnight, or its sunrise
+// on a board that starts on its night side; and the Sunday Scaries'
+// sundown, when the weekend turns over to Monday and its lost souls are
+// worries. For each: the clock in the top bar, before the turn and after;
+// what its lost souls are; what it says at the turn, and three matches
+// before; the moon's title; the score's words; and its sound.
+const TURNS = {
+  midnight: {
+    ahead: (n, night) => `${night ? '🕛' : '🌅'} <b>${n}</b> to ${night ? 'midnight' : 'sunrise'}`,
+    after: (night) => (night ? '🌙 night' : '☀️ day'),
+    soul: '👻',
+    soulsAhead: 'Lost souls if the tiles turned over now',
+    soulsWoke: 'Lost souls that woke',
+    turned: (night) => (night ? 'Midnight! The tiles turn over.' : 'Sunrise! The tiles turn back to day.'),
+    woke: (n) => (n ? `${n} lost ${n === 1 ? 'soul wakes' : 'souls wake'}: lost souls match each other.` : 'Not one lost soul.'),
+    prompt: 'Three matches to midnight. Hold the moon to see the night side, and take pairs that match on both sides.',
+    moon: 'Hold to see the night side (or hold Space)',
+    score: { night: 'Midnight', day: 'Sunrise', souls: 'Lost souls', none: 'no lost souls' },
+    ring: (night) => (night ? sound.midnight() : sound.sunrise()),
+  },
+  sundown: {
+    ahead: (n) => `🌇 <b>${n}</b> to sundown`,
+    after: () => '😟 Monday',
+    soul: '😟',
+    soulsAhead: 'Worries if the tiles turned over now',
+    soulsWoke: 'Worries that woke',
+    turned: () => "Sundown! The weekend's over, and the tiles turn over to Monday.",
+    woke: (n) => (n ? `${n} ${n === 1 ? 'worry wakes' : 'worries wake'}: worries match each other.` : 'Not one worry.'),
+    prompt: 'Three matches to sundown. Hold the moon to see Monday coming, and take pairs that match on both sides.',
+    moon: "Hold to see Monday's side (or hold Space)",
+    score: { night: 'Sundown', day: 'Sundown', souls: 'Worries', none: 'no worries' },
+    ring: () => sound.alarm(),
+  },
+};
+let turnWords = TURNS.midnight; // the board in play's
+
 // Every layout by the name an address can give it, for free play: #play/raven/12345.
 const FREE = Object.fromEntries(Object.entries(layouts).map(([k, L]) => [k.toLowerCase(), L]));
 
@@ -104,11 +140,13 @@ const leaderboard = new Leaderboard();
 // Sets up a board: deals it from its seed, plays back any moves already
 // made on it, and puts it on the page. The board it takes the place of is
 // kept first, with all the time played on it.
-function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, treatSet = 'halloween', treatBar = true, napAt = null }) {
+function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, treatSet = 'halloween', treatBar = true, napAt = null, turnSet = 'midnight' }) {
   if (game && !finished) store();
   hideCard();
   hour = at;
   nap = napAt;
+  turnWords = TURNS[turnSet] || TURNS.midnight;
+  $('moon').title = turnWords.moon;
   game = new Game(layout, { seed, ...options });
   for (const move of replay) redo(move);
   moves = replay.slice();
@@ -166,6 +204,11 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, trea
   game.on('grab', ({ grab }) => {
     sound.grab();
     toast(`Another shopper grabbed a doorbuster: ${dealName(grab[0])}.`);
+  });
+  game.on('touchdown', ({ b }) => {
+    sound.touchdown();
+    setTimeout(() => board.float(`+${POINTS.touchdown}`, b), 500); // after the pair's own points
+    toast(`Touchdown! ${POINTS.touchdown} points.`);
   });
   game.on('treat', ({ treat }) => {
     sound.treat();
@@ -238,7 +281,7 @@ function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
   const treats = { treatSet: (day && day.gifts) || 'halloween', treatBar: !day || Boolean(options.treats) };
   const napFrom = day && day.nap ? Math.round((FREE[key].count / 2) * day.nap.by) : 0;
   const napAt = napFrom ? { from: napFrom, to: napFrom + day.nap.matches } : null;
-  play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...treats, napAt });
+  play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...treats, napAt, turnSet: (day && day.words) || 'midnight' });
   saved.free = { key, seed, turnAt, moves, elapsed };
   store();
   history.replaceState(null, '', `#play/${key}/${seed}${turnAt ? `/${turnAt}` : ''}`);
@@ -254,10 +297,9 @@ function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
 
 function turned({ souls }) {
   woke = souls.length;
-  if (game.sideName === 'night') sound.midnight();
-  else sound.sunrise();
-  const what = game.sideName === 'night' ? 'Midnight! The tiles turn over.' : 'Sunrise! The tiles turn back to day.';
-  toast(woke ? `${what} ${woke} lost ${woke === 1 ? 'soul wakes' : 'souls wake'}: lost souls match each other.` : `${what} Not one lost soul.`);
+  const night = game.sideName === 'night';
+  turnWords.ring(night);
+  toast(`${turnWords.turned(night)} ${turnWords.woke(woke)}`);
   const earned = woke ? woke * POINTS.soul : POINTS.clean;
   setTimeout(() => board.float(signed(earned), -1, earned < 0), 900); // once the tiles have turned
   update();
@@ -268,7 +310,7 @@ function won() {
   finished = true;
   hold();
   const time = played();
-  const { total, rows } = scoreOf(game, time);
+  const { total, rows } = scoreOf(game, time, turnWords.score);
   const lines = [...rows, ['Score', '', total]];
   const timing = `In ${clock(time)}, against a par of ${clock(par(game))}.`;
   update();
@@ -741,20 +783,17 @@ function update() {
   applyTheme();
   $('new').hidden = hour >= 0;
   $('left').innerHTML = `<b>${g.left}</b> tiles`;
-  $('score').innerHTML = `★ <b>${signed(scoreOf(g, played()).total, '')}</b>`;
+  $('score').innerHTML = `★ <b>${signed(scoreOf(g, played(), turnWords.score).total, '')}</b>`;
   const turns = g.sides.length > 1;
   const night = g.sideNames[1] === 'night';
   $('clock').hidden = !turns;
-  if (turns) {
-    $('clock').innerHTML = g.turnAhead
-      ? `${night ? '🕛' : '🌅'} <b>${g.untilTurn}</b> to ${night ? 'midnight' : 'sunrise'}`
-      : night
-        ? '🌙 night'
-        : '☀️ day';
-  }
+  if (turns) $('clock').innerHTML = g.turnAhead ? turnWords.ahead(g.untilTurn, night) : turnWords.after(night);
   $('souls').hidden = !turns;
-  $('souls').title = g.turnAhead ? 'Lost souls if the tiles turned over now' : 'Lost souls that woke';
-  $('souls').innerHTML = `👻 <b>${g.turnAhead ? g.soulsIfNow() : woke}</b>`;
+  $('souls').title = g.turnAhead ? turnWords.soulsAhead : turnWords.soulsWoke;
+  $('souls').innerHTML = `${turnWords.soul} <b>${g.turnAhead ? g.soulsIfNow() : woke}</b>`;
+  // The touchdowns scored, on a football board.
+  $('touchdowns').hidden = !g.zones;
+  if (g.zones) $('touchdowns').innerHTML = `🏈 <b>${g.touchdowns}</b>`;
   // The nap, on a board with one: the matches until it, and while everyone
   // sleeps, the matches left of it.
   $('nap').hidden = !nap || g.matches >= nap.to;
@@ -774,9 +813,9 @@ function update() {
   $('moon').disabled = !g.turnAhead;
   document.body.classList.toggle('night', g.sideName === 'night');
   sky();
-  if (hour === MIDNIGHT && g.turnAhead && g.untilTurn === 3 && !prompted) {
+  if ((hour === MIDNIGHT || turnWords === TURNS.sundown) && g.turnAhead && g.untilTurn === 3 && !prompted) {
     prompted = true;
-    toast('Three matches to midnight. Hold the moon to see the night side, and take pairs that match on both sides.');
+    toast(turnWords.prompt);
   }
   tick();
 }

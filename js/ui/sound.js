@@ -179,6 +179,19 @@ export class Sound {
     [1318.5, 1661.2, 1975.5, 2637].forEach((f, k) => this.ping(f, this.now + k * 0.07, { gain: 0.08, fall: 0.5 }));
   }
 
+  // Sundown on the second Sunday: the alarm clock rings for Monday.
+  alarm() {
+    if (!this.on) return;
+    for (let k = 0; k < 14; k++) this.bell(k % 2 ? 1568 : 1760, this.now + k * 0.07, 0.05, 0.5);
+  }
+
+  // A touchdown: the crowd roars, and the band plays.
+  touchdown() {
+    if (!this.on) return;
+    this.rustle(this.now, 1.1, 1200, 3600, 0.1);
+    [60, 64, 67, 72].forEach((note, k) => this.organ(note, this.now + 0.1 + k * 0.12, 0.5, 0.09));
+  }
+
   // Another shopper grabbing a doorbuster: a quick snatch.
   grab() {
     if (!this.on) return;

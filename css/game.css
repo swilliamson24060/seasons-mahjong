@@ -547,6 +547,28 @@ body.covered #board {
   pointer-events: none;
 }
 
+/* Rivalry football: each end zone's tiles carry its team's pennant, blue
+   at the top of the field and red at the bottom. */
+.tile.zone-top::before,
+.tile.zone-bottom::before {
+  content: '';
+  position: absolute;
+  top: 5%;
+  right: 6%;
+  width: 28%;
+  height: 20%;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  pointer-events: none;
+}
+
+.tile.zone-top::before {
+  background: #2f5fb3;
+}
+
+.tile.zone-bottom::before {
+  background: #c0392b;
+}
+
 /* Black Friday: a doorbuster's red sale tag, while it is still to be had. */
 .tile.buster::before {
   content: '%';

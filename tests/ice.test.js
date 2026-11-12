@@ -53,9 +53,10 @@ test('the frozen turkey thaws from the outside in: its outline from the start, t
   }
 });
 
-test('Thanksgiving week has seven days, Sunday to Saturday, and Monday is the frozen turkey', () => {
-  equal(DAYS.map((d) => d.name).join(' '), 'Sunday Monday Tuesday Wednesday Thursday Friday Saturday', 'the days');
-  equal(DAYS[0].title, 'Traffic', "Sunday's theme");
+test('Thanksgiving week has eight days, from the first Sunday to the second, and Monday is the frozen turkey', () => {
+  equal(DAYS.map((d) => d.name).join(', '), 'First Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Second Sunday', 'the days');
+  equal(DAYS[0].title, 'Traffic', "the first Sunday's theme");
+  equal(DAYS[7].title, 'The Sunday Scaries', "the second Sunday's");
   equal(dayOf(TURKEY), MONDAY, "the turkey's day");
   equal(MONDAY.title, 'Thawing the turkey', "Monday's theme");
   check(dayOptions(MONDAY).ice && !dayOptions(MONDAY).treats && !dayOptions(MONDAY).ghostsFloat, "Monday's rules: ice, and no treats or ghosts");

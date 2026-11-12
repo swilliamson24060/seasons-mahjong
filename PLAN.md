@@ -14,7 +14,7 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 | Labor Day | the first Monday in September | amber, on slate | next |
 | Start of Fall | September 22, the usual day of the equinox | orange, on russet | next |
 | Halloween | October 31 | Boneyard's orange, on purple | the Long Night: thirteen boards |
-| Thanksgiving | the fourth Thursday in November | squash, on brown | a week of seven, begun: Monday's to Friday's are made |
+| Thanksgiving | the fourth Thursday in November | squash, on brown | a week of eight, all made |
 | Christmas | December 25 | red, on pine green | next |
 
 ## Choosing them
@@ -43,17 +43,23 @@ Themed levels for the nine holidays still to come. For each, to decide:
 
 ## Thanksgiving week
 
-Seven boards, one a day from the Sunday before Thanksgiving to the Saturday after it, each with a theme of its own. `js/thanksgiving.js` holds them.
+Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after it, each with a theme of its own. `js/thanksgiving.js` holds them.
 
 | Day | Theme | Board | Twist |
 |---|---|---|---|
-| Sunday | Traffic | to make | |
+| First Sunday | Traffic | the highway: six lanes in two carriageways and an overpass, 84 tiles on three layers, nine across | none: the gentle start |
 | Monday | Thawing the turkey | the frozen turkey: 90 tiles on four layers, nine across | Frozen |
 | Tuesday | The grocery run | a shopping cart: 94 tiles on four layers, nine across | The shopping list |
 | Wednesday | Friendsgiving | the potluck table: a pie, a bowl of stuffing, a casserole and a loaf, 100 tiles on four layers, nine across | Potluck |
 | Thursday | The Feast | the feast table: plates down both sides, the side dishes at its corners and the turkey in the middle, 108 tiles on five layers, nine across | Leftovers, and the nap |
 | Friday | Black Friday | a sale tag, hanging by its string, a big % on its face: 110 tiles on three layers, seven across | Doorbusters |
-| Saturday | to choose | | |
+| Saturday | Rivalry football | a football stood on end, its laces raised: 100 tiles on four layers, seven across | Touchdowns |
+| Second Sunday | The Sunday Scaries: the day before work and school again | an alarm clock, its two bells on top and its hands at seven: 102 tiles on three layers, nine across | Sundown |
+
+### The first Sunday
+
+- The gentle start, as the Long Night's 6 pm is: the week's fewest tiles, 32 of them free from the start, and no twist. Its card tells the free-tile rule as traffic: a tile can pull out only when nothing is on it and its lane is clear at one end.
+- Until the week is in the menu, it plays by its address, `#play/highway`.
 
 ### Frozen
 
@@ -96,6 +102,20 @@ Seven boards, one a day from the Sunday before Thanksgiving to the Saturday afte
 - In 200 trial deals, a player who only followed the hints bought 1.2 of the four, and other shoppers grabbed 2.8: going after the tags pays.
 - Until the week is in the menu, Friday's board plays by its address, `#play/sale`.
 
+### Touchdowns
+
+- The board is the field, the ball stood on end so that it runs from the end zone at the top to the one at the bottom, as suits a phone held upright. Each end zone is the three rows at its tip, on every layer: 14 tiles each, with its team's pennant, blue at the top and red at the bottom.
+- A pair taken with a tile in each end zone is a touchdown, for 60 points: six, as in football, times ten. The top bar counts them (🏈), and an undo takes one back.
+- Every deal can score one: a deal is made again until its own winning order holds a touchdown. In 200 trial deals, that order scored 2.2, and 5 at most.
+- Until the week is in the menu, Saturday's board plays by its address, `#play/football`.
+
+### Sundown
+
+- The second Sunday's twist is the Long Night's midnight, told as the dread of Monday. Halfway through, after 26 of the 51 matches, the sun goes down and every tile turns over to its Monday side; holding the moon, or Space, shows Monday coming.
+- Before sundown, pairs that match on both sides are the ones to take. A tile left without a partner wakes as a worry, and worries match each other; sundown with no worries earns 150, and each worry costs 10.
+- Its words are its own: 🌇 counts down to sundown, 😟 counts the worries, the alarm clock rings at the turn, and the sky goes dark for Monday. Every deal can be won through sundown with no worries, as every Midnight deal can.
+- Until the week is in the menu, its board plays by its address, `#play/alarm`.
+
 ## Still Boneyard's
 
 - The icon, the cover and the screenshots: Halloween's jack-o'-lantern and tiles.
@@ -111,7 +131,7 @@ Seven boards, one a day from the Sunday before Thanksgiving to the Saturday afte
 
 ## Milestones
 
-**Wed 11 Nov, evening:** Thanksgiving week planned as seven boards, Sunday to Saturday, with Sunday's theme traffic. Monday's is made: the frozen turkey, and with it the Frozen twist. So is Tuesday's: the grocery run, on a shopping cart, with the shopping list. And Wednesday's: Friendsgiving, at the potluck table, with friends' gifts. And Thursday's: the feast, with the fridge for leftovers and the nap after. And Friday's: Black Friday, on a sale tag, with doorbusters to race other shoppers for.
+**Wed 11 Nov, evening:** Thanksgiving week planned as eight boards, from the first Sunday, traffic, to the second, the Sunday Scaries. Monday's is made: the frozen turkey, and with it the Frozen twist. So is Tuesday's: the grocery run, on a shopping cart, with the shopping list. And Wednesday's: Friendsgiving, at the potluck table, with friends' gifts. And Thursday's: the feast, with the fridge for leftovers and the nap after. And Friday's: Black Friday, on a sale tag, with doorbusters to race other shoppers for. And Saturday's: rivalry football, on a football, with touchdowns from end zone to end zone. And the first Sunday's: traffic, on the highway, the week's gentle start with no twist. And the second Sunday's: the Sunday Scaries, on an alarm clock, turning over to Monday at sundown. The week's eight boards are all made.
 
 **Wed 11 Nov:** forked from Boneyard Mah Jong. The ten holidays, the card to choose them on a first visit, Your holidays in the menu, and each holiday's colours, sky and lettering. Halloween plays as the Long Night, and the other nine say their boards are on their way. Online the same day, at https://swilliamson24060.github.io/seasons-mahjong/, beside Boneyard, which stays a game of its own, and with a leaderboard in a Firebase project of its own.
 

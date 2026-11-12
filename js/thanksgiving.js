@@ -1,4 +1,4 @@
-import { TURKEY, CART, POTLUCK, FEAST, SALE } from './engine/layouts.js';
+import { HIGHWAY, TURKEY, CART, POTLUCK, FEAST, SALE, FOOTBALL, ALARM } from './engine/layouts.js';
 import { FACE } from './engine/tiles.js';
 import { outsideIn } from './engine/ice.js';
 
@@ -7,19 +7,31 @@ import { outsideIn } from './engine/ice.js';
 // dragons do in a set.
 const DISHES = [FACE.lantern, FACE.brew, FACE.ghost];
 
-// Thanksgiving week: seven boards, one a day from the Sunday before
-// Thanksgiving to the Saturday after it. Each day: its name and its theme,
+// Thanksgiving week: eight boards, one a day from the Sunday before
+// Thanksgiving to the Sunday after it, the first Sunday's the traffic on the
+// way and the second's the Sunday Scaries, the day before work and school
+// again. Each day: its name and its theme,
 // and once its board is made, the board; the rules for Game (thaw, on a
 // board with ice, says how many matches each ring of it takes to thaw, and
 // list, on a board with a shopping list, how many things are on it and how
 // far through the board checkout comes); the sky behind it, top and bottom;
 // what to tell the player before it starts; on a board with treats, which
 // set of them it gives (main.js names them); and on a board with a nap, how
-// far through it comes and for how many matches the clock stops. Monday's
-// to Friday's boards are made so far.
+// far through it comes and for how many matches the clock stops; and on a
+// board that turns over, the words it is told in (main.js has them). The
+// first Sunday's board is the gentle start, with no twist, as the Long
+// Night's 6 pm is; the second Sunday's turns over to Monday at sundown, as
+// the Long Night's boards turn over at midnight.
 
 export const DAYS = [
-  { name: 'Sunday', title: 'Traffic' },
+  {
+    name: 'First Sunday',
+    title: 'Traffic',
+    layout: HIGHWAY,
+    rules: { treats: false, ghostsFloat: false },
+    sky: ['#4a5566', '#151a22'],
+    text: "Everyone's on the road to Grandma's, and the highway's jammed. A tile can pull out only when nothing is on it and its lane is clear at one end: take two free tiles that match.",
+  },
   {
     name: 'Monday',
     title: 'Thawing the turkey',
@@ -62,13 +74,32 @@ export const DAYS = [
     sky: ['#3a1d24', '#0d0709'],
     text: "The doors open early. Four pairs are doorbusters, with a red sale tag: take one, and it's yours, for 50 points. But you're not the only shopper: after every 5 of your matches, someone else grabs the first doorbuster that's free.",
   },
-  { name: 'Saturday' },
+  {
+    name: 'Saturday',
+    title: 'Rivalry football',
+    layout: FOOTBALL,
+    rules: { treats: false, ghostsFloat: false, touchdown: 3 },
+    sky: ['#2f5a3a', '#0e1a11'],
+    text: "It's the big game. The field runs from the end zone at the top to the one at the bottom, and each end zone's tiles carry its team's pennant. A pair taken with a tile in each end zone is a touchdown, for 60 points.",
+  },
+  {
+    name: 'Second Sunday',
+    title: 'The Sunday Scaries',
+    layout: ALARM,
+    rules: { treats: false, ghostsFloat: false, turn: 1 / 2 },
+    words: 'sundown',
+    sky: ['#8a4a3a', '#22142a'],
+    text: "The weekend's nearly over. Halfway through, the sun goes down and every tile turns over to its Monday side: hold the moon, or Space, to see Monday coming. Before sundown, take pairs that match on both sides. A tile left without a partner wakes as a worry, and worries match each other.",
+  },
 ];
 
-// The options for Game for a day: its rules, with its thaw as the ice.
+// The options for Game for a day: its rules, with its thaw as the ice, and
+// its turn, the share of its matches before the tiles turn over, as a
+// number of matches.
 export function dayOptions(day) {
-  const { thaw, ...rules } = day.rules;
-  return thaw ? { ...rules, ice: outsideIn(day.layout, thaw) } : rules;
+  const { thaw, turn, ...rules } = day.rules;
+  const options = thaw ? { ...rules, ice: outsideIn(day.layout, thaw) } : rules;
+  return turn ? { ...options, turnAt: Math.round((day.layout.count / 2) * turn) } : options;
 }
 
 // The day a board is for, if it is one of the week's: played freely, by its
