@@ -35,15 +35,19 @@ function planchette() {
 // showing below and to the left. It draws what the game says, and turns
 // clicks, taps and keys into moves. say(text) reports things for the page
 // to show, sound, if given, plays a tock for each tile pressed, magnifier,
-// if given, shows a tile held down up close, and keyName is what the treat
-// that frees a blocked tile is called on this board.
+// if given, shows a tile held down up close, keyName is what the treat
+// that frees a blocked tile is called on this board, and fridge, on a board
+// with leftovers, is where its containers go: a tile chosen and then an
+// empty container goes in it, to be taken from there with its partner.
 export class Board {
-  constructor(el, game, { say = () => {}, sound = null, magnifier = null, keyName = 'key' } = {}) {
+  constructor(el, game, { say = () => {}, sound = null, magnifier = null, keyName = 'key', fridge = null } = {}) {
     this.el = el;
     this.game = game;
     this.say = say;
     this.sound = sound;
     this.keyName = keyName;
+    this.fridgeEl = fridge;
+    this.tableCount = game.tableCount;
     this.selected = -1;
     this.keying = false; // the next tile pressed gets the skeleton key, or the saved seat
     this.busy = 0; // while the tiles turn over, presses wait
@@ -58,6 +62,11 @@ export class Board {
     game.on('undo', (entry) => this.undone(entry));
     game.on('shuffle', () => this.shuffled());
     game.on('key', () => this.refresh());
+    game.on('save', ({ slot }) => {
+      this.selected = -1;
+      this.paint(slot);
+      this.refresh();
+    });
   }
 
   build() {
@@ -68,7 +77,7 @@ export class Board {
     // comes from z-index: upper layers over lower, and within a layer each
     // tile over the one above it and the one to its right, whose sides
     // would otherwise show over it.
-    const order = [...L.x.keys()].sort((a, b) => L.y[a] - L.y[b] || L.x[a] - L.x[b] || L.z[a] - L.z[b]);
+    const order = [...L.x.keys()].filter((i) => i < this.tableCount).sort((a, b) => L.y[a] - L.y[b] || L.x[a] - L.x[b] || L.z[a] - L.z[b]);
     for (const i of order) {
       const button = document.createElement('button');
       button.type = 'button';
@@ -131,10 +140,54 @@ export class Board {
       e.preventDefault();
       this.move(e.key);
     };
+    this.buildFridge();
 
     for (let i = 0; i < L.count; i++) this.paint(i);
     this.refresh();
     this.fit();
+  }
+
+  // The fridge's containers, one button each, after the table's tiles; a
+  // tap on one with a tile in it chooses that tile, and on an empty one
+  // puts the tile chosen in it. With no fridge, there are none.
+  buildFridge() {
+    const box = this.fridgeEl;
+    if (!box) return;
+    box.replaceChildren();
+    for (let s = this.tableCount; s < this.game.layout.count; s++) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'tile slot';
+      button.dataset.i = s;
+      const svg = document.createElementNS(SVG, 'svg');
+      svg.setAttribute('viewBox', '0 0 60 80');
+      svg.setAttribute('aria-hidden', 'true');
+      const use = document.createElementNS(SVG, 'use');
+      svg.append(use);
+      button.append(svg);
+      this.tiles[s] = { el: button, use, ice: null };
+      box.append(button);
+    }
+    box.onclick = (e) => {
+      const t = e.target.closest('.tile');
+      if (!t) return;
+      const s = Number(t.dataset.i);
+      if (this.game.present[s]) this.press(s);
+      else this.saveChosen();
+    };
+  }
+
+  // A tap on an empty container: the tile chosen goes in it, if it is a
+  // free one from the table.
+  saveChosen() {
+    const g = this.game;
+    if (this.busy) return;
+    if (this.selected < 0 || g.inFridge(this.selected)) {
+      this.say('Choose a free tile on the table, then a container, to save it for later.');
+      return;
+    }
+    if (g.save(this.selected) < 0) this.say("That tile can't go in the fridge.");
+    else if (this.sound) this.sound.save();
   }
 
   // Sizes the tiles to fill the space the board has, and places them.
@@ -158,7 +211,7 @@ export class Board {
     s.setProperty('--gap', `${Math.max(1, Math.round(w * 0.04))}px`);
     s.width = `${Math.ceil(cols * w + (deep + 1.6) * lift)}px`;
     s.height = `${Math.ceil(rows * h + (deep + 1.6) * lift)}px`;
-    for (let i = 0; i < L.count; i++) {
+    for (let i = 0; i < this.tableCount; i++) {
       const t = this.tiles[i].el.style;
       t.left = `${Math.round(1.4 * lift + (L.x[i] / 2) * w + L.z[i] * lift)}px`;
       t.top = `${Math.round((deep - L.z[i]) * lift + (L.y[i] / 2) * h)}px`;
@@ -170,15 +223,21 @@ export class Board {
     const g = this.game;
     const face = g.sides[side][i];
     const t = this.tiles[i];
+    if (face < 0) {
+      t.use.removeAttribute('href'); // a container never yet used
+      return;
+    }
     t.use.setAttribute('href', `#${symbolId(face)}`);
     t.el.classList.toggle('night', g.sideNames[side] === 'night');
     t.el.classList.toggle('soul', face === LOST);
     t.el.setAttribute('aria-label', this.label(i, face));
   }
 
-  // A tile's name, as a screen reader says it: its face, and any ice on it.
+  // A tile's name, as a screen reader says it: its face, and any ice on it;
+  // or a container in the fridge, empty, or with the tile saved in it.
   label(i, face = this.game.face(i)) {
     const g = this.game;
+    if (g.inFridge(i)) return g.present[i] && face >= 0 ? `${FACES[face].name}, in the fridge` : 'An empty container in the fridge';
     const name = FACES[face].name;
     return this.tiles[i].ice && g.frozen(i) ? `${name}, frozen: ${thawWords(g.thawIn(i))}` : name;
   }
@@ -219,12 +278,21 @@ export class Board {
       const t = this.tiles[i];
       const el = t.el;
       const here = g.present[i] === 1;
+      if (g.inFridge(i)) {
+        // A container: empty, or holding a tile, which is always free.
+        el.classList.toggle('empty', !here);
+        el.classList.toggle('selected', i === this.selected);
+        if (!here) el.classList.remove('hint');
+        el.setAttribute('aria-label', this.label(i));
+        continue;
+      }
       const frozen = here && g.frozen(i);
       const free = here && g.isFree(i);
       el.classList.toggle('gone', !here);
       el.classList.toggle('blocked', here && !g.open(i));
       el.classList.toggle('frozen', frozen);
       el.classList.toggle('listed', here && g.onList(i));
+      el.classList.toggle('buster', here && g.isBuster(i));
       if (t.ice) {
         if (frozen) t.ice.textContent = g.thawIn(i); // kept as it was while the ice fades
         el.setAttribute('aria-label', this.label(i));
@@ -283,7 +351,8 @@ export class Board {
       this.paint(entry.a);
       this.paint(entry.b);
       if (entry.souls) this.turnOver(1);
-    } else this.shuffled();
+    } else if (entry.type === 'save') this.paint(entry.tile);
+    else this.shuffled();
     this.refresh();
   }
 
@@ -330,9 +399,12 @@ export class Board {
   }
 
   // A hint: the planchette glides to one tile of the pair and then the
-  // other, and the two of them glow.
+  // other, and the two of them glow. A tile in the fridge only glows: the
+  // planchette keeps to the table.
   show(pair) {
     for (const i of pair) this.restart(this.tiles[i].el, 'hint');
+    const onTable = pair.filter((i) => i < this.tableCount);
+    if (!onTable.length) return;
     if (!this.planchette) {
       this.planchette = planchette();
       this.el.append(this.planchette);
@@ -342,9 +414,9 @@ export class Board {
     clearTimeout(this.gliding);
     void p.offsetWidth;
     p.classList.add('on');
-    this.glide(...this.centre(pair[0]));
+    this.glide(...this.centre(onTable[0]));
     this.gliding = setTimeout(() => {
-      this.glide(...this.centre(pair[1]));
+      this.glide(...this.centre(onTable.at(-1)));
       this.gliding = setTimeout(() => p.classList.remove('on'), 1500);
     }, 700);
   }
@@ -402,7 +474,7 @@ export class Board {
   move(key) {
     const g = this.game;
     const L = g.layout;
-    const free = g.freeTiles();
+    const free = g.freeTiles().filter((j) => j < this.tableCount); // on the table: the fridge has its own buttons
     if (!free.length) return;
     const at = document.activeElement && document.activeElement.closest && document.activeElement.closest('.tile');
     if (!at) return this.tiles[free[0]].el.focus();

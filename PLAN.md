@@ -14,7 +14,7 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 | Labor Day | the first Monday in September | amber, on slate | next |
 | Start of Fall | September 22, the usual day of the equinox | orange, on russet | next |
 | Halloween | October 31 | Boneyard's orange, on purple | the Long Night: thirteen boards |
-| Thanksgiving | the fourth Thursday in November | squash, on brown | a week of seven, begun: Monday's to Wednesday's are made |
+| Thanksgiving | the fourth Thursday in November | squash, on brown | a week of seven, begun: Monday's to Friday's are made |
 | Christmas | December 25 | red, on pine green | next |
 
 ## Choosing them
@@ -51,8 +51,8 @@ Seven boards, one a day from the Sunday before Thanksgiving to the Saturday afte
 | Monday | Thawing the turkey | the frozen turkey: 90 tiles on four layers, nine across | Frozen |
 | Tuesday | The grocery run | a shopping cart: 94 tiles on four layers, nine across | The shopping list |
 | Wednesday | Friendsgiving | the potluck table: a pie, a bowl of stuffing, a casserole and a loaf, 100 tiles on four layers, nine across | Potluck |
-| Thursday | to choose | | |
-| Friday | to choose | | |
+| Thursday | The Feast | the feast table: plates down both sides, the side dishes at its corners and the turkey in the middle, 108 tiles on five layers, nine across | Leftovers, and the nap |
+| Friday | Black Friday | a sale tag, hanging by its string, a big % on its face: 110 tiles on three layers, seven across | Doorbusters |
 | Saturday | to choose | | |
 
 ### Frozen
@@ -79,6 +79,23 @@ Seven boards, one a day from the Sunday before Thanksgiving to the Saturday afte
 - The gifts are Halloween's treats under other names and icons (💬, 🪑, 🎶), so each board says which set it gives. A Thanksgiving board with no treats has no treat buttons.
 - Until the week is in the menu, Wednesday's board plays by its address, `#play/potluck`.
 
+### Leftovers, and the nap
+
+- Beside the table is the fridge, with three containers. A free tile and then a container saves the tile for later: off the table, it holds nothing down any more, and it still matches its partner whenever that's free. Everything in the fridge has to be eaten by the end, so filling it with tiles whose partners are buried can box you in. An undo takes a tile back out.
+- The containers are places of their own, after the table's tiles, with nothing on them or beside them. A saved tile moves into one, so a deal, the solver, the hints and the safe shuffle treat it as any tile: every deal can still be won, the hints take tiles from the fridge, and a shuffle deals the ones in it too.
+- A board with a fridge is stuck only when nothing can be taken and nothing more can go in the fridge.
+- The nap: halfway through, after 27 of the 54 matches, everyone dozes off, and the clock stops for the next 10. Beside the clock, 😴 says how far off the nap is and 💤 how long it has left. An undo back into it stops the clock again, and it holds through a reload. The time napped never counts against par.
+- Until the week is in the menu, Thursday's board plays by its address, `#play/feast`.
+
+### Doorbusters
+
+- Four pairs wear a red sale tag. A pair taken with a tagged tile in it buys that doorbuster, for 50 points. But after every 5 of the player's matches, another shopper grabs the first doorbuster still free, both its tiles at once, and the pairs they grab don't score for the player. With none free, they come away with nothing until the next time.
+- The top bar's Deals row shows the four as small tiles, ticked once bought and crossed once grabbed, with the matches to the next grab. The day's card names them.
+- It stays fair: each doorbuster is a pair the deal's own winning order takes together, so a grab, early or late, never stops the board being won. None is free from the start, and they come from between an eighth and two thirds of the way through the order, so there is a race for each.
+- A grab belongs to the match that brought it, so an undo of that match brings the grabbed pair back. A shuffle moves the tags with the tiles, each open doorbuster becoming a pair of the new deal.
+- In 200 trial deals, a player who only followed the hints bought 1.2 of the four, and other shoppers grabbed 2.8: going after the tags pays.
+- Until the week is in the menu, Friday's board plays by its address, `#play/sale`.
+
 ## Still Boneyard's
 
 - The icon, the cover and the screenshots: Halloween's jack-o'-lantern and tiles.
@@ -94,7 +111,7 @@ Seven boards, one a day from the Sunday before Thanksgiving to the Saturday afte
 
 ## Milestones
 
-**Wed 11 Nov, evening:** Thanksgiving week planned as seven boards, Sunday to Saturday, with Sunday's theme traffic. Monday's is made: the frozen turkey, and with it the Frozen twist. So is Tuesday's: the grocery run, on a shopping cart, with the shopping list. And Wednesday's: Friendsgiving, at the potluck table, with friends' gifts.
+**Wed 11 Nov, evening:** Thanksgiving week planned as seven boards, Sunday to Saturday, with Sunday's theme traffic. Monday's is made: the frozen turkey, and with it the Frozen twist. So is Tuesday's: the grocery run, on a shopping cart, with the shopping list. And Wednesday's: Friendsgiving, at the potluck table, with friends' gifts. And Thursday's: the feast, with the fridge for leftovers and the nap after. And Friday's: Black Friday, on a sale tag, with doorbusters to race other shoppers for.
 
 **Wed 11 Nov:** forked from Boneyard Mah Jong. The ten holidays, the card to choose them on a first visit, Your holidays in the menu, and each holiday's colours, sky and lettering. Halloween plays as the Long Night, and the other nine say their boards are on their way. Online the same day, at https://swilliamson24060.github.io/seasons-mahjong/, beside Boneyard, which stays a game of its own, and with a leaderboard in a Firebase project of its own.
 

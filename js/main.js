@@ -2,7 +2,7 @@ import { Game } from './engine/game.js';
 import * as layouts from './engine/layouts.js';
 import { HOURS, gameOptions } from './night.js';
 import { dayOf, dayOptions } from './thanksgiving.js';
-import { KINDS } from './engine/tiles.js';
+import { KINDS, MATCH } from './engine/tiles.js';
 import { sprite, symbolId } from './ui/faces.js';
 import { Board } from './ui/board.js';
 import { Magnifier } from './ui/magnifier.js';
@@ -54,6 +54,7 @@ let hour = -1; // the hour of the Long Night being played, or -1 for free play
 let moves = []; // what has been done on this board, to play it back after a reload
 let elapsed = 0; // seconds played before the clock last started
 let started = 0; // when the clock last started, or 0 while it is held
+let nap = null; // on a board with a nap, { from, to }: the clock stops from the one match to the other
 let finished = false;
 let woke = 0;
 let prompted = false;
@@ -103,19 +104,31 @@ const leaderboard = new Leaderboard();
 // Sets up a board: deals it from its seed, plays back any moves already
 // made on it, and puts it on the page. The board it takes the place of is
 // kept first, with all the time played on it.
-function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, treatSet = 'halloween', treatBar = true }) {
+function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, treatSet = 'halloween', treatBar = true, napAt = null }) {
   if (game && !finished) store();
   hideCard();
   hour = at;
+  nap = napAt;
   game = new Game(layout, { seed, ...options });
   for (const move of replay) redo(move);
   moves = replay.slice();
   showGifts(treatSet, treatBar);
-  board = new Board($('board'), game, { say: toast, sound, magnifier: magnifying ? magnifier : null, keyName: gifts.keyName });
+  $('fridge').hidden = !game.fridgeSize;
+  if (!game.fridgeSize) $('fridge').querySelector('.slots').replaceChildren(); // no containers left over from a board that had them
+  const fridge = game.fridgeSize ? $('fridge').querySelector('.slots') : null;
+  board = new Board($('board'), game, { say: toast, sound, magnifier: magnifying ? magnifier : null, keyName: gifts.keyName, fridge });
   game.on('match', ({ a, b }) => {
     sound.match();
     board.float(`+${POINTS.pair}`, b);
     record(['m', a, b]);
+    if (nap && game.matches === nap.from) {
+      sound.nap();
+      toast(`The feast is over, and everyone dozes off: the clock stops for the next ${nap.to - nap.from} matches.`);
+    } else if (nap && game.matches === nap.to && !game.won) {
+      sound.wake();
+      toast('Everyone wakes up, and the clock runs again.');
+    }
+    napClock();
   });
   game.on('undo', () => {
     sound.undo();
@@ -124,7 +137,9 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, trea
       finished = false; // taking back the last match of a cleared board starts the clock again
       run();
     }
+    napClock();
   });
+  game.on('save', ({ tile }) => record(['f', tile]));
   game.on('shuffle', ({ cat }) => {
     sound.shuffle();
     if (!cat) board.float(signed(POINTS.shuffle), -1, true);
@@ -142,6 +157,15 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, trea
   game.on('checkout', () => {
     const left = game.listLeft.length;
     if (left) toast(`Checkout: ${left === 1 ? 'one thing' : `${left} things`} left on the list.`);
+  });
+  game.on('bought', ({ b }) => {
+    sound.listed();
+    setTimeout(() => board.float(`+${POINTS.buster}`, b), 500); // after the pair's own points
+    toast(`Doorbuster! It's yours: ${POINTS.buster} points.`);
+  });
+  game.on('grab', ({ grab }) => {
+    sound.grab();
+    toast(`Another shopper grabbed a doorbuster: ${dealName(grab[0])}.`);
   });
   game.on('treat', ({ treat }) => {
     sound.treat();
@@ -172,6 +196,7 @@ function redo([what, a, b]) {
   else if (what === 's') game.shuffle();
   else if (what === 'c') game.shuffle({ cat: true });
   else if (what === 'k') game.useKey(a);
+  else if (what === 'f') game.save(a);
   else if (what === 'h') game.hint();
   else if (what === 'l') game.useCandle();
 }
@@ -211,13 +236,17 @@ function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
   const day = dayOf(FREE[key]); // a Thanksgiving day's board plays by its day's rules, and gives its own treats or none
   const options = { ...(day ? dayOptions(day) : {}), ...(turnAt ? { turnAt } : {}) };
   const treats = { treatSet: (day && day.gifts) || 'halloween', treatBar: !day || Boolean(options.treats) };
-  play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...treats });
+  const napFrom = day && day.nap ? Math.round((FREE[key].count / 2) * day.nap.by) : 0;
+  const napAt = napFrom ? { from: napFrom, to: napFrom + day.nap.matches } : null;
+  play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...treats, napAt });
   saved.free = { key, seed, turnAt, moves, elapsed };
   store();
   history.replaceState(null, '', `#play/${key}/${seed}${turnAt ? `/${turnAt}` : ''}`);
   const fresh = !(keep && keep.moves.length);
   if (day && fresh) {
-    const text = game.list ? `${day.text} Today's list: ${listNames(game.list.kinds)}.` : day.text;
+    let text = day.text;
+    if (game.list) text += ` Today's list: ${listNames(game.list.kinds)}.`;
+    if (game.busters) text += ` Today's doorbusters: ${listNames(game.busters.map((d) => MATCH[game.faces[d.tiles[0]]]))}.`;
     showCard(`${day.name}: ${day.title}`, text, [['Play', () => (hideCard(), run())]]); // what is new, before it starts
   } else run();
   if (!fresh) toast(`Back to your ${game.layout.name.toLowerCase()}.`);
@@ -726,12 +755,20 @@ function update() {
   $('souls').hidden = !turns;
   $('souls').title = g.turnAhead ? 'Lost souls if the tiles turned over now' : 'Lost souls that woke';
   $('souls').innerHTML = `👻 <b>${g.turnAhead ? g.soulsIfNow() : woke}</b>`;
+  // The nap, on a board with one: the matches until it, and while everyone
+  // sleeps, the matches left of it.
+  $('nap').hidden = !nap || g.matches >= nap.to;
+  if (nap) {
+    $('nap').innerHTML = napping() ? `💤 <b>${nap.to - g.matches}</b>` : `😴 in <b>${nap.from - g.matches}</b>`;
+    $('nap').title = napping() ? 'Everyone is napping, and the clock has stopped' : `The nap: after ${nap.from} matches, the clock stops for ${nap.to - nap.from}`;
+  }
   for (const t of ['candle', 'key', 'cat']) {
     $(t).querySelector('.count').textContent = g.treats[t];
     $(t).classList.toggle('none', !g.treats[t]);
   }
   $('key').classList.toggle('on', board.keying);
   showList();
+  showDeals();
   $('pause').disabled = finished;
   $('undo').disabled = !g.history.length;
   $('moon').disabled = !g.turnAhead;
@@ -796,6 +833,43 @@ function showList() {
   el.setAttribute('aria-label', `Shopping list, ${found} of ${g.list.kinds.length} found: ${listNames(g.list.kinds)}`);
 }
 
+// Black Friday's doorbusters, on a board with them: a small tile for each,
+// ticked once bought, crossed once another shopper grabs it, and the
+// matches before the next grab.
+function showDeals() {
+  const g = game;
+  const el = $('deals');
+  el.hidden = !g.busters;
+  if (!g.busters) return;
+  el.querySelector('.things').replaceChildren(
+    ...g.busters.map((d) => {
+      const tile = document.createElement('span');
+      tile.className = { open: 'tile', mine: 'tile done', gone: 'tile grabbed' }[d.state];
+      tile.innerHTML = `<svg viewBox="0 0 60 80" aria-hidden="true"><use href="#${symbolId(g.faces[d.tiles[0]])}"/></svg>`;
+      return tile;
+    }),
+  );
+  const open = g.busters.filter((d) => d.state === 'open').length;
+  const mine = g.busters.filter((d) => d.state === 'mine').length;
+  el.querySelector('.checkout').textContent = open ? `grab in ${g.untilGrab}` : `${mine} yours`;
+  el.setAttribute('aria-label', `Doorbusters: ${mine} yours, ${open} still to be had${open ? `, and another shopper grabs one in ${matchWords(g.untilGrab)}` : ''}`);
+}
+
+// A doorbuster's name, by a tile of it: its kind's.
+const dealName = (tile) => KINDS[MATCH[game.faces[tile]]].name;
+
+const matchWords = (n) => `${n} ${n === 1 ? 'match' : 'matches'}`;
+
+// What the doorbusters' row says when it is tapped.
+function aboutDeals() {
+  const g = game;
+  if (!g || !g.busters) return;
+  const open = g.busters.filter((d) => d.state === 'open');
+  const mine = g.busters.filter((d) => d.state === 'mine').length;
+  if (!open.length) toast(`The doorbusters are all gone, ${mine} of them yours.`);
+  else toast(`Still to be had: ${listNames(open.map((d) => MATCH[g.faces[d.tiles[0]]]))}. Take a tagged pair before another shopper does: the next grab is in ${matchWords(g.untilGrab)}.`);
+}
+
 // The things on a list, in words: A, B, C and D.
 function listNames(kinds) {
   const names = kinds.map((k) => KINDS[k].name);
@@ -816,7 +890,7 @@ function aboutList() {
 // While it holds on a board not yet cleared, the board is hidden, so that
 // no one can study it with the clock stopped.
 function run() {
-  if (!started && !finished) started = performance.now();
+  if (!started && !finished && !napping()) started = performance.now();
   paused = false;
   cover(false);
 }
@@ -831,11 +905,27 @@ function cover(on) {
   document.body.classList.toggle('covered', on);
 }
 
+// The nap, on a board with one: whether everyone is asleep, the matches
+// since it came not yet as many as it lasts. The clock stops when it comes,
+// and runs again when they wake, or when an undo takes the board back to
+// before it.
+const napping = () => Boolean(nap && game) && game.matches >= nap.from && game.matches < nap.to;
+
+function napClock() {
+  if (!nap || finished) return;
+  if (napping()) {
+    if (started) {
+      elapsed = played();
+      started = 0;
+    }
+  } else if (!started && $('card').hidden) started = performance.now();
+}
+
 // A pause, from its button, the P key, or the player leaving the page: the
 // clock stops and the board is hidden until they come back.
 let paused = false;
 function pause() {
-  if (!game || finished || !started) return;
+  if (!game || finished || (!started && !napping())) return;
   hold();
   showCard('Paused', 'The clock has stopped, and the board is hidden until you come back.', [['Resume', () => (hideCard(), run())]]);
   paused = true;
@@ -967,6 +1057,7 @@ showSound();
 $('new').onclick = newDeal;
 $('pause').onclick = pause;
 $('list').onclick = aboutList;
+$('deals').onclick = aboutDeals;
 
 $('magnify').onchange = (e) => {
   magnifying = e.target.checked;

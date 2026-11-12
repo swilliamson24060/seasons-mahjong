@@ -105,7 +105,8 @@ body.night {
 /* The shopping list, on a board with one: a small tile for each thing on
    it, ticked as it is crossed off, and the matches left before checkout.
    Beside the score on a wide screen, in a row of its own on a phone. */
-#list {
+#list,
+#deals {
   --tile-w: 20px;
   --tile-h: 27px;
   --lift: 2px;
@@ -121,41 +122,50 @@ body.night {
   background: rgba(255, 255, 255, 0.08);
 }
 
-#list[hidden] {
+#list[hidden],
+#deals[hidden] {
   display: none;
 }
 
-#list .icon {
+#list .icon,
+#deals .icon {
   font-size: 18px;
 }
 
 #list .label,
-#list .checkout {
+#deals .label,
+#list .checkout,
+#deals .checkout {
   color: var(--muted);
   font-size: 13px;
   font-weight: 500;
 }
 
-#list .things {
+#list .things,
+#deals .things {
   display: flex;
   gap: 5px;
 }
 
-#list:not([hidden]) + .status {
+#list:not([hidden]) ~ .status,
+#deals:not([hidden]) ~ .status {
   margin-left: 0;
 }
 
-#list .tile {
+#list .tile,
+#deals .tile {
   position: relative;
   flex: none;
   cursor: inherit;
 }
 
-#list .tile.done svg {
+#list .tile.done svg,
+#deals .tile.done svg {
   opacity: 0.35;
 }
 
-#list .tile.done::after {
+#list .tile.done::after,
+#deals .tile.done::after {
   content: '✓';
   position: absolute;
   inset: 0;
@@ -166,8 +176,25 @@ body.night {
   text-shadow: 0 0 2px #fff, 0 0 3px #fff;
 }
 
-#list .checkout {
+#list .checkout,
+#deals .checkout {
   font-variant-numeric: tabular-nums;
+}
+
+/* A doorbuster another shopper grabbed: crossed out. */
+#deals .tile.grabbed svg {
+  opacity: 0.35;
+}
+
+#deals .tile.grabbed::after {
+  content: '✗';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #c0392b;
+  font: 900 20px/1 system-ui, -apple-system, sans-serif;
+  text-shadow: 0 0 2px #fff, 0 0 3px #fff;
 }
 
 .bottom {
@@ -449,6 +476,58 @@ body.covered #board {
   display: none;
 }
 
+/* The fridge, on a board with leftovers: its containers, each empty or
+   holding a tile saved for later, with its word under them, as the
+   buttons beside it have theirs. Its tiles are drawn as the board's are. */
+#fridge {
+  --tile-w: 32px;
+  --tile-h: 43px;
+  --lift: 3px;
+  --gap: 0px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+#fridge[hidden] {
+  display: none;
+}
+
+#fridge .slots {
+  display: flex;
+  gap: 8px;
+  padding: 4px 8px 7px 10px;
+  border: 1px solid rgba(190, 225, 255, 0.35);
+  border-radius: 10px;
+  background: rgba(190, 225, 255, 0.1);
+}
+
+#fridge .tile {
+  position: relative;
+  flex: none;
+  min-width: 0;
+  padding: 0;
+  border-radius: calc(var(--tile-w) * 0.12);
+  background: linear-gradient(155deg, var(--face-1), var(--face-2));
+}
+
+#fridge .tile.empty {
+  background: none;
+  box-shadow: none;
+  outline: 2px dashed rgba(190, 225, 255, 0.5);
+  outline-offset: -2px;
+}
+
+#fridge .tile.empty svg {
+  visibility: hidden;
+}
+
+#fridge .label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 #board.keying .tile {
   cursor: crosshair;
 }
@@ -465,6 +544,23 @@ body.covered #board {
   border-radius: 2px 7px 7px 2px;
   background: radial-gradient(circle at 24% 50%, #fff 0 13%, transparent 15%), #d63c2f;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+/* Black Friday: a doorbuster's red sale tag, while it is still to be had. */
+.tile.buster::before {
+  content: '%';
+  position: absolute;
+  top: 3%;
+  right: 4%;
+  min-width: 36%;
+  padding: 0.1em 0.12em 0.1em 0.2em;
+  border-radius: 3px 9px 9px 3px;
+  background: #d63c2f;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font: 900 calc(var(--tile-w) * 0.27) / 1 system-ui, -apple-system, sans-serif;
+  text-align: center;
   pointer-events: none;
 }
 
@@ -942,7 +1038,8 @@ body.covered #board {
     column-gap: 8px;
     row-gap: 0;
   }
-  #list {
+  #list,
+  #deals {
     grid-area: list;
     justify-self: center;
     margin: 4px 0 0;
@@ -1012,7 +1109,8 @@ body.covered #board {
     gap: 4px 12px;
     font-size: 13px;
   }
-  #list {
+  #list,
+  #deals {
     margin: 2px 0;
     flex-wrap: wrap;
     justify-content: center;

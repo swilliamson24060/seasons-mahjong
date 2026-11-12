@@ -3,6 +3,8 @@ import { MATCH, GHOST, LANTERN, LOST, dealPairs } from './tiles.js';
 import { deal, redeal } from './deal.js';
 import { soulsAt } from './midnight.js';
 import { chooseList } from './list.js';
+import { withFridge } from './fridge.js';
+import { chooseBusters } from './doorbusters.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -10,9 +12,10 @@ export const TREATS = ['candle', 'key', 'cat'];
 
 // One board in play: which tiles are left and which can be taken, undo,
 // hints, shuffles, treats, ice, the shopping list and the stroke of
-// midnight. Nothing here touches the page; the board listens with on() for
-// what happens: 'match', 'thaw', 'list', 'checkout', 'turn', 'treat', 'key',
-// 'shuffle', 'undo', 'win' and 'stuck'.
+// midnight, the fridge and doorbusters. Nothing here touches the page; the
+// board listens with on() for what happens: 'match', 'thaw', 'list',
+// 'checkout', 'bought', 'grab', 'save', 'turn', 'treat', 'key', 'shuffle',
+// 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
@@ -20,40 +23,57 @@ export const TREATS = ['candle', 'key', 'cat'];
 // the side they start on; whether ghosts float, and whether treats are
 // left, and by pairs of which faces (treatFaces: jack-o'-lanterns, unless
 // a board says otherwise); ice, for a board with frozen tiles: the matches
-// each tile takes to thaw (ice.js); and list, for a board with a shopping list (list.js):
-// { items, by }, how many things it has and after what share of the matches
-// checkout comes, or for a board whose faces are set, { kinds, checkout }.
+// each tile takes to thaw (ice.js); list, for a board with a shopping list
+// (list.js): { items, by }, how many things it has and after what share of
+// the matches checkout comes, or for a board whose faces are set, { kinds,
+// checkout }; fridge, for a board with leftovers (fridge.js): how many
+// containers it has; and doorbusters, for a board with them
+// (doorbusters.js): { pairs, every }, how many there are and after how many
+// of the player's matches another shopper grabs one, or for a board whose
+// faces are set, { tiles, every }.
+//
+// On a board with a fridge, the game's layout has the containers after the
+// table's tiles: tableCount is how many tiles the table has, and the places
+// from there on are the containers.
 export class Game {
   constructor(
-    layout,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null } = {},
+    table,
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null } = {},
   ) {
-    const pairs = layout.count / 2;
+    const n = table.count;
+    const layout = fridge ? withFridge(table, fridge) : table;
+    const pairs = n / 2;
     const turns = turnAt !== Infinity;
-    if (turns && !(turnAt >= 1 && turnAt < pairs)) throw new Error(`${layout.name} cannot turn over after ${turnAt} matches`);
+    if (turns && !(turnAt >= 1 && turnAt < pairs)) throw new Error(`${table.name} cannot turn over after ${turnAt} matches`);
     this.layout = layout;
+    this.tableCount = n;
+    this.fridgeSize = fridge;
     this.seed = seed;
     this.rules = { ghostsFloat, treats };
     this.treatFaces = treatFaces;
     this.turnAt = turnAt;
     this.r = seeded(seed);
     this.treatR = seeded(seed ^ 0x5bd1e995);
-    this.ice = ice && Int16Array.from(ice);
-    if (this.ice && this.ice.length !== layout.count) throw new Error(`${layout.name} has ${layout.count} tiles, not ${this.ice.length} under ice`);
+    // What is given for the table's tiles, with nothing yet in the containers.
+    const whole = (a, empty) => Int16Array.from({ length: layout.count }, (_, i) => (i < n ? a[i] : empty));
+    if (ice && ice.length !== n) throw new Error(`${table.name} has ${n} tiles, not ${ice.length} under ice`);
+    this.ice = ice && whole(ice, 0);
+    const onTable = Uint8Array.from({ length: layout.count }, (_, i) => (i < n ? 1 : 0));
     if (faces || sides) {
-      this.sides = (sides || [faces]).map((f) => Int16Array.from(f));
-      if (this.sides.length !== (turns ? 2 : 1)) throw new Error(`${layout.name} needs ${turns ? 2 : 1} sides of faces`);
-      for (const s of this.sides) if (s.length !== layout.count) throw new Error(`${layout.name} has ${layout.count} tiles, not ${s.length}`);
+      const given = sides || [faces];
+      if (given.length !== (turns ? 2 : 1)) throw new Error(`${table.name} needs ${turns ? 2 : 1} sides of faces`);
+      for (const s of given) if (s.length !== n) throw new Error(`${table.name} has ${n} tiles, not ${s.length}`);
+      this.sides = given.map((f) => whole(f, -1));
       this.plan = null;
     } else {
-      const dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { turnAt, ice: this.ice });
-      if (!dealt) throw new Error(`${layout.name} cannot be dealt`);
+      const dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { present: onTable, turnAt, ice: this.ice });
+      if (!dealt) throw new Error(`${table.name} cannot be dealt`);
       this.sides = dealt.sides;
       this.plan = dealt.order; // the order the deal was made in, which wins
     }
     this.sideNames = turns ? [firstSide, firstSide === 'day' ? 'night' : 'day'] : [firstSide];
-    this.present = new Uint8Array(layout.count).fill(1);
-    this.left = layout.count;
+    this.present = onTable;
+    this.left = n;
     this.matches = 0;
     this.unlocked = new Uint8Array(layout.count);
     this.history = [];
@@ -79,6 +99,16 @@ export class Game {
       const avoid = new Set([...freeNow].filter(([, n]) => n >= 2).map(([k]) => k));
       const kinds = list.kinds ?? (this.plan ? chooseList(this.plan, this.sides[0], checkout, list.items, seeded(seed ^ 0x2545f491), avoid) : []);
       this.list = { kinds: Array.from(kinds), checkout };
+    }
+    // Doorbusters: pairs wearing a sale tag, each 'open', 'mine' once the
+    // player has bought it, or 'gone' to another shopper.
+    this.busters = null;
+    this.busterEvery = 0;
+    if (doorbusters) {
+      const freeNow = new Set(this.freeTiles());
+      const tiles = doorbusters.tiles ?? (this.plan ? chooseBusters(this.plan, doorbusters.pairs, seeded(seed ^ 0x1b873593), freeNow) : []);
+      this.busters = tiles.map((t) => ({ tiles: t.slice(), state: 'open' }));
+      this.busterEvery = doorbusters.every;
     }
   }
 
@@ -133,8 +163,9 @@ export class Game {
     return this.left === 0;
   }
 
+  // Nothing can be taken, and nothing more can go in the fridge.
   get stuck() {
-    return this.left > 0 && this.pairs().length === 0;
+    return this.left > 0 && this.pairs().length === 0 && !this.canSave();
   }
 
   // Free whatever lies on them: ghosts, when they float, and tiles opened
@@ -189,6 +220,73 @@ export class Game {
     return this.listOpen && this.listLeft.includes(MATCH[this.faces[i]]);
   }
 
+  // The fridge: whether a place is one of its containers; the first one
+  // empty, or -1 when it is full; and how many are empty.
+  inFridge(i) {
+    return i >= this.tableCount;
+  }
+
+  emptySlot() {
+    for (let s = this.tableCount; s < this.layout.count; s++) if (!this.present[s]) return s;
+    return -1;
+  }
+
+  get fridgeRoom() {
+    let room = 0;
+    for (let s = this.tableCount; s < this.layout.count; s++) if (!this.present[s]) room++;
+    return room;
+  }
+
+  // Whether a tile could go in the fridge now: a container empty, and a
+  // free tile on the table to put in it.
+  canSave() {
+    return this.fridgeRoom > 0 && this.freeTiles().some((i) => !this.inFridge(i));
+  }
+
+  // Puts a free tile from the table in the fridge, in the first container
+  // empty, to take with its partner later. Off the table, it holds nothing
+  // down any more. A winning line still wins, taking the tile from the
+  // fridge where it would have taken it from the table. Returns the
+  // container, or -1 if the tile cannot go in.
+  save(i) {
+    const slot = this.emptySlot();
+    if (slot < 0 || this.inFridge(i) || !this.isFree(i)) return -1;
+    this.history.push({ type: 'save', tile: i, slot, line: this.line && this.line.slice(), outlook: this.outlook });
+    for (const s of this.sides) s[slot] = s[i];
+    this.present[i] = 0;
+    this.present[slot] = 1;
+    if (this.line) this.line = this.line.map(([a, b]) => [a === i ? slot : a, b === i ? slot : b]);
+    this.emit('save', { tile: i, slot });
+    this.settle();
+    return slot;
+  }
+
+  // Doorbusters: whether a tile is one still to be had, and how many more
+  // of the player's matches before another shopper grabs one.
+  isBuster(i) {
+    return Boolean(this.busters) && this.present[i] === 1 && this.busters.some((d) => d.state === 'open' && d.tiles.includes(i));
+  }
+
+  get untilGrab() {
+    return this.busters ? this.busterEvery - (this.matches % this.busterEvery) : 0;
+  }
+
+  // Another shopper, after every so many of the player's matches, grabs the
+  // first doorbuster still free, both its tiles at once. Its two tiles are a
+  // pair the deal's order takes together, so the winning line keeps good.
+  // Returns the doorbuster grabbed, or null.
+  grab() {
+    if (!this.busters || this.matches % this.busterEvery) return null;
+    const d = this.busters.find((o) => o.state === 'open' && o.tiles.every((t) => this.isFree(t)));
+    if (!d) return null;
+    d.state = 'gone';
+    const [x, y] = d.tiles;
+    this.present[x] = this.present[y] = 0;
+    this.left -= 2;
+    this.follow(x, y);
+    return d;
+  }
+
   freeTiles() {
     const out = [];
     for (let i = 0; i < this.layout.count; i++) if (this.isFree(i)) out.push(i);
@@ -212,10 +310,12 @@ export class Game {
   }
 
   // Takes a pair. Returns { a, b, treat, turned, souls, thawed, crossed,
-  // checkout }: the treat the pair left, if any; whether this match struck
+  // checkout, bought, grab }: the treat the pair left, if any; whether this match struck
   // midnight, and if it did, the tiles that woke as lost souls; the tiles
   // this match thawed; the kind it crossed off the list, or null; and
-  // whether it was the match at checkout. Null if the pair cannot be taken.
+  // whether it was the match at checkout; whether it bought a doorbuster;
+  // and the tiles of the doorbuster another shopper grabbed after it, or
+  // null. Null if the pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -225,12 +325,18 @@ export class Game {
       entry.crossed = MATCH[this.faces[a]];
       this.crossed.push(entry.crossed);
     }
+    // A pair with a tile of an open doorbuster in it buys that doorbuster.
+    const bought = this.busters ? this.busters.filter((d) => d.state === 'open' && (d.tiles.includes(a) || d.tiles.includes(b))) : [];
+    for (const d of bought) d.state = 'mine';
+    if (bought.length) entry.bought = bought;
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
     if (this.matches === this.turnAt) entry.souls = this.wake();
     this.history.push(entry);
     this.follow(a, b);
+    const grab = this.grab();
+    if (grab) entry.grab = grab;
     let treat = null;
     if (giving) {
       this.treatPairs++;
@@ -246,11 +352,24 @@ export class Game {
     const thawed = [];
     if (this.ice) for (let i = 0; i < this.layout.count; i++) if (this.present[i] && this.ice[i] === this.matches) thawed.push(i);
     const checkout = Boolean(this.list) && this.matches === this.list.checkout;
-    const result = { a, b, treat, turned, souls: turned ? entry.souls.map(([t]) => t) : [], thawed, crossed: listed ? entry.crossed : null, checkout };
+    const result = {
+      a,
+      b,
+      treat,
+      turned,
+      souls: turned ? entry.souls.map(([t]) => t) : [],
+      thawed,
+      crossed: listed ? entry.crossed : null,
+      checkout,
+      bought: bought.length > 0,
+      grab: grab ? grab.tiles.slice() : null,
+    };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
     if (listed) this.emit('list', result);
     if (checkout) this.emit('checkout', result);
+    if (bought.length) this.emit('bought', result);
+    if (grab) this.emit('grab', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
     this.settle();
@@ -268,9 +387,10 @@ export class Game {
     });
   }
 
-  // Takes back the last match or shuffle, and the winning line known before
-  // it; a match that struck midnight turns the tiles back again. Treats stay:
-  // undo never takes one back, and a turned key stays turned.
+  // Takes back the last match, shuffle or tile put in the fridge, and the
+  // winning line known before it; a match that struck midnight turns the
+  // tiles back again. Treats stay: undo never takes one back, and a turned
+  // key stays turned.
   undo() {
     const last = this.history.pop();
     if (!last) return null;
@@ -281,8 +401,18 @@ export class Game {
       this.matches--;
       if (last.giving) this.treatPairs--;
       if (last.crossed !== undefined) this.crossed.pop();
+      if (last.grab) {
+        last.grab.state = 'open';
+        for (const t of last.grab.tiles) this.present[t] = 1;
+        this.left += 2;
+      }
+      if (last.bought) for (const d of last.bought) d.state = 'open';
+    } else if (last.type === 'save') {
+      this.present[last.slot] = 0; // out of the fridge, and back on the table
+      this.present[last.tile] = 1;
     } else {
       this.sides = last.sides;
+      if (last.busterTiles) this.busters.forEach((d, k) => (d.tiles = last.busterTiles[k]));
     }
     this.line = last.line;
     this.outlook = last.outlook;
@@ -339,8 +469,20 @@ export class Game {
     if ((cat && !this.treats.cat) || !this.left) return false;
     const dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead());
     if (!dealt) return false;
-    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook });
+    const busterTiles = this.busters && this.busters.map((d) => d.tiles.slice());
+    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles });
     this.sides = dealt.sides;
+    // The sale tags go with the stock: each open doorbuster becomes a pair
+    // of the new deal's order, one with a tile it had if it can, so that
+    // its two tiles match again.
+    if (this.busters) {
+      const order = dealt.order.slice();
+      for (const d of this.busters) {
+        if (d.state !== 'open') continue;
+        const k = order.findIndex((p) => p.includes(d.tiles[0]) || p.includes(d.tiles[1]));
+        d.tiles = order.splice(Math.max(0, k), 1)[0].slice();
+      }
+    }
     this.line = dealt.order.slice();
     this.outlook = 'win';
     if (cat) this.treats.cat--;

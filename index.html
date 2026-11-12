@@ -33,9 +33,11 @@
       <button id="sound" type="button" title="Sound (M)"><span class="icon">🔊</span><span class="label">Sound on</span></button>
     </span>
     <button id="list" type="button" title="The shopping list: take a pair of each before checkout" hidden><span class="icon">🛒</span><span class="label">List</span><span class="things"></span><span class="checkout"></span></button>
+    <button id="deals" type="button" title="Doorbusters: take a tagged pair before another shopper grabs it" hidden><span class="icon">🏷️</span><span class="label">Deals</span><span class="things"></span><span class="checkout"></span></button>
     <div class="status">
       <span id="clock" hidden></span>
       <span id="souls" hidden></span>
+      <span id="nap" hidden></span>
       <span id="left"></span>
       <span id="score" title="Score"></span>
       <span id="time"></span>
@@ -52,6 +54,7 @@
       <button id="key" type="button" title="A skeleton key frees one blocked tile"><span class="icon">🗝️<b class="count">0</b></span><span class="label">Unlock</span></button>
       <button id="cat" type="button" title="A black cat shuffles the tiles for free"><span class="icon">🐈‍⬛<b class="count">0</b></span><span class="label">Free shuffle</span></button>
     </span>
+    <span class="fridge" id="fridge" title="The fridge: tap a free tile, then a container, to save it for later" hidden><span class="slots"></span><span class="label">Fridge</span></span>
   </footer>
   <div id="toast" role="status" aria-live="polite"></div>
   <div id="card" hidden>

@@ -4,8 +4,9 @@
 // hints cost points. When the tiles turn over, a board that wakes no lost
 // souls earns a bonus, and each lost soul costs a little. On a board with a
 // shopping list, each thing crossed off it earns points, and the whole list
-// more. Treats are free, and so is undo, though a pair taken back takes its
-// points with it.
+// more; on a board with doorbusters, each one bought does, though the pairs
+// another shopper grabs are not the player's. Treats are free, and so is
+// undo, though a pair taken back takes its points with it.
 
 export const POINTS = {
   pair: 10,
@@ -17,16 +18,21 @@ export const POINTS = {
   soul: -10, // each lost soul that wakes
   listed: 25, // each thing crossed off the shopping list
   list: 100, // the whole list, before checkout
+  buster: 50, // each doorbuster bought
 };
 
+// The tiles a board has: on a board with a fridge, the table's, its
+// containers aside.
+const tilesOf = (game) => game.tableCount ?? game.layout.count;
+
 // Par: five seconds a tile, or six on a board that turns over, as that wants planning.
-export const par = (game) => game.layout.count * (game.sides.length > 1 ? 6 : 5);
+export const par = (game) => tilesOf(game) * (game.sides.length > 1 ? 6 : 5);
 
 // The score so far, as { total, rows }, each row [what, how, points]. The
 // clearing and the speed bonus come in once the board is clear.
 export function scoreOf(game, seconds) {
   const times = (n, each) => `${n} × ${Math.abs(each)}`;
-  const pairs = (game.layout.count - game.left) / 2;
+  const pairs = game.matches; // the player's own: none another shopper grabbed
   const rows = [['Pairs', times(pairs, POINTS.pair), pairs * POINTS.pair]];
   const turn = game.history.find((e) => e.souls);
   if (turn) {
@@ -38,6 +44,11 @@ export function scoreOf(game, seconds) {
     const n = game.crossed.length;
     const all = n > 0 && n === game.list.kinds.length;
     rows.push(['Shopping list', `${n} of ${game.list.kinds.length}${all ? ', the lot' : ''}`, n * POINTS.listed + (all ? POINTS.list : 0)]);
+  }
+  if (game.busters) {
+    const mine = game.busters.filter((d) => d.state === 'mine').length;
+    const gone = game.busters.filter((d) => d.state === 'gone').length;
+    rows.push(['Doorbusters', `${mine} of ${game.busters.length}${gone ? `, ${gone} grabbed` : ''}`, mine * POINTS.buster]);
   }
   if (game.shuffles) rows.push(['Shuffles', times(game.shuffles, POINTS.shuffle), game.shuffles * POINTS.shuffle]);
   if (game.hints) rows.push(['Hints', times(game.hints, POINTS.hint), game.hints * POINTS.hint]);

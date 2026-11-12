@@ -3,6 +3,8 @@ import './engine.test.js';
 import './ice.test.js';
 import './list.test.js';
 import './potluck.test.js';
+import './fridge.test.js';
+import './doorbusters.test.js';
 import './site.test.js';
 import './score.test.js';
 import './magnifier.test.js';

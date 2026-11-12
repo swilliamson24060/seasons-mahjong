@@ -44,10 +44,12 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 - Each pair is worth 10 points and a cleared board 250, with 2 more for every second under par. A shuffle costs 100 and a hint 25; treats and undo are free. Turning over at midnight without a lost soul earns 150, and each lost soul costs 10. `js/score.js` holds the numbers.
 - From midnight the tiles turn over partway through each board. Hold the moon button or Space to see the night side. A tile held up close shows its night side beside it, or with the magnifier off, turns over while you hold it. Pairs that match on both sides are the ones to take before midnight.
 - Pairs of jack-o'-lanterns leave treats, whose buttons say what they do: a candle is a free hint, a skeleton key unlocks one blocked tile (press Unlock, then the tile), and a black cat is a free shuffle. A treat you have none of says what it does when you tap it.
-- Thanksgiving week is on its way: seven boards, Sunday to Saturday. Monday's to Wednesday's are made, and until the week is in the menu they play by their addresses, `#play/turkey`, `#play/cart` and `#play/potluck`.
+- Thanksgiving week is on its way: seven boards, Sunday to Saturday. Monday's to Friday's are made, and until the week is in the menu they play by their addresses, `#play/turkey`, `#play/cart`, `#play/potluck`, `#play/feast` and `#play/sale`.
   - On Monday's, the frozen turkey, a frozen tile can't be taken until enough matches thaw it: its face shows through the ice, with the matches still to make in its corner, and the turkey thaws from the outside in.
   - On Tuesday's, the shopping cart, the list has four things to find, shown in the top bar, with a price tag on each tile of them. A pair of each, taken before checkout halfway through the board, crosses it off: 25 points each, and 100 more for the whole list.
   - On Wednesday's, Friendsgiving's potluck table, each pair of a dish (a jack-o'-lantern, witch's brew or ghost, for now) leaves a gift: a friend's tip (a free hint), a saved seat (frees a blocked tile) or musical chairs (a free shuffle).
+  - On Thursday's, the feast table, the fridge in the bottom bar has three containers for leftovers. A free tile and then a container saves the tile for later: off the table, it holds nothing down, and it still matches its partner whenever that's free. Everything in the fridge has to be eaten by the end. Halfway through, everyone naps, and the clock stops for the next 10 matches.
+  - On Friday's, Black Friday's sale tag, four pairs are doorbusters, with a red % tag: a pair taken with one in it is yours, for 50 points. After every 5 of your matches, another shopper grabs the first doorbuster that's free. The top bar's Deals row keeps count.
 - Any board can also be played freely by address: `#play/turtle` for the classic turtle, or `#play/raven/12345/40` for the raven, dealt from seed 12345, turning over after 40 matches. A new deal (N) deals it again. The board played freely is kept like the night's, so a reload goes on with it, and a Thanksgiving day's board plays by its day's rules.
 
 ## The leaderboard
@@ -117,5 +119,7 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 - `js/engine/midnight.js`: which tiles wake as lost souls when the tiles turn over.
 - `js/engine/ice.js`: the Frozen twist's ice, and the turkey's, which thaws from the outside in.
 - `js/engine/list.js`: the shopping list's things to find, chosen so that the list can always be finished before checkout.
+- `js/engine/fridge.js`: the fridge's containers, places added to a board's layout after its tiles, with nothing on them or beside them.
+- `js/engine/doorbusters.js`: choosing Black Friday's doorbusters, pairs of the deal's own order, so that a grab never stops a board being won.
 - `js/engine/rng.js`: seeded randomness, so a deal can be made again from its seed.
 - `tests/`: the tests, the small runner behind `test.html`, and the plain board drawing.

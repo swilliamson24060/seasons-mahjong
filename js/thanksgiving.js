@@ -1,4 +1,4 @@
-import { TURKEY, CART, POTLUCK } from './engine/layouts.js';
+import { TURKEY, CART, POTLUCK, FEAST, SALE } from './engine/layouts.js';
 import { FACE } from './engine/tiles.js';
 import { outsideIn } from './engine/ice.js';
 
@@ -13,9 +13,10 @@ const DISHES = [FACE.lantern, FACE.brew, FACE.ghost];
 // board with ice, says how many matches each ring of it takes to thaw, and
 // list, on a board with a shopping list, how many things are on it and how
 // far through the board checkout comes); the sky behind it, top and bottom;
-// what to tell the player before it starts; and on a board with treats,
-// which set of them it gives (main.js names them). Monday's, Tuesday's and
-// Wednesday's boards are made so far.
+// what to tell the player before it starts; on a board with treats, which
+// set of them it gives (main.js names them); and on a board with a nap, how
+// far through it comes and for how many matches the clock stops. Monday's
+// to Friday's boards are made so far.
 
 export const DAYS = [
   { name: 'Sunday', title: 'Traffic' },
@@ -44,8 +45,23 @@ export const DAYS = [
     sky: ['#6b4a3a', '#1f1410'],
     text: "Friends have brought dishes to share, and a pair of jack-o'-lanterns, witch's brew or ghosts leaves a gift: a friend's tip shows you a match, a saved seat frees a blocked tile, and musical chairs shuffles the tiles for free.",
   },
-  { name: 'Thursday' },
-  { name: 'Friday' },
+  {
+    name: 'Thursday',
+    title: 'The Feast',
+    layout: FEAST,
+    rules: { treats: false, ghostsFloat: false, fridge: 3 },
+    nap: { by: 1 / 2, matches: 10 },
+    sky: ['#7a4a22', '#22130a'],
+    text: "Beside the table is the fridge, with three containers for leftovers. Tap a free tile and then a container to save it for later: off the table, it holds nothing down, and it still matches its partner whenever that's free. Everything in the fridge has to be eaten by the end. Halfway through, everyone naps, and the clock stops for the next 10 matches.",
+  },
+  {
+    name: 'Friday',
+    title: 'Black Friday',
+    layout: SALE,
+    rules: { treats: false, ghostsFloat: false, doorbusters: { pairs: 4, every: 5 } },
+    sky: ['#3a1d24', '#0d0709'],
+    text: "The doors open early. Four pairs are doorbusters, with a red sale tag: take one, and it's yours, for 50 points. But you're not the only shopper: after every 5 of your matches, someone else grabs the first doorbuster that's free.",
+  },
   { name: 'Saturday' },
 ];
 

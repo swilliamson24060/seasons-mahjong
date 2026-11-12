@@ -179,6 +179,30 @@ export class Sound {
     [1318.5, 1661.2, 1975.5, 2637].forEach((f, k) => this.ping(f, this.now + k * 0.07, { gain: 0.08, fall: 0.5 }));
   }
 
+  // Another shopper grabbing a doorbuster: a quick snatch.
+  grab() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.22, 3200, 500, 0.1);
+  }
+
+  // A tile put in the fridge: the door shutting.
+  save() {
+    if (!this.on) return;
+    this.ping(110, this.now, { type: 'sine', gain: 0.2, fall: 0.18, into: this.master });
+    this.rustle(this.now, 0.12, 900, 300, 0.05);
+  }
+
+  // Everyone dozes off after the feast, and wakes again.
+  nap() {
+    if (!this.on) return;
+    [392, 329.6, 261.6].forEach((f, k) => this.ping(f, this.now + k * 0.35, { gain: 0.07, fall: 0.9 }));
+  }
+
+  wake() {
+    if (!this.on) return;
+    [523.3, 659.3, 784, 1046.5].forEach((f, k) => this.ping(f, this.now + k * 0.09, { gain: 0.06, fall: 0.4 }));
+  }
+
   // A thing crossed off the shopping list: the till's bell.
   listed() {
     if (!this.on) return;
