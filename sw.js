@@ -3,13 +3,13 @@
 // to it first, asking the server whether the file has changed rather than
 // trusting the browser's own copy (GitHub Pages lets browsers keep files
 // for ten minutes), so a new version shows at once, with the cache as the
-// fallback when the network is gone or too slow; the font, which never
-// changes, comes from the cache first. A new list of files wants a new name
-// for the cache, so that old copies are cleared away: only Boneyard's own,
+// fallback when the network is gone or too slow; the fonts, which never
+// change, come from the cache first. A new list of files wants a new name
+// for the cache, so that old copies are cleared away: only Seasons' own,
 // since other games on the same site share the browser's cache store.
 
-const PREFIX = 'boneyard-';
-const CACHE = `${PREFIX}4`;
+const PREFIX = 'seasons-';
+const CACHE = `${PREFIX}1`;
 const SLOW = 3500; // ms to wait on the network before answering from the cache
 
 const FILES = [
@@ -28,6 +28,7 @@ const FILES = [
   'js/main.js',
   'js/night.js',
   'js/score.js',
+  'js/themes.js',
   'js/ui/board.js',
   'js/ui/faces.js',
   'js/ui/magnifier.js',

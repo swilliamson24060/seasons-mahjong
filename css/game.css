@@ -7,7 +7,35 @@
   --accent: #ff9f1c;
   --ink: #2b2433;
   --paper: #fffdf6;
+  /* The lettering of titles: Halloween's own, and a rounder one for the
+     other holidays. */
+  --title-font: Fredoka, system-ui, sans-serif;
+  --title-weight: 600;
+  --title-shadow: rgba(0, 0, 0, 0.45);
   font: 15px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+body[data-theme='halloween'] {
+  --title-font: Creepster, fantasy, serif;
+  --title-weight: 400;
+  --title-shadow: #5b1e00;
+}
+
+/* Seasons' own look, for choosing the holidays: none of theirs. */
+body[data-theme='seasons'] {
+  --accent: #f4cf6b;
+}
+
+/* The cards: Halloween's purple, and for the other holidays, wherever the
+   colour can be mixed, a dark one taken from the sky behind them. */
+:root {
+  --panel: #1e1530;
+}
+
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  body:not([data-theme='halloween']) {
+    --panel: color-mix(in srgb, var(--sky-top) 38%, #0f0e12);
+  }
 }
 
 * {
@@ -53,10 +81,10 @@ body.night {
 
 .top h1 {
   margin: 0 4px 0 0;
-  font: 400 27px/1 Creepster, fantasy, serif;
+  font: var(--title-weight) 27px/1 var(--title-font);
   letter-spacing: 0.04em;
   color: var(--accent);
-  text-shadow: 0 2px 0 #5b1e00;
+  text-shadow: 0 2px 0 var(--title-shadow);
   white-space: nowrap;
 }
 
@@ -175,6 +203,7 @@ button:disabled {
 
 button.on {
   background: rgba(255, 159, 28, 0.25);
+  background: color-mix(in srgb, var(--accent) 25%, transparent); /* the holiday's colour, where it can be mixed */
   border-color: var(--accent);
 }
 
@@ -503,7 +532,7 @@ body.covered #board {
 }
 
 #card .inner {
-  background: #1e1530;
+  background: var(--panel);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 16px;
   padding: 20px 22px;
@@ -519,7 +548,7 @@ body.covered #board {
 
 #card h2 {
   margin: 0 0 6px;
-  font: 400 28px/1.1 Creepster, fantasy, serif;
+  font: var(--title-weight) 28px/1.1 var(--title-font);
   color: var(--accent);
   letter-spacing: 0.03em;
 }
@@ -573,6 +602,15 @@ body.covered #board {
   grid-template-columns: repeat(auto-fill, minmax(66px, 1fr));
   gap: 6px;
   margin: 0 0 16px;
+}
+
+/* The holidays, with their longer names, two or three to a row. */
+#card .hours.themes {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+#card .hours.themes button {
+  white-space: normal;
 }
 
 #card .hours[hidden] {
@@ -756,6 +794,7 @@ body.covered #board {
   }
   .bar button.on {
     background: rgba(255, 159, 28, 0.25);
+    background: color-mix(in srgb, var(--accent) 25%, transparent);
     border-color: var(--accent);
   }
 }

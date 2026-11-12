@@ -5,7 +5,7 @@
 
 const SIGN_UP = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp';
 const REFRESH = 'https://securetoken.googleapis.com/v1/token';
-const KEPT = 'boneyard.firebase'; // the sign-in, kept between visits
+const KEPT = 'seasons.firebase'; // the sign-in, kept between visits
 
 export class Firebase {
   constructor({ apiKey, projectId }, { fetch = (...args) => globalThis.fetch(...args), store = globalThis.localStorage } = {}) {

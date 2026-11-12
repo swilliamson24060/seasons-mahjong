@@ -1,9 +1,9 @@
 rules_version = '2';
 
-// Boneyard Mah Jong's leaderboard, at boards/{board}/scores/{uid}: on each
-// board, one entry a player, holding their best. A board is an hour of the
-// Long Night (6pm, 7pm, ... midnight, 1am, ... 6am), or the whole night
-// (night), where a player's bests are added up.
+// Seasons Mah Jong's leaderboard, at boards/{board}/scores/{uid}, with only
+// Halloween's boards so far: on each board, one entry a player, holding their
+// best. A board is an hour of the Long Night (6pm, 7pm, ... midnight, 1am,
+// ... 6am), or the whole night (night), where a player's bests are added up.
 //
 // Anyone may read the boards. A player, signed in anonymously, may write only
 // their own entries, which can only get better, or take a new name, and may

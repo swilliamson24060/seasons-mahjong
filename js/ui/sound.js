@@ -26,7 +26,7 @@ export class Sound {
     this.ctx = null;
     this.next = 0; // the next note of the Toccata
     try {
-      this.muted = localStorage.getItem('boneyard.sound') === 'off';
+      this.muted = localStorage.getItem('seasons.sound') === 'off';
     } catch {
       this.muted = false;
     }
@@ -58,7 +58,7 @@ export class Sound {
   setMuted(muted) {
     this.muted = muted;
     try {
-      localStorage.setItem('boneyard.sound', muted ? 'off' : 'on');
+      localStorage.setItem('seasons.sound', muted ? 'off' : 'on');
     } catch {}
     if (this.ctx) this.master.gain.setTargetAtTime(muted ? 0 : 0.8, this.ctx.currentTime, 0.05);
   }

@@ -11,7 +11,7 @@ import re
 import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, 'dist', 'boneyard-mahjong.zip')
+OUT = os.path.join(ROOT, 'dist', 'seasons-mahjong.zip')
 
 
 def files():

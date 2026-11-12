@@ -1,7 +1,7 @@
 {
-  "name": "Boneyard Mah Jong",
-  "short_name": "Boneyard",
-  "description": "A Halloween Mah Jong solitaire: thirteen boards from dusk to dawn.",
+  "name": "Seasons Mah Jong",
+  "short_name": "Seasons",
+  "description": "Mah Jong solitaire through the year: boards for the holidays and seasons you choose.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

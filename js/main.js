@@ -7,6 +7,7 @@ import { Magnifier } from './ui/magnifier.js';
 import { Sound } from './ui/sound.js';
 import { POINTS, par, scoreOf } from './score.js';
 import { Leaderboard, BOARDS, NIGHT, boardOf, nameOf, nameProblem, tidy } from './leaderboard.js';
+import { THEMES, theme, when, calendar } from './themes.js';
 
 const MIDNIGHT = HOURS.findIndex((h) => h.name === 'Midnight');
 
@@ -40,20 +41,22 @@ let finished = false;
 let woke = 0;
 let prompted = false;
 
-// What is kept between visits: the latest hour reached, the best time and
-// the best score for each hour, with the time that score took, the boards in
-// play, the night's and the one outside it, each as its seed and its moves,
-// and the player's name on the leaderboard, with what has been posted there.
-let saved = { reached: 0, best: {}, scores: {}, times: {}, playing: null, free: null, name: '', declined: false, posted: {} };
+// What is kept between visits: the holidays the player chose, and the one
+// whose card the menu opens; the latest hour of the Long Night reached, the
+// best time and the best score for each hour, with the time that score took;
+// the boards in play, the night's and the one outside it, each as its seed
+// and its moves; and the player's name on the leaderboard, with what has
+// been posted there.
+let saved = { holidays: null, theme: 'halloween', reached: 0, best: {}, scores: {}, times: {}, playing: null, free: null, name: '', declined: false, posted: {} };
 try {
-  saved = { ...saved, ...JSON.parse(localStorage.getItem('boneyard.night')) };
+  saved = { ...saved, ...JSON.parse(localStorage.getItem('seasons.night')) };
 } catch {}
 
 function store() {
   const onTable = hour >= 0 ? saved.playing : saved.free; // while it is not yet cleared
   if (onTable) onTable.elapsed = played();
   try {
-    localStorage.setItem('boneyard.night', JSON.stringify(saved));
+    localStorage.setItem('seasons.night', JSON.stringify(saved));
   } catch {}
 }
 
@@ -64,7 +67,7 @@ document.body.prepend(sprite());
 const magnifier = new Magnifier();
 let magnifying = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 600;
 try {
-  const kept = localStorage.getItem('boneyard.magnifier');
+  const kept = localStorage.getItem('seasons.magnifier');
   if (kept) magnifying = kept === 'on';
 } catch {}
 
@@ -72,7 +75,7 @@ try {
 // looking over: from the start, unless switched off on the night's card.
 let dimming = true;
 try {
-  dimming = localStorage.getItem('boneyard.dim') !== 'off';
+  dimming = localStorage.getItem('seasons.dim') !== 'off';
 } catch {}
 $('board').classList.toggle('dimming', dimming);
 
@@ -259,6 +262,8 @@ function stuck() {
 // turtle's are both kept, so that going from one to the other loses neither.
 function menu(opening = false) {
   hold();
+  applyTheme(); // after another holiday's card, the board's own colours
+  sky();
   if (opening === true) cover(false); // a first board to look at, dealt afresh before it is played
   const playing = game && !finished && opening !== true;
   const night = nightInPlay();
@@ -269,6 +274,7 @@ function menu(opening = false) {
   else if (!night) actions.push(saved.reached > 0 ? [`On to ${HOURS[saved.reached].name}`, () => beginHour(saved.reached)] : ['Begin at 6 pm', () => beginHour(0)]);
   if (hour >= 0) actions.push(['Play the turtle', toTurtle]);
   if (leaderboard.on) actions.push(['Leaderboard', () => showLeaderboard(hour >= 0 ? boardOf(hour) : NIGHT)]);
+  actions.push(['Your holidays', showHolidays]);
   const hours = HOURS.map((h, i) => ({
     label: h.name,
     sub: saved.scores[i] !== undefined ? `★ ${signed(saved.scores[i], '')}` : '',
@@ -278,6 +284,11 @@ function menu(opening = false) {
   }));
   const intro = 'Thirteen boards, one an hour from dusk to dawn. Each hour you reach can be played again.';
   showCard('The Long Night', `${intro} ${nightScore()}`.trim(), actions, hours);
+  showOptions();
+}
+
+// The switches under each holiday's card: the magnifier, and dimming.
+function showOptions() {
   $('magnify').checked = magnifying;
   $('dim').checked = dimming;
   $('card-options').hidden = false;
@@ -311,6 +322,7 @@ function toHour(i) {
 // Back to the Long Night: its board in play, or the latest hour reached.
 function toNight() {
   const p = saved.playing;
+  saved.theme = 'halloween';
   if (p && HOURS[p.hour]) beginHour(p.hour, p);
   else beginHour(saved.reached);
 }
@@ -348,6 +360,134 @@ function newDeal() {
 function askToLose({ which, then, go, back, keep = 'Keep playing' }) {
   hold();
   showCard(`Give up ${which}?`, `The moves made on it will be lost, and ${then}.`, [[keep, back], ['Give up', go]]);
+}
+
+// ----------------------------------------------------------- the holidays
+
+// The holiday whose look the page wears: Halloween's while the Long Night
+// is on the table, and otherwise the one chosen last.
+function applyTheme() {
+  wear(theme(hour >= 0 ? 'halloween' : saved.theme) || theme('halloween'));
+}
+
+// A holiday's look: its colour as the accent, and Halloween its own
+// lettering. With no holiday, Seasons' own, for choosing them.
+function wear(t) {
+  const body = document.body;
+  body.dataset.theme = t ? t.id : 'seasons';
+  if (t) body.style.setProperty('--accent', t.accent);
+  else body.style.removeProperty('--accent');
+}
+
+// A holiday's day as a card gives it: Nov 26, or a season's first and last,
+// or today, or now while a season is on.
+function dated({ theme: t, start, end, now }) {
+  const short = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (now) return t.until ? `now, to ${short(end)}` : 'today';
+  return t.until ? `${short(start)} – ${short(end)}` : short(start);
+}
+
+// The holidays the player plays, in the order they come round from today.
+const mine = () => calendar().filter((e) => (saved.holidays || []).includes(e.theme.id));
+
+// Choosing the holidays to play, on a first visit and later from the menu:
+// all the year's, in the order they come round from today, any number of
+// them. Their boards are all to come but Halloween's.
+function chooseHolidays(first = false) {
+  hold();
+  wear(null);
+  sky();
+  if (first === true) cover(false); // the first board behind, dealt afresh before it is played
+  const chosen = new Set(saved.holidays || []);
+  // Then the holiday to open: the one chosen last, while it is still one of
+  // them, or else, as on a first visit, the soonest of those ready to play,
+  // or the soonest of all.
+  const done = () => {
+    saved.holidays = THEMES.filter((t) => chosen.has(t.id)).map((t) => t.id);
+    if (first === true || !chosen.has(saved.theme)) saved.theme = (mine().find((e) => e.theme.ready) || mine()[0]).theme.id;
+    store();
+    openTheme(first);
+  };
+  const entries = calendar();
+  const buttons = () => $('card-grid').children;
+  const show = () => {
+    entries.forEach((e, k) => {
+      buttons()[k].classList.toggle('on', chosen.has(e.theme.id));
+      buttons()[k].setAttribute('aria-pressed', String(chosen.has(e.theme.id)));
+    });
+    $('card-actions').firstChild.disabled = !chosen.size;
+  };
+  const toggle = (id) => {
+    if (chosen.has(id)) chosen.delete(id);
+    else chosen.add(id);
+    show();
+  };
+  const all = () => {
+    for (const t of THEMES) chosen.add(t.id);
+    show();
+  };
+  const grid = entries.map((e) => ({ label: `${e.theme.icon} ${e.theme.name}`, sub: dated(e), act: () => toggle(e.theme.id) }));
+  const text = "Pick the holidays and seasons you'd like to play, as many as you like. Halloween's boards are ready, and the rest are on their way. You can change them from the menu.";
+  showCard('Choose your holidays', text, [[first === true ? 'Start' : 'Done', done], ['All of them', all]], grid);
+  $('card-grid').classList.add('themes');
+  show();
+  if (!chosen.size) buttons()[0].focus(); // not Start, which waits for a choice
+}
+
+// A holiday's own card: the Long Night's for Halloween, and for the others,
+// whose boards are to come, a card to say so.
+function openTheme(opening = false) {
+  if (!saved.holidays) return chooseHolidays(opening);
+  const t = theme(saved.theme);
+  if (t.ready) menu(opening);
+  else comingSoon(t, opening);
+}
+
+// The player's holidays, in the order they come round, to go to any of.
+function showHolidays() {
+  hold();
+  wear(null);
+  sky();
+  const grid = mine().map((e) => ({
+    label: `${e.theme.icon} ${e.theme.name}`,
+    sub: e.theme.ready ? dated(e) : `${dated(e)} · soon`,
+    on: e.theme.id === saved.theme,
+    act: () => {
+      saved.theme = e.theme.id;
+      store();
+      openTheme();
+    },
+  }));
+  showCard('Your holidays', 'The holidays and seasons you play, in the order they come round.', [['Change your holidays', () => chooseHolidays()], ['Back', () => openTheme()]], grid);
+  $('card-grid').classList.add('themes');
+}
+
+// A holiday whose boards are still to come, in its own colours: its day,
+// and what to play meanwhile.
+function comingSoon(t, opening = false) {
+  hold();
+  if (opening === true) cover(false);
+  wear(t);
+  document.body.style.setProperty('--sky-top', t.sky[0]);
+  document.body.style.setProperty('--sky-low', t.sky[1]);
+  const e = { theme: t, ...when(t) };
+  const day = dated(e);
+  const comes = e.now ? (t.until ? `is on ${day}` : 'is today') : t.until ? `runs ${day}` : `falls on ${day}`;
+  const actions = [];
+  if (game && !finished && opening !== true) actions.push(['Back to the board', () => (hideCard(), run())]);
+  actions.push([
+    "Halloween's Long Night",
+    () => {
+      saved.theme = 'halloween';
+      store();
+      menu(opening);
+    },
+  ]);
+  if (hour >= 0) actions.push(['Play the turtle', toTurtle]);
+  actions.push(['Your holidays', showHolidays]);
+  const text = `${t.name} ${comes}. Its boards are on their way; until they come, there's Halloween's Long Night, and the classic turtle.`;
+  showCard(`${t.icon} ${t.name}`, text, actions);
+  showOptions();
 }
 
 // -------------------------------------------------------- the leaderboard
@@ -531,7 +671,8 @@ function ordinal(n) {
 
 function update() {
   const g = game;
-  $('where').innerHTML = hour >= 0 ? `<b>${HOURS[hour].name}</b> ${HOURS[hour].layout.name}` : `<b>Free play</b> ${g.layout.name}`;
+  $('where').innerHTML = hour >= 0 ? `${theme('halloween').icon} <b>${HOURS[hour].name}</b> ${HOURS[hour].layout.name}` : `<b>Free play</b> ${g.layout.name}`;
+  applyTheme();
   $('new').hidden = hour >= 0;
   $('left').innerHTML = `<b>${g.left}</b> tiles`;
   $('score').innerHTML = `★ <b>${signed(scoreOf(g, played()).total, '')}</b>`;
@@ -565,18 +706,23 @@ function update() {
   tick();
 }
 
-// The sky behind the board: the hour's own, or the dawn once the sun is up.
+// The sky behind the board: the hour's own, or the dawn once the sun is up;
+// and outside the night, the sky of the holiday chosen last, but for the
+// night sky of the page's styles once the tiles turn over.
 function sky() {
   const s = document.body.style;
-  if (hour < 0) {
+  let colours = null;
+  if (hour >= 0) {
+    const spec = HOURS[hour];
+    colours = spec.dawn && game.sideName === 'day' ? spec.dawn : spec.sky;
+  } else if (game.sideName !== 'night') colours = (theme(saved.theme) || theme('halloween')).sky;
+  if (colours) {
+    s.setProperty('--sky-top', colours[0]);
+    s.setProperty('--sky-low', colours[1]);
+  } else {
     s.removeProperty('--sky-top');
     s.removeProperty('--sky-low');
-    return;
   }
-  const spec = HOURS[hour];
-  const [top, low] = spec.dawn && game.sideName === 'day' ? spec.dawn : spec.sky;
-  s.setProperty('--sky-top', top);
-  s.setProperty('--sky-low', low);
 }
 
 // The clock runs while a board is in play, and holds while a card is up.
@@ -654,6 +800,7 @@ function showCard(title, text, actions, grid = [], lines = []) {
   });
   const box = $('card-grid');
   box.replaceChildren();
+  box.className = 'hours';
   box.hidden = !grid.length;
   for (const { label, sub, act, disabled, on } of grid) {
     const b = document.createElement('button');
@@ -679,6 +826,7 @@ function showCard(title, text, actions, grid = [], lines = []) {
 
 function hideCard() {
   $('card').hidden = true;
+  if (game) update(); // the board's own colours again, after a holiday's card
 }
 
 // ---------------------------------------------------------- buttons and keys
@@ -715,7 +863,7 @@ function help(what) {
   update();
 }
 
-$('menu').onclick = () => menu();
+$('menu').onclick = () => openTheme();
 $('sound').onclick = () => toggleSound();
 
 function toggleSound() {
@@ -735,7 +883,7 @@ $('pause').onclick = pause;
 $('magnify').onchange = (e) => {
   magnifying = e.target.checked;
   try {
-    localStorage.setItem('boneyard.magnifier', magnifying ? 'on' : 'off');
+    localStorage.setItem('seasons.magnifier', magnifying ? 'on' : 'off');
   } catch {}
   if (board) board.setMagnifier(magnifying ? magnifier : null);
 };
@@ -743,7 +891,7 @@ $('magnify').onchange = (e) => {
 $('dim').onchange = (e) => {
   dimming = e.target.checked;
   try {
-    localStorage.setItem('boneyard.dim', dimming ? 'on' : 'off');
+    localStorage.setItem('seasons.dim', dimming ? 'on' : 'off');
   } catch {}
   $('board').classList.toggle('dimming', dimming);
 };
@@ -831,6 +979,6 @@ if (mode === 'play') {
 } else if (goingOn) beginHour(p.hour, p);
 else {
   beginHour(0);
-  menu(true);
+  openTheme(true); // the holidays to choose, on a first visit
 }
 postScores(); // any bests that could not go up last time

@@ -100,9 +100,9 @@ const scenes = {
 const [name, size] = location.hash.slice(1).split('/');
 const scene = scenes[name]();
 localStorage.clear();
-localStorage.setItem('boneyard.night', JSON.stringify(scene.saved));
-localStorage.setItem('boneyard.magnifier', scene.magnify ? 'on' : 'off');
-localStorage.setItem('boneyard.sound', 'on');
+localStorage.setItem('seasons.night', JSON.stringify(scene.saved));
+localStorage.setItem('seasons.magnifier', scene.magnify ? 'on' : 'off');
+localStorage.setItem('seasons.sound', 'on');
 const frame = document.createElement('iframe');
 if (size) {
   const [w, h] = size.split('x');

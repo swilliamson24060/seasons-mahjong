@@ -3,7 +3,7 @@ import { test, check } from './run.js';
 const text = async (path) => (await fetch(path)).text();
 
 // Paths as sw.js lists them: from the folder the game is served from, which
-// may be the root of the site or, on GitHub Pages, /boneyard-mahjong/.
+// may be the root of the site or, on GitHub Pages, /seasons-mahjong/.
 const base = new URL('.', location.href).href;
 const relative = (url) => (url.href.startsWith(base) ? url.href.slice(base.length) : url.href);
 

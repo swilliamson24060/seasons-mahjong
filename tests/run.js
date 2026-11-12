@@ -52,7 +52,7 @@ export async function run(list, summary) {
   }
   const failed = results.filter((r) => !r.ok).length;
   summary.textContent = failed ? `${failed} of ${results.length} failed` : `All ${results.length} passed`;
-  document.title = `${failed ? '✘' : '✔'} ${summary.textContent} · Boneyard tests`;
+  document.title = `${failed ? '✘' : '✔'} ${summary.textContent} · Seasons tests`;
   window.testResults = results;
   return results;
 }

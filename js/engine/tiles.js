@@ -1,4 +1,4 @@
-// The 144 tiles of a Boneyard set: 42 faces, and which of them match.
+// The 144 tiles of a set: 42 faces, and which of them match.
 //
 // Eyes, bones and graves stand in for dots, bamboo and characters, and the
 // monsters for the four winds. The jack-o'-lantern, witch's brew and ghost
