@@ -3,7 +3,7 @@ import * as layouts from './engine/layouts.js';
 import { HOURS, gameOptions } from './night.js';
 import { DAYS, dayOf, dayOptions } from './thanksgiving.js';
 import { KINDS, MATCH } from './engine/tiles.js';
-import { sprite, symbolId } from './ui/faces.js';
+import { sprite, symbolId, kindName, FACE_SETS } from './ui/faces.js';
 import { Board } from './ui/board.js';
 import { Magnifier } from './ui/magnifier.js';
 import { Sound } from './ui/sound.js';
@@ -34,7 +34,7 @@ const GIFTS = {
     names: { candle: 'a tip, to show you a match', key: 'a saved seat, to free a blocked tile', cat: 'musical chairs, for a free shuffle' },
     help: { candle: "A friend's tip shows you a match, for free.", key: 'A saved seat frees one blocked tile.', cat: 'Musical chairs shuffles the tiles for free.' },
     came: (name) => `A friend brought ${name}.`,
-    from: () => "Each pair of jack-o'-lanterns, witch's brew or ghosts leaves a gift.",
+    from: () => 'Each pair of turkeys, green beans or mashed potatoes leaves a gift.',
     used: { candle: "A friend's tip: there's a match.", cat: 'Musical chairs: everyone moves round, a free shuffle.', key: 'Choose a blocked tile for the saved seat.' },
     keyName: 'saved seat',
   },
@@ -76,6 +76,12 @@ const TURNS = {
   },
 };
 let turnWords = TURNS.midnight; // the board in play's
+
+// The set of faces the board in play's tiles wear, and are named by
+// (faces.js): Halloween's on the night's boards, Thanksgiving's on the
+// week's, and on the turtle and the rest outside them, the holiday chosen's
+// (holidayFaces).
+let faceSet = 'halloween';
 
 // Every layout by the name an address can give it, for free play: #play/raven/12345.
 const FREE = Object.fromEntries(Object.entries(layouts).map(([k, L]) => [k.toLowerCase(), L]));
@@ -155,12 +161,13 @@ const leaderboard = new Leaderboard();
 // Sets up a board: deals it from its seed, plays back any moves already
 // made on it, and puts it on the page. The board it takes the place of is
 // kept first, with all the time played on it.
-function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDay = -1, treatSet = 'halloween', treatBar = true, napAt = null, turnSet = 'midnight' }) {
+function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDay = -1, treatSet = 'halloween', treatBar = true, napAt = null, turnSet = 'midnight', faces = 'halloween' }) {
   if (game && !finished) store();
   hideCard();
   hour = at;
   weekDay = onDay;
   nap = napAt;
+  faceSet = faces;
   turnWords = TURNS[turnSet] || TURNS.midnight;
   $('moon').title = turnWords.moon;
   game = new Game(layout, { seed, ...options });
@@ -170,7 +177,7 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
   $('fridge').hidden = !game.fridgeSize;
   if (!game.fridgeSize) $('fridge').querySelector('.slots').replaceChildren(); // no containers left over from a board that had them
   const fridge = game.fridgeSize ? $('fridge').querySelector('.slots') : null;
-  board = new Board($('board'), game, { say: toast, sound, magnifier: magnifying ? magnifier : null, keyName: gifts.keyName, fridge });
+  board = new Board($('board'), game, { say: toast, sound, magnifier: magnifying ? magnifier : null, keyName: gifts.keyName, fridge, faceSet });
   game.on('match', ({ a, b }) => {
     sound.match();
     board.float(`+${POINTS.pair}`, b);
@@ -206,7 +213,7 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     sound.listed();
     if (!left) setTimeout(() => sound.treat(), 250);
     setTimeout(() => board.float(`+${POINTS.listed + (left ? 0 : POINTS.list)}`, b), 500); // after the pair's own points
-    toast(left ? `Crossed off the list: ${KINDS[crossed].name}. ${left} more to find.` : `That's the whole list: ${POINTS.list} more points.`);
+    toast(left ? `Crossed off the list: ${kindName(crossed, faceSet)}. ${left} more to find.` : `That's the whole list: ${POINTS.list} more points.`);
   });
   game.on('checkout', () => {
     const left = game.listLeft.length;
@@ -283,9 +290,10 @@ function beginHour(at, keep = null) {
 }
 
 // A board outside the night, as often as you like: the turtle, or any of the
-// night's boards by name, with or without a midnight. Like the night's, the
-// board in play is kept, to go on with after a reload or a visit to the
-// night: `keep` is that board.
+// night's boards by name, with or without a midnight. It wears the faces of
+// the holiday chosen, as the page wears its look, and a day's board
+// Thanksgiving's. Like the night's, the board in play is kept, to go on with
+// after a reload or a visit to the night: `keep` is that board.
 let freeKey = 'turtle'; // the board free play deals,
 let freeTurn = 0; // and after how many matches its tiles turn over, if they do
 function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
@@ -293,7 +301,7 @@ function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
   freeKey = key;
   freeTurn = turnAt;
   const today = dayOf(FREE[key]); // a Thanksgiving day's board plays by its day's rules, and gives its own treats or none
-  const { options, ...rest } = today ? dayPlay(today) : { options: {} };
+  const { options, ...rest } = today ? dayPlay(today) : { options: {}, faces: holidayFaces() };
   if (turnAt) options.turnAt = turnAt;
   play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...rest });
   saved.free = { key, seed, turnAt, moves, elapsed };
@@ -308,7 +316,8 @@ function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
 // -------------------------------------------------------- Thanksgiving week
 
 // What play() wants for a day's board: its options, the treats it gives or
-// none, its nap, and the words its turning over is told in.
+// none, its nap, the words its turning over is told in, and Thanksgiving's
+// faces.
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;
@@ -318,6 +327,7 @@ function dayPlay(d) {
     treatBar: Boolean(options.treats),
     napAt: napFrom ? { from: napFrom, to: napFrom + d.nap.matches } : null,
     turnSet: d.words || 'midnight',
+    faces: 'thanksgiving',
   };
 }
 
@@ -471,7 +481,9 @@ function won() {
   if (hour < 0) {
     saved.free = null;
     store();
-    showCard('The board is clear!', timing, [['Deal again', () => freePlay(freeKey, newSeed(), freeTurn)], ['Back to the Long Night', toNight]], [], lines);
+    // Back to the holiday's boards: the week's, when Thanksgiving is the one chosen.
+    const back = saved.theme === 'thanksgiving' ? ['Back to the week', toWeek] : ['Back to the Long Night', toNight];
+    showCard('The board is clear!', timing, [['Deal again', () => freePlay(freeKey, newSeed(), freeTurn)], back], [], lines);
     return;
   }
   const spec = HOURS[hour];
@@ -629,10 +641,20 @@ function askToLose({ which, then, go, back, keep = 'Keep playing' }) {
 
 // The holiday whose look the page wears: Halloween's while the Long Night
 // is on the table, Thanksgiving's while its week is, and otherwise the one
-// chosen last.
+// chosen last, whose faces the board then wears too, unless it is one of the
+// week's days played freely. Another holiday chosen with the turtle on the
+// table changes its tiles with its colours.
 function applyTheme() {
   wear(theme(hour >= 0 ? 'halloween' : weekDay >= 0 ? 'thanksgiving' : saved.theme) || theme('halloween'));
+  // The day is found by the key free play dealt: a board with a fridge
+  // plays on a layout of its own, with the containers added.
+  const faces = hour < 0 && weekDay < 0 && !dayOf(FREE[freeKey]) ? holidayFaces() : faceSet;
+  if (faces !== faceSet) board.setFaces((faceSet = faces));
 }
+
+// The faces of the holiday chosen last, for a board outside the night and the
+// week: Halloween's while that holiday's own are still to come.
+const holidayFaces = () => (FACE_SETS.includes(saved.theme) ? saved.theme : 'halloween');
 
 // A holiday's look: its colour as the accent, and Halloween its own
 // lettering. With no holiday, Seasons' own, for choosing them.
@@ -1029,7 +1051,7 @@ function showList() {
     ...g.list.kinds.map((k) => {
       const tile = document.createElement('span');
       tile.className = g.crossed.includes(k) ? 'tile done' : 'tile';
-      tile.innerHTML = `<svg viewBox="0 0 60 80" aria-hidden="true"><use href="#${symbolId(KINDS[k].faces[0])}"/></svg>`;
+      tile.innerHTML = `<svg viewBox="0 0 60 80" aria-hidden="true"><use href="#${symbolId(KINDS[k].faces[0], faceSet)}"/></svg>`;
       return tile;
     }),
   );
@@ -1051,7 +1073,7 @@ function showDeals() {
     ...g.busters.map((d) => {
       const tile = document.createElement('span');
       tile.className = { open: 'tile', mine: 'tile done', gone: 'tile grabbed' }[d.state];
-      tile.innerHTML = `<svg viewBox="0 0 60 80" aria-hidden="true"><use href="#${symbolId(g.faces[d.tiles[0]])}"/></svg>`;
+      tile.innerHTML = `<svg viewBox="0 0 60 80" aria-hidden="true"><use href="#${symbolId(g.faces[d.tiles[0]], faceSet)}"/></svg>`;
       return tile;
     }),
   );
@@ -1062,7 +1084,7 @@ function showDeals() {
 }
 
 // A doorbuster's name, by a tile of it: its kind's.
-const dealName = (tile) => KINDS[MATCH[game.faces[tile]]].name;
+const dealName = (tile) => kindName(MATCH[game.faces[tile]], faceSet);
 
 const matchWords = (n) => `${n} ${n === 1 ? 'match' : 'matches'}`;
 
@@ -1078,7 +1100,7 @@ function aboutDeals() {
 
 // The things on a list, in words: A, B, C and D.
 function listNames(kinds) {
-  const names = kinds.map((k) => KINDS[k].name);
+  const names = kinds.map((k) => kindName(k, faceSet));
   return names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names.join('');
 }
 

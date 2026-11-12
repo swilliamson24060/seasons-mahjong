@@ -8,6 +8,7 @@ import './doorbusters.test.js';
 import './football.test.js';
 import './week.test.js';
 import './scaries.test.js';
+import './faces.test.js';
 import './site.test.js';
 import './score.test.js';
 import './magnifier.test.js';

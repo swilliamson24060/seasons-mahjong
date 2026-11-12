@@ -29,7 +29,7 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 
 - On a first visit the game asks which to play, as many as you like, from a card that lists all ten in the order they come round from today, each with its date. Start waits until one is chosen, and All of them chooses every one.
 - The menu (☾) opens the holiday chosen last. Your holidays, on its card, lists the ones you chose, to go to any of them, and Change your holidays brings back the first card.
-- Each holiday has its own look: its colour, its sky, and its lettering, with Halloween keeping Boneyard's. While the Long Night is on the table the page wears Halloween's, and the turtle wears the holiday chosen last. The cards for choosing wear Seasons' own gold.
+- Each holiday has its own look: its colour, its sky, and its lettering, with Halloween keeping Boneyard's. While the Long Night is on the table the page wears Halloween's, and the turtle wears the holiday chosen last, tiles and all. The cards for choosing wear Seasons' own gold.
 - Halloween's and Thanksgiving's boards are made: the Long Night, and Thanksgiving week. The other holidays' cards say when they fall and that their boards are on their way, with the Long Night, the week and the turtle to play until then.
 - `js/themes.js` holds the ten: their icons and colours, and when each falls, worked out for any year, as Thanksgiving, Labor Day and the beach season move.
 
@@ -48,11 +48,12 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
   - On the first Sunday's, the jammed highway, there is no twist: the gentle start, its card telling the free-tile rule as traffic.
   - On Monday's, the frozen turkey, a frozen tile can't be taken until enough matches thaw it: its face shows through the ice, with the matches still to make in its corner, and the turkey thaws from the outside in.
   - On Tuesday's, the shopping cart, the list has four things to find, shown in the top bar, with a price tag on each tile of them. A pair of each, taken before checkout halfway through the board, crosses it off: 25 points each, and 100 more for the whole list.
-  - On Wednesday's, Friendsgiving's potluck table, each pair of a dish (a jack-o'-lantern, witch's brew or ghost, for now) leaves a gift: a friend's tip (a free hint), a saved seat (frees a blocked tile) or musical chairs (a free shuffle).
+  - On Wednesday's, Friendsgiving's potluck table, each pair of a dish (a turkey, green beans or mashed potatoes) leaves a gift: a friend's tip (a free hint), a saved seat (frees a blocked tile) or musical chairs (a free shuffle).
   - On Thursday's, the feast table, the fridge in the bottom bar has three containers for leftovers. A free tile and then a container saves the tile for later: off the table, it holds nothing down, and it still matches its partner whenever that's free. Everything in the fridge has to be eaten by the end. Halfway through, everyone naps, and the clock stops for the next 10 matches.
   - On Friday's, Black Friday's sale tag, four pairs are doorbusters, with a red % tag: a pair taken with one in it is yours, for 50 points. After every 5 of your matches, another shopper grabs the first doorbuster that's free. The top bar's Deals row keeps count.
   - On Saturday's, rivalry football's football, the field runs from the end zone at the top to the one at the bottom, their tiles carrying blue and red pennants. A pair taken with a tile in each end zone is a touchdown, for 60 points.
   - On the second Sunday's, the Sunday Scaries' alarm clock, the sun goes down halfway through and every tile turns over to its Monday side, as the Long Night's do at midnight: hold the moon to see Monday coming, and take pairs that match on both sides. A tile left without a partner wakes as a worry, and worries match each other.
+- The week's tiles are Thanksgiving's own, matching just as Halloween's do: cranberries, corn and leaves for the three suits, the harvest's apple, gourd, acorn and pinecone, the turkey, green beans and mashed potatoes, autumn flowers and pies, any two of which match as any two flowers or moons do, and worries for lost souls. They are the week's wherever its boards are played, and the Long Night keeps Halloween's. The turtle, and any other board played freely, wears the tiles of the holiday chosen: Thanksgiving's for Thanksgiving, and Halloween's for the rest until their own are made. Choosing another holiday with the turtle on the table changes its tiles with its colours, and a turtle cleared goes back to the holiday's boards: the week's, or the Long Night.
 - Any board can also be played freely by address: `#play/turtle` for the classic turtle, or `#play/raven/12345/40` for the raven, dealt from seed 12345, turning over after 40 matches. A new deal (N) deals it again. The board played freely is kept like the night's, so a reload goes on with it, and a Thanksgiving day's board plays by its day's rules.
 
 ## The leaderboard
@@ -86,7 +87,7 @@ Boneyard lives beside it, as a game of its own, at https://swilliamson24060.gith
 3. Under Embed options, a viewport of 960 by 640 suits it, though the game fits whatever size it is given; tick Mobile friendly, and Fullscreen button.
 4. Save, and view the page.
 
-`python3 tools/shots.py` makes the page's pictures in `dist/itch/`, from the game as it is, in a few seconds: the cover, 630 by 500 as itch.io asks, and five screenshots, three from a computer and two from a phone. `tools/cover.html` draws the cover from the game's own tiles and lettering, and `tools/stage.html` sets up each screenshot's scene with moves from the game's own winning line, so they come out the same each time, and anew after a change. It needs Google Chrome, which draws the pictures headless (or the `CHROME` variable saying where a Chrome is), and macOS's `sips`, to cut out the phone pictures. For now the pictures are all Halloween's, as Thanksgiving's boards still wear Boneyard's tiles.
+`python3 tools/shots.py` makes the page's pictures in `dist/itch/`, from the game as it is, in a few seconds: the cover, 630 by 500 as itch.io asks, and five screenshots, three from a computer and two from a phone. `tools/cover.html` draws the cover from the game's own tiles and lettering, and `tools/stage.html` sets up each screenshot's scene with moves from the game's own winning line, so they come out the same each time, and anew after a change. It needs Google Chrome, which draws the pictures headless (or the `CHROME` variable saying where a Chrome is), and macOS's `sips`, to cut out the phone pictures. For now the pictures are all Halloween's.
 
 There the game plays in a frame in itch.io's page, so it leaves out its service worker: playing offline is for the game at its own address.
 
@@ -97,7 +98,7 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 ## Tests and sheets
 
 - http://localhost:8790/test.html runs the tests in the page, the holidays' dates among them; the tab's title shows the result. Below the results is a dealt turtle drawn plainly, with its free tiles outlined, for checking layouts by eye.
-- http://localhost:8790/faces.html shows every face by day and by night, and small, at the size of a tile on an upright phone. Its switch shows them as each kind of colour blindness sees them, or with no colour at all (`faces.html?vision=achromatopsia`): every face reads by its shape alone.
+- http://localhost:8790/faces.html shows every face of a set, Halloween's or Thanksgiving's (`faces.html?set=thanksgiving`), by day and by night, and small, at the size of a tile on an upright phone. Its other switch shows them as each kind of colour blindness sees them, or with no colour at all (`faces.html?vision=achromatopsia`): every face reads by its shape alone.
 - http://localhost:8790/boards.html shows the thirteen boards of the Long Night, dealt as they will be played.
 
 ## Where things live
@@ -107,12 +108,12 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 - `sw.js`, `manifest.webmanifest` and `icons/`: offline play, and installing the game as an app.
 - `tools/itch.py`: the zip for itch.io, and `tools/shots.py`, with `tools/cover.html` and `tools/stage.html`, its cover and screenshots.
 - `js/night.js`: the Long Night's thirteen hours: each one's board, rules, sky and the words before it.
-- `js/thanksgiving.js`: Thanksgiving week's seven days, with the boards made so far, and the rules each plays by.
+- `js/thanksgiving.js`: Thanksgiving week's eight days: each one's board, rules, sky and the words before it.
 - `js/score.js`: the score for a board, worked out from what the game records.
 - `js/leaderboard.js`: the leaderboard's boards, the names it takes, and posting and reading scores; `js/firebase.js` speaks to Firebase, and `js/firebase-config.js` says which project. `firestore.rules` is what Firestore lets players do.
 - `js/ui/sound.js`: the sounds, made with Web Audio as they play: the tiles, the organ, the bells.
 - `js/ui/board.js`: the board on the page: the tiles stacked in their layers and sized to fit, selecting and matching, peeking, the tiles turning over, and the planchette that points out a hint. Players who have asked their device for less motion get no shaking or turning waves.
-- `js/ui/faces.js`: the faces, drawn in code as SVG symbols, one drawing for both sides.
+- `js/ui/faces.js`: the sets of faces, as SVG symbols, and their names: Halloween's drawn here, in code, one drawing for both sides. `js/ui/thanksgiving-faces.js` draws and names Thanksgiving's, and `js/ui/draw.js` holds what both draw with: the colours that change by night, and where the pips and sticks stand.
 - `js/ui/magnifier.js`: a held tile up close, above the finger that would hide it, with the side it will turn to.
 - `js/engine/tiles.js`: the 42 faces, which of them match, and the pairs a deal is made from.
 - `js/engine/layout.js`: reading a layout drawn as text, and the free-tile rule. `layouts.js` holds the layouts themselves.

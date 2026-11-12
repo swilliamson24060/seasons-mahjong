@@ -22,12 +22,13 @@ export class Magnifier {
   }
 
   // Shows a tile's sides, each [face, night], for a board whose tiles are
-  // `width` pixels wide, near the point (x, y) on the screen.
-  show(sides, width, x, y) {
-    const key = `${sides.join(' ')} ${width}`;
+  // `width` pixels wide and wear the set of faces given, near the point
+  // (x, y) on the screen.
+  show(sides, width, x, y, set = 'halloween') {
+    const key = `${sides.join(' ')} ${width} ${set}`;
     if (key !== this.showing) {
       this.showing = key;
-      this.draw(sides, width);
+      this.draw(sides, width, set);
     }
     const { left, top, stacked, scale } = spot(this.sizes, x, y, innerWidth, innerHeight);
     this.el.classList.toggle('stacked', stacked);
@@ -42,7 +43,7 @@ export class Magnifier {
     this.showing = '';
   }
 
-  draw(sides, width) {
+  draw(sides, width, set) {
     // Three times the board's tiles, though never so small as to be hard
     // to read, nor so big that two side by side are wider than the screen.
     const w = Math.round(Math.min(Math.max(width * 3, 112), 160, innerWidth / 2 - 50));
@@ -53,7 +54,7 @@ export class Magnifier {
     const parts = [];
     sides.forEach(([face, night], k) => {
       if (k) parts.push(arrow());
-      parts.push(tile(face, night));
+      parts.push(tile(face, night, set));
     });
     this.el.replaceChildren(...parts);
     // Its size in a row and in a column, for spot() to choose between.
@@ -104,13 +105,13 @@ export function spot(sizes, x, y, W, H) {
   return best;
 }
 
-function tile(face, night) {
+function tile(face, night, set) {
   const el = document.createElement('div');
   el.className = `tile${night ? ' night' : ''}${face === LOST ? ' soul' : ''}`;
   const svg = document.createElementNS(SVG, 'svg');
   svg.setAttribute('viewBox', '0 0 60 80');
   const use = document.createElementNS(SVG, 'use');
-  use.setAttribute('href', `#${symbolId(face)}`);
+  use.setAttribute('href', `#${symbolId(face, set)}`);
   svg.append(use);
   el.append(svg);
   return el;

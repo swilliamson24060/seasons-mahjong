@@ -18,7 +18,10 @@
 </head>
 <body>
   <h1>The faces</h1>
-  <p>Every face by day, by night, and small by day at the size of a tile on an upright phone.
+  <p>Every face of <select id="set" aria-label="Set of faces">
+      <option value="halloween">Halloween's set</option>
+      <option value="thanksgiving">Thanksgiving's set</option>
+    </select> by day, by night, and small by day at the size of a tile on an upright phone.
     <label>See them as with <select id="vision">
       <option value="">full colour vision</option>
       <option value="protanopia">protanopia: no red</option>
@@ -39,23 +42,30 @@
   <div class="sheet small" id="small"></div>
   <script type="module">
     import { FACES } from './js/engine/tiles.js';
-    import { sprite, symbolId } from './js/ui/faces.js';
+    import { sprite, symbolId, faceName, FACE_SETS } from './js/ui/faces.js';
 
     document.body.prepend(sprite());
-    for (const [id, night] of [['day', false], ['night', true], ['small', false]]) {
-      const sheet = document.getElementById(id);
-      for (const f of FACES) {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.innerHTML = `<div class="tile${night ? ' night' : ''}"><svg viewBox="0 0 60 80"><use href="#${symbolId(f.id)}"></use></svg></div>${id === 'small' ? '' : f.name}`;
-        sheet.append(cell);
+    const params = new URLSearchParams(location.search);
+    const set = document.getElementById('set');
+    set.onchange = () => {
+      for (const [id, night] of [['day', false], ['night', true], ['small', false]]) {
+        const sheet = document.getElementById(id);
+        sheet.replaceChildren();
+        for (const f of FACES) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.innerHTML = `<div class="tile${night ? ' night' : ''}${f.group === 'soul' ? ' soul' : ''}"><svg viewBox="0 0 60 80"><use href="#${symbolId(f.id, set.value)}"></use></svg></div>${id === 'small' ? '' : faceName(f.id, set.value)}`;
+          sheet.append(cell);
+        }
       }
-    }
+    };
+    set.value = FACE_SETS.includes(params.get('set')) ? params.get('set') : 'halloween';
+    set.onchange();
     const vision = document.getElementById('vision');
     vision.onchange = () => {
       for (const sheet of document.querySelectorAll('.sheet')) sheet.style.filter = vision.value ? `url(#${vision.value})` : '';
     };
-    vision.value = new URLSearchParams(location.search).get('vision') || '';
+    vision.value = params.get('vision') || '';
     vision.onchange();
   </script>
 </body>

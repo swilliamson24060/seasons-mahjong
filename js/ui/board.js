@@ -1,5 +1,5 @@
-import { FACES, LOST } from '../engine/tiles.js';
-import { symbolId } from './faces.js';
+import { LOST } from '../engine/tiles.js';
+import { symbolId, faceName } from './faces.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const LIFT = 0.11; // how far each layer sits up and to the right, in tile widths
@@ -36,13 +36,15 @@ function planchette() {
 // clicks, taps and keys into moves. say(text) reports things for the page
 // to show, sound, if given, plays a tock for each tile pressed, magnifier,
 // if given, shows a tile held down up close, keyName is what the treat
-// that frees a blocked tile is called on this board, and fridge, on a board
+// that frees a blocked tile is called on this board, fridge, on a board
 // with leftovers, is where its containers go: a tile chosen and then an
-// empty container goes in it, to be taken from there with its partner.
+// empty container goes in it, to be taken from there with its partner, and
+// faceSet is the set of faces its tiles wear (faces.js), and are named by.
 export class Board {
-  constructor(el, game, { say = () => {}, sound = null, magnifier = null, keyName = 'key', fridge = null } = {}) {
+  constructor(el, game, { say = () => {}, sound = null, magnifier = null, keyName = 'key', fridge = null, faceSet = 'halloween' } = {}) {
     this.el = el;
     this.game = game;
+    this.faceSet = faceSet;
     this.say = say;
     this.sound = sound;
     this.keyName = keyName;
@@ -229,7 +231,7 @@ export class Board {
       t.use.removeAttribute('href'); // a container never yet used
       return;
     }
-    t.use.setAttribute('href', `#${symbolId(face)}`);
+    t.use.setAttribute('href', `#${symbolId(face, this.faceSet)}`);
     t.el.classList.toggle('night', g.sideNames[side] === 'night');
     t.el.classList.toggle('soul', face === LOST);
     t.el.setAttribute('aria-label', this.label(i, face));
@@ -239,8 +241,8 @@ export class Board {
   // or a container in the fridge, empty, or with the tile saved in it.
   label(i, face = this.game.face(i)) {
     const g = this.game;
-    if (g.inFridge(i)) return g.present[i] && face >= 0 ? `${FACES[face].name}, in the fridge` : 'An empty container in the fridge';
-    const name = FACES[face].name;
+    if (g.inFridge(i)) return g.present[i] && face >= 0 ? `${faceName(face, this.faceSet)}, in the fridge` : 'An empty container in the fridge';
+    const name = faceName(face, this.faceSet);
     return this.tiles[i].ice && g.frozen(i) ? `${name}, frozen: ${thawWords(g.thawIn(i))}` : name;
   }
 
@@ -262,7 +264,7 @@ export class Board {
     const [x, y] = this.at;
     const under = document.elementFromPoint(x, y)?.closest('.tile');
     this.held = under && this.el.contains(under) ? Number(under.dataset.i) : i;
-    this.magnifier.show(this.sidesOf(this.held), this.tileWidth, x, y);
+    this.magnifier.show(this.sidesOf(this.held), this.tileWidth, x, y, this.faceSet);
   }
 
   // A tile's faces as the magnifier shows them, each [face, night]: the side
@@ -340,6 +342,14 @@ export class Board {
   setKeying(on) {
     this.keying = on;
     this.el.classList.toggle('keying', on);
+  }
+
+  // Puts the tiles in another set of faces, and names them by it: as when
+  // another holiday is chosen with the turtle on the table.
+  setFaces(set) {
+    this.faceSet = set;
+    for (let i = 0; i < this.game.layout.count; i++) this.paint(i);
+    this.refresh();
   }
 
   matched({ turned }) {

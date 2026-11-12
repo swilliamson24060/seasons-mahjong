@@ -4,7 +4,9 @@
 // monsters for the four winds. The jack-o'-lantern, witch's brew and ghost
 // take the places of the red, green and white dragons, the poison garden the
 // flowers' and the moons the seasons'. Any two flowers match, and any two
-// moons; every other face matches only itself.
+// moons; every other face matches only itself. Those are Halloween's names:
+// other sets draw and name the same faces their own way, as Thanksgiving's
+// does (thanksgiving-faces.js), and match them just the same.
 
 const NUMBERS = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
 const SUITS = [

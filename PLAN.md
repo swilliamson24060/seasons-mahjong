@@ -28,7 +28,7 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 ## A holiday's look
 
 - Its colour is the accent, for titles and buttons; its sky goes behind the board, and tints the cards; and its lettering is its titles' type. Halloween keeps Boneyard's Creepster, and the others share Fredoka, a rounder hand.
-- The Long Night always wears Halloween's look, with each hour's own sky. The turtle wears the holiday chosen last.
+- The Long Night always wears Halloween's look, with each hour's own sky. The turtle wears the holiday chosen last, its tiles too: Halloween's while that holiday's own are still to come.
 - `js/themes.js` works the dates out for any year, as some move: Thanksgiving, Labor Day, and the beach season, from Memorial Day. Spring and fall start on the days the equinoxes fall on most years.
 
 ## Next: the holidays' own boards
@@ -36,7 +36,7 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 Themed levels for the nine holidays still to come. For each, to decide:
 
 - **Its boards**: how many, and their shapes. The Long Night has thirteen, an hour each, and keeps its layouts about nine tiles across, for phones held upright.
-- **Its tiles**: faces of its own, or Boneyard's suits with its own honours in place of the jack-o'-lanterns, brews and ghosts. A set is 42 faces, drawn in code, each one readable by shape alone, with its big corner index.
+- **Its tiles**: faces of its own, as Thanksgiving's are: the same faces, drawn and named its own way and matching as Halloween's do, so the engine never knows. A set is 42 faces and a lost soul, drawn in code, each one readable by shape alone, with its big corner index.
 - **Its twist, if any**: Ghosts float, Treats and Midnight belong to Halloween, so each holiday could bring something of its own.
 - **Its sky through the boards, and its sounds.**
 - **Its scores**, and boards of its own on the leaderboard.
@@ -48,6 +48,7 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 - Thanksgiving's card in the menu is the week's, as the Long Night's is Halloween's: its eight days in order, each with its theme, or its best score once played, and the week score, the bests added up. Each day reached can be played again, and clearing a board opens the next. The second Sunday cleared, the week is seen through.
 - The week's board in play is kept, as the night's is, so a player can go between the week, the Long Night and the turtle without losing any of them. A reload opens on the holiday chosen last: the week's board in play, or its card.
 - The days aren't on the leaderboard yet: its rules know only the Long Night's hours.
+- The week's boards wear Thanksgiving's own tiles (below), wherever they are played, and the Long Night keeps Halloween's. With Thanksgiving chosen, the turtle wears them too, and a turtle cleared goes back to the week.
 
 | Day | Theme | Board | Twist |
 |---|---|---|---|
@@ -60,6 +61,25 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 | Saturday | Rivalry football | a football stood on end, its laces raised: 100 tiles on four layers, seven across | Touchdowns |
 | Second Sunday | The Sunday Scaries: the day before work and school again | an alarm clock, its two bells on top and its hands at seven: 102 tiles on three layers, nine across | Sundown |
 
+### Thanksgiving's tiles
+
+The same faces as Halloween's, matching just as those do, drawn as the harvest and the feast: only the drawings and the names are Thanksgiving's. `js/ui/thanksgiving-faces.js` holds them, and `faces.html?set=thanksgiving` shows them all.
+
+| Halloween's | Thanksgiving's |
+|---|---|
+| Eyes, one to nine | Cranberries, the one a cluster of them under a leafy bough |
+| Bones | Corn, the one an ear of flint corn |
+| Graves | Leaves, each with its number on it |
+| The monsters (E, S, W, N) | The harvest: apple, gourd, acorn and pinecone |
+| Jack-o'-lantern, witch's brew, ghost | Turkey, green beans and mashed potatoes: the potluck's dishes |
+| The poison garden | Autumn flowers: sunflower, mum, aster and marigold, any two of which match |
+| The moons | Pies: pumpkin, apple, pecan and cherry, any two of which match |
+| The lost soul | A worry, for the Sunday Scaries |
+
+- The middle cranberry of the five and the nine is pale, still ripening, as a dots tile's middle dot is red.
+- Each group's corner number has a colour of its own, by day and by night: cranberry red, husk green, leaf orange, harvest brown, aster purple, and the blue of the pie dish.
+- Wherever a board names its tiles, it names them in its own set's words: a tile to a screen reader, the shopping list, the doorbusters, and the dishes on Friendsgiving's card.
+
 ### The first Sunday
 
 - The gentle start, as the Long Night's 6 pm is: the week's fewest tiles, 32 of them free from the start, and no twist. Its card tells the free-tile rule as traffic: a tile can pull out only when nothing is on it and its lane is clear at one end.
@@ -71,7 +91,7 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 - On Monday the turkey thaws from the outside in: its outline is thawed from the start, the next ring thaws after 8 matches, and the middle after 16, of the board's 45.
 - A deal plays the board through taking a frozen tile only once it has thawed, so every deal can be won; the hints, the solver and the safe shuffle go by the same rule. An undo freezes the tiles again, and a skeleton key can't thaw ice.
 - In trials of 200 deals, the ice doesn't make the board harder by luck: a player taking pairs at random clears it about as often as with no ice. What it changes is the order to play in. At the start, 8 tiles that would be free are frozen, and the outside of the bird has to last until the middle thaws.
-- It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/turkey`, and shows its day's card first. Its tiles are still Boneyard's.
+- It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/turkey`, and shows its day's card first.
 
 ### The shopping list
 
@@ -84,7 +104,7 @@ Eight boards, one a day from the Sunday before Thanksgiving to the Sunday after 
 ### Potluck
 
 - Friends bring dishes to share, and each pair of a dish leaves a gift, as Halloween's jack-o'-lanterns leave treats: a friend's tip shows you a match, a saved seat frees one blocked tile, and musical chairs shuffles the tiles for free.
-- The dishes are the three faces that stand where a set's dragons do: until Thanksgiving has tiles of its own, the jack-o'-lantern, the witch's brew and the ghost. An undo never earns a second gift.
+- The dishes are the three faces that stand where a set's dragons do: the turkey, the green beans and the mashed potatoes, in Halloween's set the jack-o'-lantern, the witch's brew and the ghost. An undo never earns a second gift.
 - It is the week's breather, between Tuesday's list and Thursday: in 200 trial deals, a board brought 4.2 gifts.
 - The gifts are Halloween's treats under other names and icons (💬, 🪑, 🎶), so each board says which set it gives. A Thanksgiving board with no treats has no treat buttons.
 - It plays from Thanksgiving week's card in the menu, and freely by its address, `#play/potluck`.

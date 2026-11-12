@@ -337,6 +337,13 @@ body.covered #board {
   --index-monster: #c0392b;
   --index-flower: #a63a87;
   --index-moon: #4a5aa8;
+  /* Thanksgiving's, by the same groups: cranberries, corn, leaves, the harvest, autumn flowers and pies. */
+  --index-tg-eyes: #b3163a;
+  --index-tg-bones: #3f7d27;
+  --index-tg-graves: #b35a12;
+  --index-tg-monster: #6b4221;
+  --index-tg-flower: #9b3f8f;
+  --index-tg-moon: #3d5ea8;
   position: absolute;
   width: calc(var(--tile-w) - var(--gap));
   height: calc(var(--tile-h) - var(--gap));
@@ -382,6 +389,12 @@ body.covered #board {
   --index-monster: #ff978a;
   --index-flower: #f5a3dc;
   --index-moon: #b8c3ff;
+  --index-tg-eyes: #ff8fa3;
+  --index-tg-bones: #9be27a;
+  --index-tg-graves: #ffb36b;
+  --index-tg-monster: #e8c39e;
+  --index-tg-flower: #f0a6e6;
+  --index-tg-moon: #a9c1ff;
 }
 
 .tile.night svg {

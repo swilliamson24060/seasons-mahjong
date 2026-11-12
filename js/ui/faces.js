@@ -1,15 +1,21 @@
-import { FACES } from '../engine/tiles.js';
+import { FACES, KINDS } from '../engine/tiles.js';
+import { INK, PAPER, DARK, LEAF, PIPS, STICKS, style, n } from './draw.js';
+import { THANKSGIVING } from './thanksgiving-faces.js';
 
 // The faces, drawn in code as SVG symbols on a 60 by 80 tile and gathered in
 // one hidden sprite that every tile points into. Outlines and small dark
 // details use var(--ink) and whites var(--paper), which a night tile turns
 // pale, so one drawing serves both sides: by night the faces glow. The other
 // colours read on ivory and on midnight blue alike.
-
-const INK = 'var(--ink)';
-const PAPER = 'var(--paper)';
-const DARK = '#231c2b'; // dark fills that stay dark by night, outlined in ink
-const LEAF = '#3a8f55';
+//
+// There are sets of them, each drawing the same 43 faces, which match as
+// tiles.js says, in its own way and with its own names: Halloween's, Boneyard's
+// own, here, and Thanksgiving's (thanksgiving-faces.js). A board says which
+// set its tiles wear.
+const SETS = {
+  halloween: { prefix: 'face-', draw: (f) => draw(f), index: 'index' },
+  thanksgiving: { prefix: 'face-tg-', draw: (f) => THANKSGIVING.draw(f), index: 'index-tg' },
+};
 
 // The groups with an index in a corner, in the group's colour, which the tile
 // sets as --index-eyes and so on: brighter by night. Like a playing card's,
@@ -20,57 +26,53 @@ const LEAF = '#3a8f55';
 const INDEXED = new Set(['eyes', 'bones', 'graves', 'monster', 'flower', 'moon']);
 const SHRINK = 0.8; // the drawing on a tile with an index
 
-export const symbolId = (face) => `face-${FACES[face].key}`;
+export const FACE_SETS = Object.keys(SETS);
+export const symbolId = (face, set = 'halloween') => `${SETS[set].prefix}${FACES[face].key}`;
 const indexed = (f) => Boolean(f.index) && INDEXED.has(f.group);
 
-// The sprite, to be put in the page once.
+// A face's name in a set, and a kind's: the flowers and the moons are kinds
+// of four faces each, any two of which match.
+export const faceName = (face, set = 'halloween') => (set === 'halloween' ? FACES[face].name : THANKSGIVING.names[FACES[face].key]);
+export function kindName(kind, set = 'halloween') {
+  const k = KINDS[kind];
+  if (set === 'halloween') return k.name;
+  return k.faces.length === 1 ? faceName(k.faces[0], set) : THANKSGIVING.kinds[k.key];
+}
+
+// The sprite, to be put in the page once: every set's faces.
 export function sprite() {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('aria-hidden', 'true');
   svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
-  const symbols = FACES.map((f) => `<symbol id="${symbolId(f.id)}" viewBox="0 0 60 80">${art(f)}${index(f)}</symbol>`);
+  const symbols = FACE_SETS.flatMap((set) => FACES.map((f) => `<symbol id="${symbolId(f.id, set)}" viewBox="0 0 60 80">${art(f, set)}${index(f, set)}</symbol>`));
   svg.innerHTML = `<defs>${symbols.join('')}</defs>`;
   return svg;
 }
 
 // A face's drawing, shrunk toward the bottom right on a tile with an index.
-function art(f) {
-  if (!indexed(f)) return draw(f);
-  return `<g transform="translate(${60 * (1 - SHRINK)} ${80 * (1 - SHRINK)}) scale(${SHRINK})">${draw(f)}</g>`;
+function art(f, set) {
+  const drawing = SETS[set].draw(f);
+  if (!indexed(f)) return drawing;
+  return `<g transform="translate(${60 * (1 - SHRINK)} ${80 * (1 - SHRINK)}) scale(${SHRINK})">${drawing}</g>`;
 }
 
 function draw(f) {
-  if (f.group === 'eyes') return f.index === '1' ? bigEye() : EYES[f.index].map((e) => eye(...e)).join('');
-  if (f.group === 'bones') return f.index === '1' ? crow() : bones(BONES[f.index]);
+  if (f.group === 'eyes') return f.index === '1' ? bigEye() : PIPS[f.index].map((e) => eye(...e)).join('');
+  if (f.group === 'bones') return f.index === '1' ? crow() : bones(STICKS[f.index]);
   if (f.group === 'graves') return grave(f.index);
   if (f.group === 'moon') return moon(f.key);
   return ART[f.key]();
 }
 
-function index(f) {
+// The index, in its group's colour in this set: --index-eyes and so on for
+// Halloween's, --index-tg-eyes for Thanksgiving's.
+function index(f, set) {
   if (!indexed(f)) return '';
   const ring = 'stroke:var(--face-1);stroke-width:4;stroke-linejoin:round;paint-order:stroke';
-  return `<text x="2.5" y="25.5" style="fill:var(--index-${f.group});${ring};font:900 29px system-ui,-apple-system,sans-serif">${f.index}</text>`;
+  return `<text x="2.5" y="25.5" style="fill:var(--${SETS[set].index}-${f.group});${ring};font:900 29px system-ui,-apple-system,sans-serif">${f.index}</text>`;
 }
 
-const style = (fill, stroke = 'none', width = 1.4, extra = '') =>
-  `style="fill:${fill};stroke:${stroke};stroke-width:${width};stroke-linejoin:round;stroke-linecap:round${extra}"`;
-
-const n = (v) => +v.toFixed(2);
-
 // ------------------------------------------------------------------- eyes
-
-// Where the eyes sit, as the dots do on a dots tile: [x, y, size, red].
-const EYES = {
-  2: [[30, 27, 11], [30, 59, 11]],
-  3: [[18, 24, 9], [30, 43, 9], [42, 62, 9]],
-  4: [[19, 29, 9.5], [41, 29, 9.5], [19, 57, 9.5], [41, 57, 9.5]],
-  5: [[17, 26, 8.5], [43, 26, 8.5], [30, 43, 8.5, true], [17, 60, 8.5], [43, 60, 8.5]],
-  6: [[20, 24, 8.5], [40, 24, 8.5], [20, 43, 8.5], [40, 43, 8.5], [20, 62, 8.5], [40, 62, 8.5]],
-  7: [[18, 22, 6.5], [30, 31, 6.5], [42, 40, 6.5], [20, 55, 7], [40, 55, 7], [20, 69, 7], [40, 69, 7]],
-  8: [[20, 21, 7], [40, 21, 7], [20, 37, 7], [40, 37, 7], [20, 53, 7], [40, 53, 7], [20, 69, 7], [40, 69, 7]],
-  9: [[16, 24, 7], [30, 24, 7], [44, 24, 7], [16, 43, 7], [30, 43, 7, true], [44, 43, 7], [16, 62, 7], [30, 62, 7], [44, 62, 7]],
-};
 
 function eye(cx, cy, r, red = false) {
   return (
@@ -93,18 +95,6 @@ function bigEye() {
 }
 
 // ------------------------------------------------------------------ bones
-
-// Where the bones stand, as the sticks do on a bamboo tile: [x, y, length, width].
-const BONES = {
-  2: [[30, 28, 24, 7], [30, 58, 24, 7]],
-  3: [[30, 28, 22, 7], [19, 58, 22, 7], [41, 58, 22, 7]],
-  4: [[20, 28, 24, 7], [40, 28, 24, 7], [20, 58, 24, 7], [40, 58, 24, 7]],
-  5: [[16, 27, 20, 6], [44, 27, 20, 6], [30, 43, 20, 6], [16, 60, 20, 6], [44, 60, 20, 6]],
-  6: [[16, 29, 22, 6], [30, 29, 22, 6], [44, 29, 22, 6], [16, 59, 22, 6], [30, 59, 22, 6], [44, 59, 22, 6]],
-  7: [[30, 21, 15, 6], [16, 43, 15, 6], [30, 43, 15, 6], [44, 43, 15, 6], [16, 65, 15, 6], [30, 65, 15, 6], [44, 65, 15, 6]],
-  8: [[13, 31, 22, 4.6], [24.6, 31, 22, 4.6], [36.2, 31, 22, 4.6], [47.8, 31, 22, 4.6], [13, 60, 22, 4.6], [24.6, 60, 22, 4.6], [36.2, 60, 22, 4.6], [47.8, 60, 22, 4.6]],
-  9: [[16, 22, 15, 6], [30, 22, 15, 6], [44, 22, 15, 6], [16, 44, 15, 6], [30, 44, 15, 6], [44, 44, 15, 6], [16, 66, 15, 6], [30, 66, 15, 6], [44, 66, 15, 6]],
-};
 
 // A bone standing up: a shaft with two knobs at each end.
 function bone(cx, cy, len, w) {

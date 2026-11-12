@@ -2,15 +2,17 @@ import { HIGHWAY, TURKEY, CART, POTLUCK, FEAST, SALE, FOOTBALL, ALARM } from './
 import { FACE } from './engine/tiles.js';
 import { outsideIn } from './engine/ice.js';
 
-// The dishes friends bring to the potluck, whose pairs leave gifts: until
-// Thanksgiving has tiles of its own, the three faces that stand where the
-// dragons do in a set.
+// The dishes friends bring to the potluck, whose pairs leave gifts: the
+// turkey, the green beans and the mashed potatoes, the three faces that
+// stand where the dragons do in a set (Halloween's jack-o'-lantern, witch's
+// brew and ghost).
 const DISHES = [FACE.lantern, FACE.brew, FACE.ghost];
 
 // Thanksgiving week: eight boards, one a day from the Sunday before
 // Thanksgiving to the Sunday after it, the first Sunday's the traffic on the
 // way and the second's the Sunday Scaries, the day before work and school
-// again. Each day: its name and its theme,
+// again. Its tiles wear Thanksgiving's faces (ui/thanksgiving-faces.js).
+// Each day: its name and its theme,
 // and once its board is made, the board; the rules for Game (thaw, on a
 // board with ice, says how many matches each ring of it takes to thaw, and
 // list, on a board with a shopping list, how many things are on it and how
@@ -55,7 +57,7 @@ export const DAYS = [
     rules: { treats: true, ghostsFloat: false, treatFaces: DISHES },
     gifts: 'potluck',
     sky: ['#6b4a3a', '#1f1410'],
-    text: "Friends have brought dishes to share, and a pair of jack-o'-lanterns, witch's brew or ghosts leaves a gift: a friend's tip shows you a match, a saved seat frees a blocked tile, and musical chairs shuffles the tiles for free.",
+    text: "Friends have brought dishes to share, and a pair of turkeys, green beans or mashed potatoes leaves a gift: a friend's tip shows you a match, a saved seat frees a blocked tile, and musical chairs shuffles the tiles for free.",
   },
   {
     name: 'Thursday',
