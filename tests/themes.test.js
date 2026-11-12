@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { THEMES, theme, when, calendar } from '../js/themes.js';
+import { THEMES, theme, when, calendar, isOpen, opensOn, today } from '../js/themes.js';
 
 const day = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 const ids = (list) => list.map((e) => e.theme.id).join(' ');
@@ -33,4 +33,43 @@ test('the calendar runs from today, with a season on now first', () => {
   equal(july.at(-1).theme.id, 'independence', 'the Fourth just gone, so last');
   const christmas = when(theme('christmas'), new Date(2026, 11, 25, 20));
   check(christmas.now && day(christmas.start) === '2026-12-25', 'Christmas, on the day itself');
+});
+
+test('each holiday opens on the first of a month, weeks before its day', () => {
+  const opens = { 'new-year': 'Dec 1', valentines: 'Feb 1', spring: 'Mar 1', summer: 'May 1', independence: 'Jun 1', labor: 'Aug 1', fall: 'Aug 1', halloween: 'Oct 1', thanksgiving: 'Nov 1', christmas: 'Dec 1' };
+  for (const t of THEMES) {
+    const o = t.opens(2026);
+    equal(o.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), opens[t.id], `${t.name} opens`);
+    const itsDay = t.id === 'new-year' ? t.on(2027) : t.on(2026); // New Year's opens for the year to come
+    const weeks = (itsDay - o) / (7 * 24 * 3600 * 1000);
+    check(weeks >= 1.5 && weeks <= 8, `${t.name} opens ${weeks.toFixed(1)} weeks before its day`);
+  }
+});
+
+test('a holiday made can be played from its opening day to the end of the year, and the new year closes it again', () => {
+  const halloween = theme('halloween');
+  const thanksgiving = theme('thanksgiving');
+  check(!isOpen(halloween, new Date(2026, 8, 30, 20)), 'Halloween is open on the 30th of September');
+  check(isOpen(halloween, new Date(2026, 9, 1, 0, 5)), 'Halloween is shut on the 1st of October');
+  check(isOpen(halloween, new Date(2026, 10, 12)), 'Halloween is shut in November');
+  check(isOpen(halloween, new Date(2026, 11, 31, 23, 59)), "Halloween is shut on New Year's Eve");
+  check(!isOpen(halloween, new Date(2027, 0, 1, 0, 1)), "Halloween is open on New Year's Day");
+  check(!isOpen(halloween, new Date(2027, 6, 4)), 'Halloween is open in July');
+  check(isOpen(halloween, new Date(2027, 9, 1, 9)), 'Halloween is shut on the 1st of October the next year');
+  check(!isOpen(thanksgiving, new Date(2026, 9, 31, 20)), 'Thanksgiving is open on Halloween');
+  check(isOpen(thanksgiving, new Date(2026, 10, 1, 9)), 'Thanksgiving is shut on the 1st of November');
+  check(isOpen(thanksgiving, new Date(2026, 10, 29, 20)), 'Thanksgiving is shut on the second Sunday');
+  check(!isOpen(theme('christmas'), new Date(2026, 11, 20)), 'Christmas, whose boards are still to come, is open');
+  equal(day(opensOn(halloween, new Date(2027, 2, 1))), '2027-10-1', 'in March, Halloween opens in October');
+  equal(day(opensOn(halloween, new Date(2026, 10, 12))), '2027-10-1', 'once open, it next opens the year after');
+  equal(day(opensOn(thanksgiving, new Date(2026, 9, 15))), '2026-11-1', 'in October, Thanksgiving opens in November');
+});
+
+test('an address can name the day to try the game on', () => {
+  const named = today('?date=2027-03-01');
+  equal(day(named), '2027-3-1', 'the day named');
+  check(!isOpen(theme('halloween'), named), 'Halloween is open on the day named');
+  for (const search of ['', '?date=soon', '?date=2027-13-45', '?set=thanksgiving']) {
+    check(Math.abs(today(search) - new Date()) < 5000, `${search || 'no address'} is not today`);
+  }
 });

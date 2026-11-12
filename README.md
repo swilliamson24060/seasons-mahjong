@@ -14,23 +14,24 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 
 ## The holidays
 
-| Holiday | When |
-|---|---|
-| New Year's | January 1 |
-| Valentine's Day | February 14 |
-| Start of Spring | March 20 |
-| Summer Beach Season | Memorial Day, the last Monday in May, to Labor Day |
-| Independence Day | July 4 |
-| Labor Day | the first Monday in September |
-| Start of Fall | September 22 |
-| Halloween | October 31 |
-| Thanksgiving | the fourth Thursday in November |
-| Christmas | December 25 |
+| Holiday | When | Opens |
+|---|---|---|
+| New Year's | January 1 | December 1 |
+| Valentine's Day | February 14 | February 1 |
+| Start of Spring | March 20 | March 1 |
+| Summer Beach Season | Memorial Day, the last Monday in May, to Labor Day | May 1 |
+| Independence Day | July 4 | June 1 |
+| Labor Day | the first Monday in September | August 1 |
+| Start of Fall | September 22 | August 1 |
+| Halloween | October 31 | October 1 |
+| Thanksgiving | the fourth Thursday in November | November 1 |
+| Christmas | December 25 | December 1 |
 
 - On a first visit the game asks which to play, as many as you like, from a card that lists all ten in the order they come round from today, each with its date. Start waits until one is chosen, and All of them chooses every one.
 - The menu (☾) opens the holiday chosen last. Your holidays, on its card, lists the ones you chose, to go to any of them, and Change your holidays brings back the first card.
 - Each holiday has its own look: its colour, its sky, and its lettering, with Halloween keeping Boneyard's. While the Long Night is on the table the page wears Halloween's, and the turtle wears the holiday chosen last, tiles and all. The cards for choosing wear Seasons' own gold.
-- Halloween's and Thanksgiving's boards are made: the Long Night, and Thanksgiving week. The other holidays' cards say when they fall and that their boards are on their way, with the Long Night, the week and the turtle to play until then.
+- Halloween's and Thanksgiving's boards are made: the Long Night, and Thanksgiving week. The other holidays' cards say when they fall and that their boards are on their way, with the holidays open and the turtle to play until then.
+- Each holiday opens weeks before its day, to build up to it, and stays open to the end of the year. With the new year every holiday closes again, until its opening day comes round. Until a holiday opens, Your holidays and its card say when it will, and its boards can't be played, from the menu or by their address. The turtle is always there. Progress and best scores are kept through the new year.
 - `js/themes.js` holds the ten: their icons and colours, and when each falls, worked out for any year, as Thanksgiving, Labor Day and the beach season move.
 
 ## Playing
@@ -54,7 +55,7 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
   - On Saturday's, rivalry football's football, the field runs from the end zone at the top to the one at the bottom, their tiles carrying blue and red pennants. A pair taken with a tile in each end zone is a touchdown, for 60 points.
   - On the second Sunday's, the Sunday Scaries' alarm clock, the sun goes down halfway through and every tile turns over to its Monday side, as the Long Night's do at midnight: hold the moon to see Monday coming, and take pairs that match on both sides. A tile left without a partner wakes as a worry, and worries match each other.
 - The week's tiles are Thanksgiving's own, matching just as Halloween's do: cranberries, corn and leaves for the three suits, the harvest's apple, gourd, acorn and pinecone, the turkey, green beans and mashed potatoes, autumn flowers and pies, any two of which match as any two flowers or moons do, and worries for lost souls. They are the week's wherever its boards are played, and the Long Night keeps Halloween's. The turtle, and any other board played freely, wears the tiles of the holiday chosen: Thanksgiving's for Thanksgiving, and Halloween's for the rest until their own are made. Choosing another holiday with the turtle on the table changes its tiles with its colours, and a turtle cleared goes back to the holiday's boards: the week's, or the Long Night.
-- Any board can also be played freely by address: `#play/turtle` for the classic turtle, or `#play/raven/12345/40` for the raven, dealt from seed 12345, turning over after 40 matches. A new deal (N) deals it again. The board played freely is kept like the night's, so a reload goes on with it, and a Thanksgiving day's board plays by its day's rules.
+- Any board can also be played freely by address: `#play/turtle` for the classic turtle, or `#play/raven/12345/40` for the raven, dealt from seed 12345, turning over after 40 matches. A new deal (N) deals it again. The board played freely is kept like the night's, so a reload goes on with it, and a Thanksgiving day's board plays by its day's rules. A holiday's board plays by address only while the holiday is open; before then, its address deals a turtle.
 
 ## The leaderboard
 
@@ -100,6 +101,7 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 - http://localhost:8790/test.html runs the tests in the page, the holidays' dates among them; the tab's title shows the result. Below the results is a dealt turtle drawn plainly, with its free tiles outlined, for checking layouts by eye.
 - http://localhost:8790/faces.html shows every face of a set, Halloween's or Thanksgiving's (`faces.html?set=thanksgiving`), by day and by night, and small, at the size of a tile on an upright phone. Its other switch shows them as each kind of colour blindness sees them, or with no colour at all (`faces.html?vision=achromatopsia`): every face reads by its shape alone.
 - http://localhost:8790/boards.html shows the thirteen boards of the Long Night, dealt as they will be played.
+- `?date=2027-03-01` on the game's address plays it as though it were that day, to see the holidays open and close: http://localhost:8790/?date=2027-10-15 has Halloween open and Thanksgiving still to come, and `?date=2027-03-01` has neither.
 
 ## Where things live
 

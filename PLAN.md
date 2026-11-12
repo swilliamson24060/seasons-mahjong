@@ -4,26 +4,34 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 
 ## The holidays
 
-| Holiday | When | Its colours | Its boards |
-|---|---|---|---|
-| New Year's | January 1 | gold, under a midnight blue | next |
-| Valentine's Day | February 14 | pink, on deep rose | next |
-| Start of Spring | March 20, the usual day of the equinox | leaf green, on deep green | next |
-| Summer Beach Season | Memorial Day to Labor Day | sun yellow, on sea blue | next |
-| Independence Day | July 4 | red, on navy | next |
-| Labor Day | the first Monday in September | amber, on slate | next |
-| Start of Fall | September 22, the usual day of the equinox | orange, on russet | next |
-| Halloween | October 31 | Boneyard's orange, on purple | the Long Night: thirteen boards |
-| Thanksgiving | the fourth Thursday in November | squash, on brown | Thanksgiving week: eight boards, in the menu |
-| Christmas | December 25 | red, on pine green | next |
+| Holiday | When | Opens | Its colours | Its boards |
+|---|---|---|---|---|
+| New Year's | January 1 | December 1 | gold, under a midnight blue | next |
+| Valentine's Day | February 14 | February 1 | pink, on deep rose | next |
+| Start of Spring | March 20, the usual day of the equinox | March 1 | leaf green, on deep green | next |
+| Summer Beach Season | Memorial Day to Labor Day | May 1 | sun yellow, on sea blue | next |
+| Independence Day | July 4 | June 1 | red, on navy | next |
+| Labor Day | the first Monday in September | August 1 | amber, on slate | next |
+| Start of Fall | September 22, the usual day of the equinox | August 1 | orange, on russet | next |
+| Halloween | October 31 | October 1 | Boneyard's orange, on purple | the Long Night: thirteen boards |
+| Thanksgiving | the fourth Thursday in November | November 1 | squash, on brown | Thanksgiving week: eight boards, in the menu |
+| Christmas | December 25 | December 1 | red, on pine green | next |
 
 ## Choosing them
 
 - On a first visit a card asks which to play: all ten, in the order they come round from today, each with its date, as many as the player likes. Start waits until one is chosen, and All of them chooses every one.
-- Then the game opens the soonest of those chosen whose boards are ready, or if none are, the soonest of all.
+- Then the game opens the soonest of those chosen that is open, or of those whose boards are made, or if none are, the soonest of all.
 - From then on the menu opens the holiday chosen last. Your holidays lists the player's own, in the order they come round, with those still to come marked soon. Any of them opens from there, and Change your holidays brings back the first card.
-- A holiday whose boards aren't made yet has a card of its own, in its own colours, saying when it falls, with Halloween's Long Night and the turtle to play until its boards come.
+- A holiday whose boards aren't made yet has a card of its own, in its own colours, saying when it falls, with the holidays open and the turtle to play until its boards come.
 - The cards for choosing wear Seasons' own look, a plain gold, rather than any one holiday's.
+
+## When they open
+
+- The games build up to each holiday, so each opens weeks before its day, on the first of a month (the table above), and stays open to the end of the year. With the new year every holiday closes again, until its opening day comes round. New Year's opens on December 1st for the year to come, so it closes as that year begins.
+- Until a holiday opens, Your holidays says when it will, and its card does too, in its own colours, with the holidays open meanwhile and the turtle. Its boards can't be played, from the menu or by their address, which deals a turtle instead; the turtle is always there.
+- Out of season, the page opens on the board played freely, or a turtle, under the card of the holiday chosen last.
+- Progress, best scores and the boards in play are kept through the new year, for when each holiday opens again.
+- `?date=2027-03-01` on the game's address plays it as though it were that day, to try the holidays opening and closing.
 
 ## A holiday's look
 
@@ -155,7 +163,7 @@ The same faces as Halloween's, matching just as those do, drawn as the harvest a
 
 ## Milestones
 
-**Thu 12 Nov:** Thanksgiving week in the menu, the second holiday ready to play: its card lists the eight days, reached in turn, with their best scores, and the week's board in play is kept beside the night's.
+**Thu 12 Nov:** Thanksgiving week in the menu, the second holiday ready to play: its card lists the eight days, reached in turn, with their best scores, and the week's board in play is kept beside the night's. Then Thanksgiving's own tiles, the harvest and the feast, which the turtle wears too while Thanksgiving is the holiday chosen. And each holiday opens weeks before its day, to build up to it, and stays open to the end of the year.
 
 **Wed 11 Nov, evening:** Thanksgiving week planned as eight boards, from the first Sunday, traffic, to the second, the Sunday Scaries. Monday's is made: the frozen turkey, and with it the Frozen twist. So is Tuesday's: the grocery run, on a shopping cart, with the shopping list. And Wednesday's: Friendsgiving, at the potluck table, with friends' gifts. And Thursday's: the feast, with the fridge for leftovers and the nap after. And Friday's: Black Friday, on a sale tag, with doorbusters to race other shoppers for. And Saturday's: rivalry football, on a football, with touchdowns from end zone to end zone. And the first Sunday's: traffic, on the highway, the week's gentle start with no twist. And the second Sunday's: the Sunday Scaries, on an alarm clock, turning over to Monday at sundown. The week's eight boards are all made.
 
