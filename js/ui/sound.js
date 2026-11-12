@@ -179,6 +179,19 @@ export class Sound {
     [1318.5, 1661.2, 1975.5, 2637].forEach((f, k) => this.ping(f, this.now + k * 0.07, { gain: 0.08, fall: 0.5 }));
   }
 
+  // A thing crossed off the shopping list: the till's bell.
+  listed() {
+    if (!this.on) return;
+    this.bell(1975.5, this.now, 0.07, 1.4);
+    this.ping(2637, this.now + 0.06, { gain: 0.04, fall: 0.3 });
+  }
+
+  // Ice thawing: a few drips, falling.
+  thaw() {
+    if (!this.on) return;
+    [2093, 1568, 1760].forEach((f, k) => this.ping(f, this.now + 0.12 + k * 0.11, { gain: 0.06, fall: 0.18 }));
+  }
+
   // The clock strikes twelve.
   midnight() {
     if (!this.on) return;

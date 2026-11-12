@@ -2,25 +2,31 @@ import { isFree } from './layout.js';
 import { MATCH, GHOST, LANTERN, LOST, dealPairs } from './tiles.js';
 import { deal, redeal } from './deal.js';
 import { soulsAt } from './midnight.js';
+import { chooseList } from './list.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
 export const TREATS = ['candle', 'key', 'cat'];
 
 // One board in play: which tiles are left and which can be taken, undo,
-// hints, shuffles, treats and the stroke of midnight. Nothing here touches
-// the page; the board listens with on() for what happens: 'match', 'turn',
-// 'treat', 'key', 'shuffle', 'undo', 'win' and 'stuck'.
+// hints, shuffles, treats, ice, the shopping list and the stroke of
+// midnight. Nothing here touches the page; the board listens with on() for
+// what happens: 'match', 'thaw', 'list', 'checkout', 'turn', 'treat', 'key',
+// 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
 // matches after which the tiles turn over, and firstSide, 'day' or 'night',
-// the side they start on; and whether ghosts float and jack-o'-lanterns
-// leave treats.
+// the side they start on; whether ghosts float, and whether treats are
+// left, and by pairs of which faces (treatFaces: jack-o'-lanterns, unless
+// a board says otherwise); ice, for a board with frozen tiles: the matches
+// each tile takes to thaw (ice.js); and list, for a board with a shopping list (list.js):
+// { items, by }, how many things it has and after what share of the matches
+// checkout comes, or for a board whose faces are set, { kinds, checkout }.
 export class Game {
   constructor(
     layout,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null } = {},
   ) {
     const pairs = layout.count / 2;
     const turns = turnAt !== Infinity;
@@ -28,16 +34,19 @@ export class Game {
     this.layout = layout;
     this.seed = seed;
     this.rules = { ghostsFloat, treats };
+    this.treatFaces = treatFaces;
     this.turnAt = turnAt;
     this.r = seeded(seed);
     this.treatR = seeded(seed ^ 0x5bd1e995);
+    this.ice = ice && Int16Array.from(ice);
+    if (this.ice && this.ice.length !== layout.count) throw new Error(`${layout.name} has ${layout.count} tiles, not ${this.ice.length} under ice`);
     if (faces || sides) {
       this.sides = (sides || [faces]).map((f) => Int16Array.from(f));
       if (this.sides.length !== (turns ? 2 : 1)) throw new Error(`${layout.name} needs ${turns ? 2 : 1} sides of faces`);
       for (const s of this.sides) if (s.length !== layout.count) throw new Error(`${layout.name} has ${layout.count} tiles, not ${s.length}`);
       this.plan = null;
     } else {
-      const dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { turnAt });
+      const dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { turnAt, ice: this.ice });
       if (!dealt) throw new Error(`${layout.name} cannot be dealt`);
       this.sides = dealt.sides;
       this.plan = dealt.order; // the order the deal was made in, which wins
@@ -49,8 +58,8 @@ export class Game {
     this.unlocked = new Uint8Array(layout.count);
     this.history = [];
     this.treats = { candle: 0, key: 0, cat: 0 };
-    this.lanterns = 0; // lantern pairs taken, as things stand
-    this.lanternsBest = 0; // the most ever taken at once: only a new best earns a treat
+    this.treatPairs = 0; // pairs taken that leave treats, as things stand
+    this.treatPairsBest = 0; // the most ever taken at once: only a new best earns a treat
     this.hints = 0;
     this.shuffles = 0;
     // The rest of a winning line, kept while the player follows it so that
@@ -58,6 +67,19 @@ export class Game {
     this.line = this.plan && this.plan.slice();
     this.outlook = this.plan ? 'win' : 'unknown';
     this.handlers = {};
+    // The shopping list: the kinds on it, and the match at which checkout
+    // comes; and the kinds crossed off it so far, in order. A list never
+    // asks for a pair that is free from the start, when it can help it.
+    this.list = null;
+    this.crossed = [];
+    if (list) {
+      const checkout = list.checkout ?? Math.round(pairs * list.by);
+      const freeNow = new Map();
+      for (const i of this.freeTiles()) freeNow.set(MATCH[this.faces[i]], (freeNow.get(MATCH[this.faces[i]]) || 0) + 1);
+      const avoid = new Set([...freeNow].filter(([, n]) => n >= 2).map(([k]) => k));
+      const kinds = list.kinds ?? (this.plan ? chooseList(this.plan, this.sides[0], checkout, list.items, seeded(seed ^ 0x2545f491), avoid) : []);
+      this.list = { kinds: Array.from(kinds), checkout };
+    }
   }
 
   on(type, fn) {
@@ -121,8 +143,50 @@ export class Game {
     return this.unlocked[i] === 1 || (this.rules.ghostsFloat && faces[i] === GHOST);
   }
 
-  isFree(i) {
+  // How many more matches a tile needs before it thaws: 0 once it has, and
+  // for a tile never frozen.
+  thawIn(i) {
+    return this.ice ? Math.max(0, this.ice[i] - this.matches) : 0;
+  }
+
+  frozen(i) {
+    return this.thawIn(i) > 0;
+  }
+
+  // The ice still to thaw on every tile, as the solver and a shuffle want it.
+  iceAhead() {
+    return this.ice && Int16Array.from(this.ice, (t) => Math.max(0, t - this.matches));
+  }
+
+  // Free as the tiles lie, ice aside: nothing on it, and a side open.
+  open(i) {
     return this.present[i] === 1 && (this.loose(i) || isFree(this.layout, this.present, i));
+  }
+
+  // Free to be taken: open, and not frozen.
+  isFree(i) {
+    return this.open(i) && !this.frozen(i);
+  }
+
+  // Whether the store is still open: the list can be crossed off until the
+  // match at checkout has been made.
+  get listOpen() {
+    return Boolean(this.list) && this.matches < this.list.checkout;
+  }
+
+  // The matches still to make before checkout, that one included.
+  get untilCheckout() {
+    return this.list ? Math.max(0, this.list.checkout - this.matches) : 0;
+  }
+
+  // The kinds still on the list, not yet crossed off.
+  get listLeft() {
+    return this.list ? this.list.kinds.filter((k) => !this.crossed.includes(k)) : [];
+  }
+
+  // Whether a tile is one of the things still to find while the store is open.
+  onList(i) {
+    return this.listOpen && this.listLeft.includes(MATCH[this.faces[i]]);
   }
 
   freeTiles() {
@@ -147,13 +211,20 @@ export class Game {
     return out;
   }
 
-  // Takes a pair. Returns { a, b, treat, turned, souls }: the treat the pair
-  // left, if any; whether this match struck midnight, and if it did, the
-  // tiles that woke as lost souls. Null if the pair cannot be taken.
+  // Takes a pair. Returns { a, b, treat, turned, souls, thawed, crossed,
+  // checkout }: the treat the pair left, if any; whether this match struck
+  // midnight, and if it did, the tiles that woke as lost souls; the tiles
+  // this match thawed; the kind it crossed off the list, or null; and
+  // whether it was the match at checkout. Null if the pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
-    const lantern = this.faces[a] === LANTERN;
-    const entry = { type: 'match', a, b, lantern, line: this.line && this.line.slice(), outlook: this.outlook };
+    const giving = this.treatFaces.includes(this.faces[a]);
+    const listed = this.onList(a);
+    const entry = { type: 'match', a, b, giving, line: this.line && this.line.slice(), outlook: this.outlook };
+    if (listed) {
+      entry.crossed = MATCH[this.faces[a]];
+      this.crossed.push(entry.crossed);
+    }
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
@@ -161,10 +232,10 @@ export class Game {
     this.history.push(entry);
     this.follow(a, b);
     let treat = null;
-    if (lantern) {
-      this.lanterns++;
-      if (this.lanterns > this.lanternsBest) {
-        this.lanternsBest = this.lanterns;
+    if (giving) {
+      this.treatPairs++;
+      if (this.treatPairs > this.treatPairsBest) {
+        this.treatPairsBest = this.treatPairs;
         if (this.rules.treats) {
           treat = this.treatR.pick(TREATS);
           this.treats[treat]++;
@@ -172,8 +243,14 @@ export class Game {
       }
     }
     const turned = Boolean(entry.souls);
-    const result = { a, b, treat, turned, souls: turned ? entry.souls.map(([t]) => t) : [] };
+    const thawed = [];
+    if (this.ice) for (let i = 0; i < this.layout.count; i++) if (this.present[i] && this.ice[i] === this.matches) thawed.push(i);
+    const checkout = Boolean(this.list) && this.matches === this.list.checkout;
+    const result = { a, b, treat, turned, souls: turned ? entry.souls.map(([t]) => t) : [], thawed, crossed: listed ? entry.crossed : null, checkout };
     this.emit('match', result);
+    if (thawed.length) this.emit('thaw', result);
+    if (listed) this.emit('list', result);
+    if (checkout) this.emit('checkout', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
     this.settle();
@@ -202,7 +279,8 @@ export class Game {
       this.present[last.a] = this.present[last.b] = 1;
       this.left += 2;
       this.matches--;
-      if (last.lantern) this.lanterns--;
+      if (last.giving) this.treatPairs--;
+      if (last.crossed !== undefined) this.crossed.pop();
     } else {
       this.sides = last.sides;
     }
@@ -242,9 +320,10 @@ export class Game {
     return pair;
   }
 
-  // Opens a blocked tile with a skeleton key: it stays free until it is taken.
+  // Opens a blocked tile with a skeleton key: it stays free until it is
+  // taken. A key is no use on ice, which only matches thaw.
   useKey(i) {
-    if (!this.treats.key || !this.present[i] || this.isFree(i)) return false;
+    if (!this.treats.key || !this.present[i] || this.isFree(i) || this.frozen(i)) return false;
     this.treats.key--;
     this.unlocked[i] = 1;
     if (this.outlook === 'lost') this.outlook = 'unknown'; // an opened tile may save it
@@ -258,7 +337,7 @@ export class Game {
   // tiles left one on top of the other.
   shuffle({ cat = false } = {}) {
     if ((cat && !this.treats.cat) || !this.left) return false;
-    const dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r);
+    const dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead());
     if (!dealt) return false;
     this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook });
     this.sides = dealt.sides;
@@ -278,6 +357,7 @@ export class Game {
       unlocked: this.unlocked,
       ghostsFloat: this.rules.ghostsFloat,
       turn: this.turnAhead ? { after: this.turnAt - this.matches, faces: this.sides[1] } : null,
+      ice: this.iceAhead(),
     };
   }
 
@@ -306,14 +386,15 @@ export class Game {
   }
 
   // Whether a line of pairs wins from here, the tiles turning over when they
-  // should and lost souls waking as they would.
+  // should, lost souls waking as they would, and ice thawing as it would.
   holds(line) {
     const p = Uint8Array.from(this.present);
     const sides = this.sides.map((s) => Int16Array.from(s));
     let matches = this.matches;
     for (const [x, y] of line) {
       const faces = sides[matches >= this.turnAt ? 1 : 0];
-      const free = (i) => p[i] === 1 && (this.loose(i, faces) || isFree(this.layout, p, i));
+      const thawed = (i) => !this.ice || this.ice[i] <= matches;
+      const free = (i) => p[i] === 1 && thawed(i) && (this.loose(i, faces) || isFree(this.layout, p, i));
       if (!free(x) || !free(y) || MATCH[faces[x]] !== MATCH[faces[y]]) return false;
       p[x] = p[y] = 0;
       if (++matches === this.turnAt) for (const t of soulsAt(this.layout, sides[1], p)) sides[1][t] = LOST;

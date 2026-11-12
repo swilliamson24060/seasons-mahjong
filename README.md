@@ -44,7 +44,11 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 - Each pair is worth 10 points and a cleared board 250, with 2 more for every second under par. A shuffle costs 100 and a hint 25; treats and undo are free. Turning over at midnight without a lost soul earns 150, and each lost soul costs 10. `js/score.js` holds the numbers.
 - From midnight the tiles turn over partway through each board. Hold the moon button or Space to see the night side. A tile held up close shows its night side beside it, or with the magnifier off, turns over while you hold it. Pairs that match on both sides are the ones to take before midnight.
 - Pairs of jack-o'-lanterns leave treats, whose buttons say what they do: a candle is a free hint, a skeleton key unlocks one blocked tile (press Unlock, then the tile), and a black cat is a free shuffle. A treat you have none of says what it does when you tap it.
-- Any board can also be played freely by address: `#play/turtle` for the classic turtle, or `#play/raven/12345/40` for the raven, dealt from seed 12345, turning over after 40 matches. A new deal (N) deals it again. The board played freely is kept like the night's, so a reload goes on with it.
+- Thanksgiving week is on its way: seven boards, Sunday to Saturday. Monday's to Wednesday's are made, and until the week is in the menu they play by their addresses, `#play/turkey`, `#play/cart` and `#play/potluck`.
+  - On Monday's, the frozen turkey, a frozen tile can't be taken until enough matches thaw it: its face shows through the ice, with the matches still to make in its corner, and the turkey thaws from the outside in.
+  - On Tuesday's, the shopping cart, the list has four things to find, shown in the top bar, with a price tag on each tile of them. A pair of each, taken before checkout halfway through the board, crosses it off: 25 points each, and 100 more for the whole list.
+  - On Wednesday's, Friendsgiving's potluck table, each pair of a dish (a jack-o'-lantern, witch's brew or ghost, for now) leaves a gift: a friend's tip (a free hint), a saved seat (frees a blocked tile) or musical chairs (a free shuffle).
+- Any board can also be played freely by address: `#play/turtle` for the classic turtle, or `#play/raven/12345/40` for the raven, dealt from seed 12345, turning over after 40 matches. A new deal (N) deals it again. The board played freely is kept like the night's, so a reload goes on with it, and a Thanksgiving day's board plays by its day's rules.
 
 ## The leaderboard
 
@@ -98,6 +102,7 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 - `sw.js`, `manifest.webmanifest` and `icons/`: offline play, and installing the game as an app.
 - `tools/itch.py`: the zip for itch.io, and `tools/shots.py`, with `tools/cover.html` and `tools/stage.html`, its cover and screenshots.
 - `js/night.js`: the Long Night's thirteen hours: each one's board, rules, sky and the words before it.
+- `js/thanksgiving.js`: Thanksgiving week's seven days, with the boards made so far, and the rules each plays by.
 - `js/score.js`: the score for a board, worked out from what the game records.
 - `js/leaderboard.js`: the leaderboard's boards, the names it takes, and posting and reading scores; `js/firebase.js` speaks to Firebase, and `js/firebase-config.js` says which project. `firestore.rules` is what Firestore lets players do.
 - `js/ui/sound.js`: the sounds, made with Web Audio as they play: the tiles, the organ, the bells.
@@ -110,5 +115,7 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 - `js/engine/solver.js`: finds a winning line, for hints and for checking twists.
 - `js/engine/game.js`: one board in play: matching, undo, hints, shuffles, Ghosts float, Treats and the stroke of midnight, when the tiles turn over.
 - `js/engine/midnight.js`: which tiles wake as lost souls when the tiles turn over.
+- `js/engine/ice.js`: the Frozen twist's ice, and the turkey's, which thaws from the outside in.
+- `js/engine/list.js`: the shopping list's things to find, chosen so that the list can always be finished before checkout.
 - `js/engine/rng.js`: seeded randomness, so a deal can be made again from its seed.
 - `tests/`: the tests, the small runner behind `test.html`, and the plain board drawing.

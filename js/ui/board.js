@@ -10,6 +10,9 @@ const WINDOW = 42 / 110; // how far down the planchette its window sits
 // turning waves: things simply change, and a hint glows without pulsing.
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// When a frozen tile thaws, in words: thaws in 3 matches.
+const thawWords = (n) => `thaws in ${n} ${n === 1 ? 'match' : 'matches'}`;
+
 // The planchette that points out a hint: heart-shaped wood with a glass
 // window near its point, which comes to rest over a tile.
 function planchette() {
@@ -31,16 +34,18 @@ function planchette() {
 // sits up and to the right of the one under it, with the tiles' sides
 // showing below and to the left. It draws what the game says, and turns
 // clicks, taps and keys into moves. say(text) reports things for the page
-// to show, sound, if given, plays a tock for each tile pressed, and
-// magnifier, if given, shows a tile held down up close.
+// to show, sound, if given, plays a tock for each tile pressed, magnifier,
+// if given, shows a tile held down up close, and keyName is what the treat
+// that frees a blocked tile is called on this board.
 export class Board {
-  constructor(el, game, { say = () => {}, sound = null, magnifier = null } = {}) {
+  constructor(el, game, { say = () => {}, sound = null, magnifier = null, keyName = 'key' } = {}) {
     this.el = el;
     this.game = game;
     this.say = say;
     this.sound = sound;
+    this.keyName = keyName;
     this.selected = -1;
-    this.keying = false; // the next tile pressed gets the skeleton key
+    this.keying = false; // the next tile pressed gets the skeleton key, or the saved seat
     this.busy = 0; // while the tiles turn over, presses wait
     this.held = -1; // the tile held down: shown up close, or peeked at
     this.at = [0, 0]; // where the pointer is on the screen
@@ -76,7 +81,18 @@ export class Board {
       const use = document.createElementNS(SVG, 'use');
       svg.append(use);
       button.append(svg);
-      this.tiles[i] = { el: button, use };
+      this.tiles[i] = { el: button, use, ice: null };
+      // A tile that starts frozen has its ice over it, with the matches it
+      // still needs to thaw: the ice fades away as it thaws, and back with
+      // an undo.
+      if (this.game.ice && this.game.ice[i] > 0) {
+        const ice = document.createElement('span');
+        ice.className = 'ice';
+        ice.setAttribute('aria-hidden', 'true');
+        ice.append(document.createElement('b'));
+        button.append(ice);
+        this.tiles[i].ice = ice.firstChild;
+      }
       el.append(button);
     }
 
@@ -157,7 +173,14 @@ export class Board {
     t.use.setAttribute('href', `#${symbolId(face)}`);
     t.el.classList.toggle('night', g.sideNames[side] === 'night');
     t.el.classList.toggle('soul', face === LOST);
-    t.el.setAttribute('aria-label', FACES[face].name);
+    t.el.setAttribute('aria-label', this.label(i, face));
+  }
+
+  // A tile's name, as a screen reader says it: its face, and any ice on it.
+  label(i, face = this.game.face(i)) {
+    const g = this.game;
+    const name = FACES[face].name;
+    return this.tiles[i].ice && g.frozen(i) ? `${name}, frozen: ${thawWords(g.thawIn(i))}` : name;
   }
 
   // Whether holding a tile shows it up close, in the magnifier given, or
@@ -188,16 +211,24 @@ export class Board {
     return (g.turnAhead ? [0, 1] : [g.side]).map((s) => [g.sides[s][i], g.sideNames[s] === 'night']);
   }
 
-  // Brings every tile's state up to date: here or gone, free or blocked,
-  // chosen.
+  // Brings every tile's state up to date: here or gone, free, blocked by
+  // the tiles round it or frozen, chosen.
   refresh() {
     const g = this.game;
     for (let i = 0; i < g.layout.count; i++) {
-      const el = this.tiles[i].el;
+      const t = this.tiles[i];
+      const el = t.el;
       const here = g.present[i] === 1;
+      const frozen = here && g.frozen(i);
       const free = here && g.isFree(i);
       el.classList.toggle('gone', !here);
-      el.classList.toggle('blocked', here && !free);
+      el.classList.toggle('blocked', here && !g.open(i));
+      el.classList.toggle('frozen', frozen);
+      el.classList.toggle('listed', here && g.onList(i));
+      if (t.ice) {
+        if (frozen) t.ice.textContent = g.thawIn(i); // kept as it was while the ice fades
+        el.setAttribute('aria-label', this.label(i));
+      }
       if (!here) el.classList.remove('hint');
       el.classList.toggle('selected', i === this.selected);
       el.classList.toggle('unlocked', here && g.unlocked[i] === 1);
@@ -211,10 +242,12 @@ export class Board {
     if (this.busy || !g.present[i]) return;
     if (this.keying) {
       this.setKeying(false);
-      if (!g.useKey(i)) this.say('That tile is free already: the key is still yours.');
+      if (g.frozen(i)) this.say(`A ${this.keyName} can't thaw ice: the ${this.keyName} is still yours.`);
+      else if (!g.useKey(i)) this.say(`That tile is free already: the ${this.keyName} is still yours.`);
       return;
     }
     if (!g.isFree(i)) {
+      if (g.frozen(i)) this.say(`That tile is still frozen: it ${thawWords(g.thawIn(i))}.`);
       if (this.sound) this.sound.blocked();
       return this.restart(this.tiles[i].el, 'shake');
     }

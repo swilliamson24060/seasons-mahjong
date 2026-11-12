@@ -1,5 +1,8 @@
 import { run } from './run.js';
 import './engine.test.js';
+import './ice.test.js';
+import './list.test.js';
+import './potluck.test.js';
 import './site.test.js';
 import './score.test.js';
 import './magnifier.test.js';

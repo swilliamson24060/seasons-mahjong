@@ -1,7 +1,9 @@
 import { Game } from './engine/game.js';
 import * as layouts from './engine/layouts.js';
 import { HOURS, gameOptions } from './night.js';
-import { sprite } from './ui/faces.js';
+import { dayOf, dayOptions } from './thanksgiving.js';
+import { KINDS } from './engine/tiles.js';
+import { sprite, symbolId } from './ui/faces.js';
 import { Board } from './ui/board.js';
 import { Magnifier } from './ui/magnifier.js';
 import { Sound } from './ui/sound.js';
@@ -11,18 +13,33 @@ import { THEMES, theme, when, calendar } from './themes.js';
 
 const MIDNIGHT = HOURS.findIndex((h) => h.name === 'Midnight');
 
-const TREAT_NAMES = {
-  candle: 'a candle, to show you a match',
-  key: 'a skeleton key, to free a blocked tile',
-  cat: 'a black cat, for a free shuffle',
+// The treats a board gives, in its own words: Halloween's, which the
+// jack-o'-lanterns leave, and the potluck's, the gifts friends bring at
+// Friendsgiving. The game knows them as candle, key and cat: a free hint, a
+// blocked tile freed, and a free shuffle. For each: its icon; its name, as
+// a toast gives it when one comes; what it does, for a player who taps one
+// with none in hand, and where they come from; and what it says when used.
+const GIFTS = {
+  halloween: {
+    icons: { candle: '🕯️', key: '🗝️', cat: '🐈‍⬛' },
+    names: { candle: 'a candle, to show you a match', key: 'a skeleton key, to free a blocked tile', cat: 'a black cat, for a free shuffle' },
+    help: { candle: 'A candle shows you a match, for free.', key: 'A skeleton key frees one blocked tile.', cat: 'A black cat shuffles the tiles for free.' },
+    came: (name) => `The jack-o'-lanterns left ${name}.`,
+    from: (on) => (on ? "Each pair of jack-o'-lanterns leaves a treat." : 'Treats begin at 7 pm.'),
+    used: { candle: 'The candle shows you a match, for free.', cat: 'The black cat knocks the tiles about: a free shuffle.', key: 'Choose a blocked tile for the skeleton key.' },
+    keyName: 'key',
+  },
+  potluck: {
+    icons: { candle: '💬', key: '🪑', cat: '🎶' },
+    names: { candle: 'a tip, to show you a match', key: 'a saved seat, to free a blocked tile', cat: 'musical chairs, for a free shuffle' },
+    help: { candle: "A friend's tip shows you a match, for free.", key: 'A saved seat frees one blocked tile.', cat: 'Musical chairs shuffles the tiles for free.' },
+    came: (name) => `A friend brought ${name}.`,
+    from: () => "Each pair of jack-o'-lanterns, witch's brew or ghosts leaves a gift.",
+    used: { candle: "A friend's tip: there's a match.", cat: 'Musical chairs: everyone moves round, a free shuffle.', key: 'Choose a blocked tile for the saved seat.' },
+    keyName: 'saved seat',
+  },
 };
-
-// What each treat does, for a player who taps one with none in hand.
-const TREAT_HELP = {
-  candle: 'A candle shows you a match, for free.',
-  key: 'A skeleton key frees one blocked tile.',
-  cat: 'A black cat shuffles the tiles for free.',
-};
+let gifts = GIFTS.halloween; // the board in play's
 
 // Every layout by the name an address can give it, for free play: #play/raven/12345.
 const FREE = Object.fromEntries(Object.entries(layouts).map(([k, L]) => [k.toLowerCase(), L]));
@@ -86,14 +103,15 @@ const leaderboard = new Leaderboard();
 // Sets up a board: deals it from its seed, plays back any moves already
 // made on it, and puts it on the page. The board it takes the place of is
 // kept first, with all the time played on it.
-function play({ layout, options, seed, replay = [], playedFor = 0, at = -1 }) {
+function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, treatSet = 'halloween', treatBar = true }) {
   if (game && !finished) store();
   hideCard();
   hour = at;
   game = new Game(layout, { seed, ...options });
   for (const move of replay) redo(move);
   moves = replay.slice();
-  board = new Board($('board'), game, { say: toast, sound, magnifier: magnifying ? magnifier : null });
+  showGifts(treatSet, treatBar);
+  board = new Board($('board'), game, { say: toast, sound, magnifier: magnifying ? magnifier : null, keyName: gifts.keyName });
   game.on('match', ({ a, b }) => {
     sound.match();
     board.float(`+${POINTS.pair}`, b);
@@ -113,9 +131,21 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1 }) {
     record([cat ? 'c' : 's']);
   });
   game.on('key', (i) => record(['k', i]));
+  game.on('thaw', () => sound.thaw());
+  game.on('list', ({ b, crossed }) => {
+    const left = game.listLeft.length;
+    sound.listed();
+    if (!left) setTimeout(() => sound.treat(), 250);
+    setTimeout(() => board.float(`+${POINTS.listed + (left ? 0 : POINTS.list)}`, b), 500); // after the pair's own points
+    toast(left ? `Crossed off the list: ${KINDS[crossed].name}. ${left} more to find.` : `That's the whole list: ${POINTS.list} more points.`);
+  });
+  game.on('checkout', () => {
+    const left = game.listLeft.length;
+    if (left) toast(`Checkout: ${left === 1 ? 'one thing' : `${left} things`} left on the list.`);
+  });
   game.on('treat', ({ treat }) => {
     sound.treat();
-    toast(`The jack-o'-lanterns left ${TREAT_NAMES[treat]}.`);
+    toast(gifts.came(gifts.names[treat]));
   });
   game.on('turn', turned);
   game.on('win', () => {
@@ -178,12 +208,19 @@ function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
   if (!FREE[key]) key = 'turtle';
   freeKey = key;
   freeTurn = turnAt;
-  play({ layout: FREE[key], options: turnAt ? { turnAt } : {}, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0 });
+  const day = dayOf(FREE[key]); // a Thanksgiving day's board plays by its day's rules, and gives its own treats or none
+  const options = { ...(day ? dayOptions(day) : {}), ...(turnAt ? { turnAt } : {}) };
+  const treats = { treatSet: (day && day.gifts) || 'halloween', treatBar: !day || Boolean(options.treats) };
+  play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...treats });
   saved.free = { key, seed, turnAt, moves, elapsed };
   store();
   history.replaceState(null, '', `#play/${key}/${seed}${turnAt ? `/${turnAt}` : ''}`);
-  run();
-  if (keep && keep.moves.length) toast(`Back to your ${game.layout.name.toLowerCase()}.`);
+  const fresh = !(keep && keep.moves.length);
+  if (day && fresh) {
+    const text = game.list ? `${day.text} Today's list: ${listNames(game.list.kinds)}.` : day.text;
+    showCard(`${day.name}: ${day.title}`, text, [['Play', () => (hideCard(), run())]]); // what is new, before it starts
+  } else run();
+  if (!fresh) toast(`Back to your ${game.layout.name.toLowerCase()}.`);
 }
 
 function turned({ souls }) {
@@ -694,6 +731,7 @@ function update() {
     $(t).classList.toggle('none', !g.treats[t]);
   }
   $('key').classList.toggle('on', board.keying);
+  showList();
   $('pause').disabled = finished;
   $('undo').disabled = !g.history.length;
   $('moon').disabled = !g.turnAhead;
@@ -723,6 +761,55 @@ function sky() {
     s.removeProperty('--sky-top');
     s.removeProperty('--sky-low');
   }
+}
+
+// The treat buttons in the board's own words, with their icons; hidden on
+// a Thanksgiving day's board with no treats, as none will come.
+function showGifts(set, bar) {
+  gifts = GIFTS[set] || GIFTS.halloween;
+  for (const t of ['candle', 'key', 'cat']) {
+    $(t).querySelector('.icon').firstChild.textContent = gifts.icons[t];
+    $(t).title = gifts.help[t].replace(/\.$/, '');
+  }
+  document.querySelector('.treats').hidden = !bar;
+  $('board').classList.toggle('potluck', set === 'potluck');
+}
+
+// The shopping list, on a board with one: a small tile for each thing on
+// it, ticked once it is crossed off, and the matches left before checkout.
+function showList() {
+  const g = game;
+  const el = $('list');
+  el.hidden = !g.list;
+  if (!g.list) return;
+  el.querySelector('.things').replaceChildren(
+    ...g.list.kinds.map((k) => {
+      const tile = document.createElement('span');
+      tile.className = g.crossed.includes(k) ? 'tile done' : 'tile';
+      tile.innerHTML = `<svg viewBox="0 0 60 80" aria-hidden="true"><use href="#${symbolId(KINDS[k].faces[0])}"/></svg>`;
+      return tile;
+    }),
+  );
+  const found = g.crossed.length;
+  const all = found === g.list.kinds.length;
+  el.querySelector('.checkout').textContent = all ? 'all found' : g.listOpen ? `${g.untilCheckout} to checkout` : 'checked out';
+  el.setAttribute('aria-label', `Shopping list, ${found} of ${g.list.kinds.length} found: ${listNames(g.list.kinds)}`);
+}
+
+// The things on a list, in words: A, B, C and D.
+function listNames(kinds) {
+  const names = kinds.map((k) => KINDS[k].name);
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names.join('');
+}
+
+// What the list says when it is tapped.
+function aboutList() {
+  const g = game;
+  if (!g || !g.list) return;
+  const left = g.listLeft;
+  if (!left.length) toast(`The whole list is found: ${listNames(g.list.kinds)}.`);
+  else if (g.listOpen) toast(`Still to find: ${listNames(left)}. Take a pair of each in the next ${g.untilCheckout} ${g.untilCheckout === 1 ? 'match' : 'matches'}, before checkout.`);
+  else toast(`Checked out, with ${listNames(left)} left on the list.`);
 }
 
 // The clock runs while a board is in play, and holds while a card is up.
@@ -835,8 +922,8 @@ function hideCard() {
 // would do, and where treats come from.
 function help(what) {
   if (!game || board.busy || (finished && what !== 'undo')) return;
-  if (TREAT_HELP[what] && !game.treats[what]) {
-    toast(`${TREAT_HELP[what]} ${game.rules.treats ? "Each pair of jack-o'-lanterns leaves a treat." : 'Treats begin at 7 pm.'}`);
+  if (gifts.help[what] && !game.treats[what]) {
+    toast(`${gifts.help[what]} ${gifts.from(game.rules.treats)}`);
     return;
   }
   hideCard();
@@ -849,16 +936,16 @@ function help(what) {
       sound.hint();
       board.show(pair);
       if (what === 'hint') board.float(signed(POINTS.hint), pair[0], true);
-      else toast('The candle shows you a match, for free.');
+      else toast(gifts.used.candle);
     }
     if (game.outlook === 'lost') toast("This board can't be won from here: undo, or shuffle.");
   } else if (what === 'shuffle' || what === 'cat') {
     if (!game.shuffle({ cat: what === 'cat' })) toast('No shuffle can help now: undo instead.');
-    else if (what === 'cat') toast('The black cat knocks the tiles about: a free shuffle.');
+    else if (what === 'cat') toast(gifts.used.cat);
   } else if (what === 'key') {
     if (!game.treats.key) return;
     board.setKeying(!board.keying);
-    if (board.keying) toast('Choose a blocked tile for the skeleton key.');
+    if (board.keying) toast(gifts.used.key);
   }
   update();
 }
@@ -879,6 +966,7 @@ function showSound() {
 showSound();
 $('new').onclick = newDeal;
 $('pause').onclick = pause;
+$('list').onclick = aboutList;
 
 $('magnify').onchange = (e) => {
   magnifying = e.target.checked;

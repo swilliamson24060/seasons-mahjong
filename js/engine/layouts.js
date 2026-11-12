@@ -526,6 +526,135 @@ export const SUNRISE = parseLayout('Rising sun', [
   `,
 ]);
 
+// Thanksgiving week's boards.
+
+// Monday: the frozen turkey, breast up and its drumsticks toward you, 90
+// tiles on four layers and nine across, out of the freezer to thaw.
+export const TURKEY = parseLayout('Frozen turkey', [
+  `
+  ..#####..
+  .#######.
+  #########
+  #########
+  .#######.
+  ..#####..
+  .##...##.
+  ##.....##
+  `,
+  `
+  .........
+  ..#####..
+  .#######.
+  .#######.
+  ..#####..
+  `,
+  `
+  .........
+  .........
+  ..#####..
+  ..#####..
+  `,
+  `
+  .........
+  .........
+  ...###...
+  ...###...
+  `,
+]);
+
+// Tuesday: a shopping cart seen from the side, its handle at the back and
+// the groceries piled up above the basket: 94 tiles on four layers, nine
+// across.
+export const CART = parseLayout('Shopping cart', [
+  `
+  #........
+  ##..###..
+  .#.######
+  .########
+  .########
+  ..#######
+  ...######
+  ..#######
+  ..##...##
+  `,
+  `
+  .........
+  .....#...
+  ....####.
+  ..######.
+  ..######.
+  ...#####.
+  ....###..
+  `,
+  `
+  .........
+  .........
+  .....##..
+  ...####..
+  ...####..
+  ....##...
+  `,
+  `
+  .........
+  .........
+  .........
+  ....##...
+  ....##...
+  `,
+]);
+
+// Wednesday: the potluck table at Friendsgiving, with the dishes friends
+// brought: a pie with its lattice, and a bowl of stuffing heaped up; a
+// casserole across the middle, with its handles; and a loaf of bread. 100
+// tiles on four layers, nine across.
+export const POTLUCK = parseLayout('Potluck table', [
+  `
+  .##..###.
+  ####.####
+  ####.####
+  .##...##.
+  .........
+  .#######.
+  #########
+  .#######.
+  .........
+  ...###...
+  ..#####..
+  `,
+  `
+  ......#..
+  .##..###.
+  .##...##.
+  .........
+  .........
+  ..#####..
+  .#######.
+  ..#####..
+  .........
+  ....#....
+  ...###...
+  `,
+  `
+  .........
+  ......#..
+  .........
+  .........
+  .........
+  ...###...
+  ..#####..
+  ...###...
+  `,
+  `
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  ....#....
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [

@@ -29,14 +29,15 @@ const BOTH = 3;
 // already proved lost.
 //
 // The position: faces, the faces showing; present; unlocked, the tiles
-// opened with a skeleton key; ghostsFloat; and turn, while the tiles have
-// still to turn over: { after, faces }, the matches until they do and the
-// faces they turn over to.
+// opened with a skeleton key; ghostsFloat; turn, while the tiles have still
+// to turn over: { after, faces }, the matches until they do and the faces
+// they turn over to; and ice, on a board with frozen tiles, the matches each
+// tile still needs to thaw, which the pairs taken in the search count down.
 //
 // Returns { result, line, steps }, where result is 'win', 'lost', or
 // 'unknown' when the budget of steps ran out first.
 export function solve(L, position, { budget = 200000 } = {}) {
-  const { faces, unlocked = null, ghostsFloat = false, turn = null } = position;
+  const { faces, unlocked = null, ghostsFloat = false, turn = null, ice = null } = position;
   const n = L.count;
   const K = KINDS.length;
   const present = Uint8Array.from(position.present);
@@ -46,7 +47,8 @@ export function solve(L, position, { budget = 200000 } = {}) {
   let souls = ''; // which tiles woke as lost souls: part of every position after midnight
   const kindOf = (i) => MATCH[cur[i]];
   const loose = (i) => (unlocked !== null && unlocked[i] === 1) || (ghostsFloat && cur[i] === GHOST);
-  const free = (i) => loose(i) || isFree(L, present, i);
+  let taken = 0; // the pairs taken so far at this point of the search, which thaw the ice
+  const free = (i) => (ice === null || ice[i] <= taken) && (loose(i) || isFree(L, present, i));
   const r = seeded(7);
   const line = [];
   const dead = new Set();
@@ -83,9 +85,10 @@ export function solve(L, position, { budget = 200000 } = {}) {
   };
 
   // Plays on as if a kind with more than two tiles left could be taken a tile
-  // at a time, and a kind down to its last two only as a pair. If even that
-  // cannot clear the board, nothing can. Taking tiles only ever frees others,
-  // so the order this plays in makes no difference.
+  // at a time, and a kind down to its last two only as a pair, and as if any
+  // ice had thawed. If even that cannot clear the board, nothing can. Taking
+  // tiles only ever frees others, so the order this plays in makes no
+  // difference.
   const hopeless = (tiles, left) => {
     rest.set(present);
     const queue = [];
@@ -131,8 +134,10 @@ export function solve(L, position, { budget = 200000 } = {}) {
 
   let turnLeft = -1; // the tiles left at the stroke of midnight
 
+  let total = 0; // the tiles there were to begin with
   const search = (left) => {
     if (left === 0) return true;
+    taken = (total - left) / 2;
     if (++steps > limit) {
       cut = true;
       return false;
@@ -196,6 +201,7 @@ export function solve(L, position, { budget = 200000 } = {}) {
 
   let left = 0;
   for (let i = 0; i < n; i++) left += present[i];
+  total = left;
   if (turn) turnLeft = left - 2 * turn.after;
   for (let go = 1; ; go++) {
     limit = Math.min(steps + UNIT * luby(go), budget);
