@@ -22,8 +22,8 @@ import { PEARTREE, DOVES, HEN, SONGBIRD, RINGS, GOOSE, SWAN, PAIL, DANCER, CROWN
 // ninth's, for every how many matches the free tiles change partners,
 // lords, on the tenth's, for how many tiles are lords, free wherever they
 // are, and pipers, on the eleventh's, for how many tiles are pipers, whom
-// the rest of their kind follow out. Until Christmas's own tiles are drawn,
-// its boards wear Halloween's.
+// the rest of their kind follow out. Its tiles wear Christmas's faces
+// (ui/christmas-faces.js), whose lost soul is a lump of coal.
 
 export const TWELVE_DAYS = [
   {

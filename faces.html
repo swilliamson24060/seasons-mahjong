@@ -21,6 +21,7 @@
   <p>Every face of <select id="set" aria-label="Set of faces">
       <option value="halloween">Halloween's set</option>
       <option value="thanksgiving">Thanksgiving's set</option>
+      <option value="christmas">Christmas's set</option>
     </select> by day, by night, and small by day at the size of a tile on an upright phone.
     <label>See them as with <select id="vision">
       <option value="">full colour vision</option>
@@ -51,6 +52,7 @@
       for (const [id, night] of [['day', false], ['night', true], ['small', false]]) {
         const sheet = document.getElementById(id);
         sheet.replaceChildren();
+        sheet.dataset.faces = set.value;
         for (const f of FACES) {
           const cell = document.createElement('div');
           cell.className = 'cell';

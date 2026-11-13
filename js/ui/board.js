@@ -39,12 +39,14 @@ function planchette() {
 // that frees a blocked tile is called on this board, fridge, on a board
 // with leftovers, is where its containers go: a tile chosen and then an
 // empty container goes in it, to be taken from there with its partner, and
-// faceSet is the set of faces its tiles wear (faces.js), and are named by.
+// faceSet is the set of faces its tiles wear (faces.js), and are named by,
+// which the board says as data-faces, for the page's style to follow.
 export class Board {
   constructor(el, game, { say = () => {}, sound = null, magnifier = null, keyName = 'key', fridge = null, faceSet = 'halloween' } = {}) {
     this.el = el;
     this.game = game;
     this.faceSet = faceSet;
+    el.dataset.faces = faceSet;
     this.say = say;
     this.sound = sound;
     this.keyName = keyName;
@@ -444,6 +446,7 @@ export class Board {
   // another holiday is chosen with the turtle on the table.
   setFaces(set) {
     this.faceSet = set;
+    this.el.dataset.faces = set;
     for (let i = 0; i < this.game.layout.count; i++) this.paint(i);
     this.refresh();
   }

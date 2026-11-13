@@ -44,6 +44,7 @@ export class Magnifier {
   }
 
   draw(sides, width, set) {
+    this.el.dataset.faces = set; // for the style of the set's tiles, as the board's
     // Three times the board's tiles, though never so small as to be hard
     // to read, nor so big that two side by side are wider than the screen.
     const w = Math.round(Math.min(Math.max(width * 3, 112), 160, innerWidth / 2 - 50));

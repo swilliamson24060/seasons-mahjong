@@ -1,6 +1,7 @@
 import { FACES, KINDS } from '../engine/tiles.js';
 import { INK, PAPER, DARK, LEAF, PIPS, STICKS, style, n } from './draw.js';
 import { THANKSGIVING } from './thanksgiving-faces.js';
+import { CHRISTMAS } from './christmas-faces.js';
 
 // The faces, drawn in code as SVG symbols on a 60 by 80 tile and gathered in
 // one hidden sprite that every tile points into. Outlines and small dark
@@ -10,11 +11,13 @@ import { THANKSGIVING } from './thanksgiving-faces.js';
 //
 // There are sets of them, each drawing the same 43 faces, which match as
 // tiles.js says, in its own way and with its own names: Halloween's, Boneyard's
-// own, here, and Thanksgiving's (thanksgiving-faces.js). A board says which
-// set its tiles wear.
+// own, here, whose names are tiles.js's, Thanksgiving's
+// (thanksgiving-faces.js) and Christmas's (christmas-faces.js). A board says
+// which set its tiles wear.
 const SETS = {
   halloween: { prefix: 'face-', draw: (f) => draw(f), index: 'index' },
-  thanksgiving: { prefix: 'face-tg-', draw: (f) => THANKSGIVING.draw(f), index: 'index-tg' },
+  thanksgiving: { prefix: 'face-tg-', index: 'index-tg', ...THANKSGIVING },
+  christmas: { prefix: 'face-xm-', index: 'index-xm', ...CHRISTMAS },
 };
 
 // The groups with an index in a corner, in the group's colour, which the tile
@@ -39,12 +42,13 @@ const indexed = (f) => Boolean(f.index) && INDEXED.has(f.group);
 // of four faces each, any two of which match.
 export function faceName(face, set = 'halloween') {
   if (face === EGG) return 'An egg, still to hatch';
-  return set === 'halloween' ? FACES[face].name : THANKSGIVING.names[FACES[face].key];
+  const { names } = SETS[set];
+  return names ? names[FACES[face].key] : FACES[face].name;
 }
 export function kindName(kind, set = 'halloween') {
   const k = KINDS[kind];
-  if (set === 'halloween') return k.name;
-  return k.faces.length === 1 ? faceName(k.faces[0], set) : THANKSGIVING.kinds[k.key];
+  if (!SETS[set].kinds) return k.name;
+  return k.faces.length === 1 ? faceName(k.faces[0], set) : SETS[set].kinds[k.key];
 }
 
 // The sprite, to be put in the page once: every set's faces.
@@ -84,7 +88,8 @@ function draw(f) {
 }
 
 // The index, in its group's colour in this set: --index-eyes and so on for
-// Halloween's, --index-tg-eyes for Thanksgiving's.
+// Halloween's, --index-tg-eyes for Thanksgiving's, --index-xm-eyes for
+// Christmas's.
 function index(f, set) {
   if (!indexed(f)) return '';
   const ring = 'stroke:var(--face-1);stroke-width:4;stroke-linejoin:round;paint-order:stroke';

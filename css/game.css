@@ -344,6 +344,13 @@ body.covered #board {
   --index-tg-monster: #6b4221;
   --index-tg-flower: #9b3f8f;
   --index-tg-moon: #3d5ea8;
+  /* Christmas's: ornament red, cane green, the presents' blue, the birds' brown, berry pink and the snowflakes' ice blue. */
+  --index-xm-eyes: #c41e3a;
+  --index-xm-bones: #23803a;
+  --index-xm-graves: #2f5fb0;
+  --index-xm-monster: #8a4b1c;
+  --index-xm-flower: #a8326e;
+  --index-xm-moon: #1f7fa6;
   position: absolute;
   width: calc(var(--tile-w) - var(--gap));
   height: calc(var(--tile-h) - var(--gap));
@@ -443,6 +450,12 @@ body.covered #board {
   --index-tg-monster: #e8c39e;
   --index-tg-flower: #f0a6e6;
   --index-tg-moon: #a9c1ff;
+  --index-xm-eyes: #ff8f9f;
+  --index-xm-bones: #93e6ad;
+  --index-xm-graves: #9cc0ff;
+  --index-xm-monster: #f0c49a;
+  --index-xm-flower: #f5a3d0;
+  --index-xm-moon: #9fe3ff;
 }
 
 .tile.night svg {
@@ -451,6 +464,11 @@ body.covered #board {
 
 .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(127, 211, 236, 0.9));
+}
+
+/* Christmas's lost soul is a lump of coal, glowing as an ember does. */
+[data-faces='christmas'] .tile.soul svg {
+  filter: drop-shadow(0 0 4px rgba(255, 128, 48, 0.9));
 }
 
 .tile.selected {
