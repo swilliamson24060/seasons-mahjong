@@ -27,12 +27,20 @@ const INDEXED = new Set(['eyes', 'bones', 'graves', 'monster', 'flower', 'moon']
 const SHRINK = 0.8; // the drawing on a tile with an index
 
 export const FACE_SETS = Object.keys(SETS);
-export const symbolId = (face, set = 'halloween') => `${SETS[set].prefix}${FACES[face].key}`;
+
+// Not a face: an egg still to hatch, which a board shows in place of the
+// tile inside it, in every set alike.
+export const EGG = -2;
+
+export const symbolId = (face, set = 'halloween') => (face === EGG ? 'egg' : `${SETS[set].prefix}${FACES[face].key}`);
 const indexed = (f) => Boolean(f.index) && INDEXED.has(f.group);
 
 // A face's name in a set, and a kind's: the flowers and the moons are kinds
 // of four faces each, any two of which match.
-export const faceName = (face, set = 'halloween') => (set === 'halloween' ? FACES[face].name : THANKSGIVING.names[FACES[face].key]);
+export function faceName(face, set = 'halloween') {
+  if (face === EGG) return 'An egg, still to hatch';
+  return set === 'halloween' ? FACES[face].name : THANKSGIVING.names[FACES[face].key];
+}
 export function kindName(kind, set = 'halloween') {
   const k = KINDS[kind];
   if (set === 'halloween') return k.name;
@@ -45,8 +53,19 @@ export function sprite() {
   svg.setAttribute('aria-hidden', 'true');
   svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
   const symbols = FACE_SETS.flatMap((set) => FACES.map((f) => `<symbol id="${symbolId(f.id, set)}" viewBox="0 0 60 80">${art(f, set)}${index(f, set)}</symbol>`));
+  symbols.push(`<symbol id="${symbolId(EGG)}" viewBox="0 0 60 80">${egg()}</symbol>`);
   svg.innerHTML = `<defs>${symbols.join('')}</defs>`;
   return svg;
+}
+
+// An egg still to hatch: a speckled shell with a shine on it.
+function egg() {
+  const specks = [[24, 33, 1.7], [36, 29, 1.2], [33, 45, 1.9], [21, 51, 1.3], [40, 54, 1.6], [28, 61, 1.3], [38, 40, 1.1], [26, 42, 1]];
+  return (
+    `<path d="M30 12 C42 12 50 34 50 49 C50 63 41 71 30 71 C19 71 10 63 10 49 C10 34 18 12 30 12 Z" ${style('#efe3c4', INK, 1.6)}/>` +
+    specks.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" ${style('#a57d52')}/>`).join('') +
+    `<ellipse cx="22" cy="29" rx="3.4" ry="7.5" transform="rotate(20 22 29)" ${style('#fffaf0', 'none', 0, ';opacity:0.85')}/>`
+  );
 }
 
 // A face's drawing, shrunk toward the bottom right on a tile with an index.

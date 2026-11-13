@@ -25,9 +25,11 @@ const THURSDAY = 4;
 // its boards open, weeks before, to build up to it: they stay open to the
 // end of the year, and with the new year every holiday closes again, until
 // its opening day comes round. New Year's opens in December, for the year
-// to come.
+// to come. Groundhog Day, the day that comes round again and again, has no
+// opening day: it is open `always`, all year, every year.
 export const THEMES = [
   { id: 'new-year', name: "New Year's", icon: '🎉', on: fixed(1, 1), opens: fixed(12, 1), accent: '#f2c14e', sky: ['#243266', '#080b1f'] },
+  { id: 'groundhog', name: 'Groundhog Day', icon: '🦫', on: fixed(2, 2), always: true, accent: '#8ccff5', sky: ['#34546b', '#0d1820'] },
   { id: 'valentines', name: "Valentine's Day", icon: '💘', on: fixed(2, 14), opens: fixed(2, 1), accent: '#ff6b9a', sky: ['#5c2042', '#1c0913'] },
   { id: 'spring', name: 'Start of Spring', icon: '🌷', on: fixed(3, 20), opens: fixed(3, 1), accent: '#8ad66d', sky: ['#2f6650', '#0e221b'] },
   { id: 'summer', name: 'Summer Beach Season', icon: '🏖️', on: nth(-1, MONDAY, 5), until: nth(1, MONDAY, 9), opens: fixed(5, 1), accent: '#ffc857', sky: ['#1c6a9e', '#082338'] },
@@ -50,12 +52,13 @@ export function today(search = location.search) {
 }
 
 // Whether a holiday's boards can be played on `date`: they are made, and
-// they have opened this year.
-export const isOpen = (t, date = today()) => Boolean(t.ready) && date >= t.opens(date.getFullYear());
+// they have opened this year, or are always open.
+export const isOpen = (t, date = today()) => Boolean(t.ready) && (Boolean(t.always) || date >= t.opens(date.getFullYear()));
 
 // The day a holiday's boards next open: this year's, or next year's once
-// this year's has come.
+// this year's has come; for one always open, today.
 export function opensOn(t, date = today()) {
+  if (t.always) return date;
   const opens = t.opens(date.getFullYear());
   return date < opens ? opens : t.opens(date.getFullYear() + 1);
 }

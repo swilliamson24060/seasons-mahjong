@@ -192,6 +192,102 @@ export class Sound {
     [60, 64, 67, 72].forEach((note, k) => this.organ(note, this.now + 0.1 + k * 0.12, 0.5, 0.09));
   }
 
+  // A pair of lovebirds: a turtle dove's coo, twice.
+  coo() {
+    if (!this.on) return;
+    [[440, 0], [370, 0.2], [440, 0.5], [370, 0.7]].forEach(([f, t]) => this.ping(f, this.now + t, { gain: 0.08, attack: 0.03, fall: 0.22 }));
+  }
+
+  // Birds of a feather flocking together: a flutter of wings, and a chirp.
+  flutter() {
+    if (!this.on) return;
+    for (let k = 0; k < 3; k++) this.rustle(this.now + k * 0.06, 0.07, 2600, 1300, 0.06);
+    this.ping(3520, this.now + 0.22, { gain: 0.04, fall: 0.06 });
+    this.ping(4186, this.now + 0.28, { gain: 0.035, fall: 0.07 });
+  }
+
+  // A ring turning to gold: bright bells, rising, and a glint.
+  ring() {
+    if (!this.on) return;
+    [1568, 1975.5, 2349.3].forEach((f, k) => this.bell(f, this.now + k * 0.08, 0.05, 1.8));
+    this.ping(4186, this.now + 0.32, { gain: 0.03, fall: 0.25 });
+  }
+
+  // A line of goslings: their mother's honk, twice.
+  honk() {
+    if (!this.on) return;
+    [[370, 0], [330, 0.24]].forEach(([f, t]) => {
+      this.ping(f, this.now + t, { type: 'sawtooth', gain: 0.045, attack: 0.02, fall: 0.17 });
+      this.ping(f * 1.5, this.now + t, { type: 'square', gain: 0.015, attack: 0.02, fall: 0.14 });
+    });
+  }
+
+  // A swan and her reflection: a harp's run, gliding up.
+  swan() {
+    if (!this.on) return;
+    [587.3, 740, 880, 1174.7, 1480].forEach((f, k) => this.ping(f, this.now + k * 0.06, { type: 'triangle', gain: 0.05, fall: 0.7 }));
+  }
+
+  // A swan swimming off: a ripple on the water.
+  ripple() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.4, 500, 1400, 0.05);
+    this.ping(392, this.now + 0.05, { gain: 0.04, fall: 0.3 });
+  }
+
+  // A pail of fresh milk: a splash into the churn, and the maid's bell.
+  milk() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.25, 700, 2200, 0.06);
+    this.bell(1318.5, this.now + 0.12, 0.05, 1.2);
+  }
+
+  // A pail gone sour: a falling sigh.
+  sour() {
+    if (!this.on) return;
+    [[311.1, 0], [261.6, 0.22]].forEach(([f, t]) => this.ping(f, this.now + t, { type: 'triangle', gain: 0.07, attack: 0.03, fall: 0.35 }));
+  }
+
+  // The music changes: a bar of a waltz, oom-pah-pah, twice.
+  waltz() {
+    if (!this.on) return;
+    [[196, 0.16], [392, 0.07], [493.9, 0.07], [220, 0.16], [440, 0.07], [523.3, 0.07]].forEach(([f, gain], k) =>
+      this.ping(f, this.now + k * 0.17, { type: 'triangle', gain, fall: k % 3 ? 0.18 : 0.32 }),
+    );
+    this.bell(1568, this.now + 1.02, 0.05, 1.2);
+  }
+
+  // Twelfth Night: twelve drummers drumming, a roll and twelve beats.
+  drums() {
+    if (!this.on) return;
+    for (let k = 0; k < 12; k++) {
+      const at = this.now + k * 0.15;
+      this.ping(k % 4 ? 90 : 70, at, { type: 'sine', gain: k % 4 ? 0.14 : 0.22, attack: 0.002, fall: 0.18, into: this.master });
+      this.rustle(at, 0.07, 1800, 900, k % 4 ? 0.05 : 0.08);
+    }
+    this.bell(784, this.now + 12 * 0.15, 0.06, 1.6);
+  }
+
+  // A piper playing: the drone, and a skirl of the chanter over it.
+  bagpipe() {
+    if (!this.on) return;
+    this.ping(110, this.now, { type: 'sawtooth', gain: 0.03, attack: 0.08, fall: 1.4 });
+    this.ping(220, this.now, { type: 'sawtooth', gain: 0.02, attack: 0.08, fall: 1.4 });
+    [880, 987.8, 1108.7, 1318.5, 1108.7, 1318.5].forEach((f, k) => this.ping(f, this.now + 0.1 + k * 0.11, { type: 'square', gain: 0.025, attack: 0.01, fall: 0.12 }));
+  }
+
+  // A lord leaping out: a trumpet call, rising.
+  fanfare() {
+    if (!this.on) return;
+    [[67, 0, 0.12], [67, 0.14, 0.08], [72, 0.24, 0.12], [76, 0.38, 0.12], [79, 0.52, 0.4]].forEach(([note, at, length]) => this.organ(note, this.now + at, length, 0.09));
+  }
+
+  // An egg hatching: a chick's cheep, twice.
+  cheep() {
+    if (!this.on) return;
+    [[2794, 0], [3136, 0.06], [2794, 0.2], [3322, 0.26]].forEach(([f, t]) => this.ping(f, this.now + t, { gain: 0.045, fall: 0.07 }));
+  }
+
   // Another shopper grabbing a doorbuster: a quick snatch.
   grab() {
     if (!this.on) return;

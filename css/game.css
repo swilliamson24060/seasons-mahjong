@@ -376,6 +376,54 @@ body.covered #board {
   outline-offset: 1px;
 }
 
+/* On the crown, a lord is gilded and wears a crown: free wherever he is. */
+.tile.lord {
+  --face-1: #fff7da;
+  --face-2: #f2d98f;
+  --edge: #c9a346;
+  --edge-deep: #9c7a26;
+}
+
+.tile.lord::after {
+  content: '👑';
+  position: absolute;
+  top: -11%;
+  right: -10%;
+  font-size: calc(var(--tile-w) * 0.4);
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+/* On the bagpipes, a piper is tinged with the green of his tartan, and
+   carries a note: the rest of his kind follow him out. */
+.tile.piper {
+  --face-1: #f3faf1;
+  --face-2: #d3e8cd;
+  --edge: #a8c69d;
+  --edge-deep: #7f9f74;
+}
+
+.tile.piper::after {
+  content: '🎶';
+  position: absolute;
+  top: -10%;
+  right: -10%;
+  font-size: calc(var(--tile-w) * 0.38);
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+/* On the lake, the swan's reflection lies in the water: its tiles are
+   tinged with blue, edges and all. */
+.tile.lake {
+  --face-1: #f1f8fc;
+  --face-2: #d2e4ef;
+  --edge: #a3bfd2;
+  --edge-deep: #7f9db2;
+}
+
 .tile.night {
   --ink: #ece6ff;
   --paper: #f3efff;
@@ -450,8 +498,137 @@ body.covered #board {
   }
 }
 
+/* When the music changes on the board of the dancer, a tile that changes
+   partners twirls round, its new face showing from halfway. */
+.tile.twirl {
+  animation: twirl 0.6s ease-in-out;
+}
+
+@keyframes twirl {
+  50% {
+    transform: rotate(180deg) scaleX(0.08);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .tile.jiggle {
   animation: jiggle 0.45s ease-in-out;
+}
+
+/* An egg coming free hatches: it wobbles, and the tile inside shows. */
+.tile.hatching {
+  animation: hatching 0.5s ease-out;
+}
+
+@keyframes hatching {
+  20% {
+    transform: rotate(-7deg);
+  }
+  45% {
+    transform: rotate(6deg) scale(1.06);
+  }
+  70% {
+    transform: rotate(-3deg);
+  }
+}
+
+/* On the milk pail, a tile of a pail of fresh milk carries a bottle, and
+   once either of its tiles is free, the matches it still keeps for, amber
+   as it nears souring. */
+.tile.pail::before {
+  content: '🥛' attr(data-fresh);
+  position: absolute;
+  top: 3%;
+  right: 4%;
+  padding: 0.1em 0.22em 0.1em 0.08em;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px #b8d2e6;
+  color: #24557f;
+  font: 800 max(10px, calc(var(--tile-w) * 0.3)) / 1 system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tile.pail.souring::before {
+  background: #ffe1a1;
+  color: #9a3412;
+}
+
+/* On the board of geese, a free tile that lay beside or under the pair
+   taken last carries a gosling: a pair with it follows on in the line. */
+.tile.follows::before {
+  content: '🐣';
+  position: absolute;
+  top: -10%;
+  right: -14%;
+  font-size: calc(var(--tile-w) * 0.42);
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+/* On the board of gold rings, a ring whose tiles are all taken turns to
+   gold where it lay, under the tiles still left, with a glint on its top
+   left; it shines out as it does. */
+.gold-ring {
+  position: absolute;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.gold-ring.won {
+  opacity: 1;
+}
+
+.gold-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.55));
+}
+
+.gold-ring ellipse {
+  fill: none;
+}
+
+.gold-ring .rim {
+  stroke: #5e3f08;
+}
+
+.gold-ring .shine {
+  stroke: #fffbe8;
+  stroke-linecap: round;
+  stroke-dasharray: 0 56 16 28;
+  opacity: 0.85;
+}
+
+.gold-ring.gilding {
+  animation: gilding 0.9s ease-out;
+}
+
+@keyframes gilding {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+    filter: brightness(2.2);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.08);
+    filter: brightness(1.6) drop-shadow(0 0 12px #ffd54a);
+  }
+  100% {
+    transform: scale(1);
+    filter: none;
+  }
 }
 
 @keyframes jiggle {
@@ -995,13 +1172,15 @@ body.covered #board {
 
 @media (prefers-reduced-motion: reduce) {
   .tile,
-  .planchette {
+  .planchette,
+  .gold-ring {
     transition: none;
   }
   .tile.hint,
   .tile.shake,
   .tile.jiggle,
-  .tile.flip {
+  .tile.flip,
+  .tile.twirl {
     animation: none;
   }
   .tile.hint {

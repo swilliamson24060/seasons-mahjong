@@ -6,6 +6,14 @@ import { chooseList } from './list.js';
 import { withFridge } from './fridge.js';
 import { chooseBusters } from './doorbusters.js';
 import { endZones, isTouchdown } from './football.js';
+import { touching } from './flock.js';
+import { ringTiles, ringByRing } from './rings.js';
+import { followsOn } from './goslings.js';
+import { mirrorOf, swansIn, swansCanPart, swanSteps, plantSwans } from './swans.js';
+import { choosePails, possiblePails, pailSteps, plantPails } from './milk.js';
+import { changePartners } from './dance.js';
+import { chooseLords } from './lords.js';
+import { choosePipers } from './pipers.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -13,10 +21,13 @@ export const TREATS = ['candle', 'key', 'cat'];
 
 // One board in play: which tiles are left and which can be taken, undo,
 // hints, shuffles, treats, ice, the shopping list and the stroke of
-// midnight, the fridge, doorbusters and touchdowns. Nothing here touches the
-// page; the board listens with on() for what happens: 'match', 'thaw',
-// 'list', 'checkout', 'bought', 'grab', 'touchdown', 'save', 'turn',
-// 'treat', 'key', 'shuffle', 'undo', 'win' and 'stuck'.
+// midnight, the fridge, doorbusters, touchdowns, lovebirds, eggs, flocks,
+// gold rings, goslings, swans, fresh milk, the dance, leaping lords and
+// pipers. Nothing here touches the page; the board listens with on() for
+// what happens: 'match', 'thaw', 'list', 'checkout', 'bought', 'grab',
+// 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold', 'gosling', 'swan',
+// 'milk', 'dance', 'leap', 'pipe', 'save', 'turn', 'treat', 'key',
+// 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
@@ -31,8 +42,27 @@ export const TREATS = ['candle', 'key', 'cat'];
 // containers it has; and doorbusters, for a board with them
 // (doorbusters.js): { pairs, every }, how many there are and after how many
 // of the player's matches another shopper grabs one, or for a board whose
-// faces are set, { tiles, every }; and touchdown, for a football board
-// (football.js): how many rows deep each end zone is.
+// faces are set, { tiles, every }; touchdown, for a football board
+// (football.js): how many rows deep each end zone is; and lovebirds, for a
+// board of turtle doves: whether a kind's second pair, taken straight after
+// its first, is a pair of lovebirds; eggs, for a board of hens: how many of
+// the tiles that start blocked are eggs, whose faces aren't seen until they
+// come free and hatch; flock, for a board of songbirds: whether a pair
+// whose two tiles touch flocks together (flock.js); rings, for the board of
+// gold rings: the square each ring goes round (rings.js), each turning to
+// gold once every tile of it is taken; goslings, for the board of geese:
+// how many pairs in a line, each taken beside or under the pair before it,
+// make a brood (goslings.js); swans, for the board of the swan on the lake:
+// how many of its pairs are a tile and its own reflection (swans.js); and
+// milk, for the milk pail (milk.js): { pails, keeps }, how many pails of
+// fresh milk there are and how many matches each keeps for once either of
+// its tiles is free, or for a board whose faces are set, { tiles, keeps };
+// dance, for the board of the dancer: every how many matches the free tiles
+// change partners (dance.js); lords, for the crown: how many lords there
+// are, free wherever they are, or for a board whose faces are set, which
+// tiles they are (lords.js); and pipers, for the bagpipes: how many pipers
+// there are, whom the rest of their kind follow out, or which tiles they
+// are (pipers.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -40,7 +70,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0 } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0 } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -51,7 +81,9 @@ export class Game {
     this.tableCount = n;
     this.fridgeSize = fridge;
     this.seed = seed;
-    this.rules = { ghostsFloat, treats };
+    this.rules = { ghostsFloat, treats, lovebirds, flock, goslings, swans, dance };
+    this.danceR = seeded(seed ^ 0x1d872b41); // who dances with whom
+    this.lords = null; // until the lords are chosen, below
     this.treatFaces = treatFaces;
     this.turnAt = turnAt;
     this.r = seeded(seed);
@@ -65,6 +97,28 @@ export class Game {
     // touchdowns scored so far.
     this.zones = touchdown ? whole(endZones(table, touchdown), 0) : null;
     this.touchdowns = 0;
+    this.lovebirds = 0; // on a board of turtle doves, the lovebirds taken so far
+    this.flocks = 0; // on a board of songbirds, the pairs that flocked together so far
+    // On the board of gold rings, each ring: the square it goes round, its
+    // tiles, and whether they have all been taken, turning it to gold.
+    this.rings = rings && ringTiles(table, rings).map((tiles, k) => ({ square: rings[k], tiles, gold: false }));
+    // On the board of geese, the goslings in the line so far, and the broods
+    // they have made.
+    this.trail = 0;
+    this.broods = 0;
+    // On the board of the swan on the lake, each tile's reflection.
+    this.mirror = swans ? mirrorOf(table) : null;
+    // The board of gold rings is dealt, and shuffled, a ring at a time, in
+    // an order of its own; the board of the swan with its swans, a tile and
+    // its reflection, coming free at different times; and the milk pail
+    // with pairs that could be pails all through it.
+    this.prefer = this.rings
+      ? ringByRing(layout, this.rings.map((r) => r.tiles), seeded(seed ^ 0x68e31da4).shuffle(this.rings.map((_, k) => k)))
+      : swans
+        ? plantSwans(this.mirror, swans, swanSteps(seeded(seed ^ 0x3c6ef372), swans, pairs))
+        : milk && !milk.tiles
+          ? plantPails(table, pailSteps(seeded(seed ^ 0x2f8f9e1d), milk.pails, pairs), milk.keeps)
+          : null;
     if (faces || sides) {
       const given = sides || [faces];
       if (given.length !== (turns ? 2 : 1)) throw new Error(`${table.name} needs ${turns ? 2 : 1} sides of faces`);
@@ -73,18 +127,54 @@ export class Game {
       this.plan = null;
     } else {
       // On a football board, dealt again until the deal's own order scores
-      // a touchdown, so that one can always be had.
+      // a touchdown, on a board of turtle doves until it takes a pair of
+      // lovebirds, and on a board of songbirds until it takes a pair that
+      // flocks, so that one can always be had; on the board of the swan
+      // until it has its swans, no more and no fewer, each a pair of the
+      // deal's own order and of a kind with another pair on the board, which
+      // can take a while; and on the milk pail until it has enough pairs
+      // that could be pails.
+      const swansAsWanted = (faces, order) => {
+        const found = swansIn(layout, this.mirror, faces, onTable);
+        const planned = (a, b) => order.some(([p, q]) => (p === a && q === b) || (p === b && q === a));
+        return found.length === swans && found.every(([a, b]) => planned(a, b)) && swansCanPart(faces, onTable, found);
+      };
+      const wanted = ({ order, sides }) =>
+        (!this.zones || order.some(([a, b]) => isTouchdown(this.zones, a, b))) &&
+        (!lovebirds || order.some(([a], k) => k > 0 && MATCH[sides[0][a]] === MATCH[sides[0][order[k - 1][0]]])) &&
+        (!flock || order.some(([a, b]) => touching(layout, a, b))) &&
+        (!swans || swansAsWanted(sides[0], order)) &&
+        (!milk || possiblePails(table, order, milk.keeps).length >= milk.pails);
       let dealt = null;
       for (let tries = 0; ; tries++) {
-        dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { present: onTable, turnAt, ice: this.ice });
+        dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { present: onTable, turnAt, ice: this.ice, prefer: this.prefer });
         if (!dealt) throw new Error(`${table.name} cannot be dealt`);
-        if (!this.zones || tries >= 50 || dealt.order.some(([a, b]) => isTouchdown(this.zones, a, b))) break;
+        if (tries >= (swans ? 400 : 50) || wanted(dealt)) break;
       }
       this.sides = dealt.sides;
       this.plan = dealt.order; // the order the deal was made in, which wins
     }
     this.sideNames = turns ? [firstSide, firstSide === 'day' ? 'night' : 'day'] : [firstSide];
     this.present = onTable;
+    // The swans still to be found, each [tile, its reflection], and those
+    // found so far.
+    this.swans = swans ? swansIn(table, this.mirror, this.sides[0], onTable) : null;
+    this.swansFound = 0;
+    // On the crown, the lords, 1 for a tile that is one, and the leaps
+    // they have made: lords taken while held down by the usual rule.
+    this.leaps = 0;
+    if (lords) {
+      this.lords = new Uint8Array(layout.count);
+      for (const i of Array.isArray(lords) ? lords : chooseLords(table, this.sides[0], onTable, lords, seeded(seed ^ 0x6a09e667))) this.lords[i] = 1;
+    }
+    // On the bagpipes, the pipers, 1 for a tile that is one, and the tiles
+    // that have followed them out.
+    this.pipers = null;
+    this.piped = 0;
+    if (pipers) {
+      this.pipers = new Uint8Array(layout.count);
+      for (const i of Array.isArray(pipers) ? pipers : choosePipers(table, this.sides[0], onTable, pipers, seeded(seed ^ 0x510e527f), this.plan)) this.pipers[i] = 1;
+    }
     this.left = n;
     this.matches = 0;
     this.unlocked = new Uint8Array(layout.count);
@@ -122,6 +212,153 @@ export class Game {
       this.busters = tiles.map((t) => ({ tiles: t.slice(), state: 'open' }));
       this.busterEvery = doorbusters.every;
     }
+    // Eggs: tiles that start blocked, chosen at random from the seed, whose
+    // faces aren't seen until they come free and hatch (1 while still an egg).
+    this.eggs = null;
+    if (eggs) {
+      const blocked = [];
+      for (let i = 0; i < n; i++) if (!this.isFree(i)) blocked.push(i);
+      this.eggs = new Uint8Array(layout.count);
+      for (const i of seeded(seed ^ 0x27d4eb2f).shuffle(blocked).slice(0, eggs)) this.eggs[i] = 1;
+    }
+    // Fresh milk: pails, each a pair of tiles, 'fresh' until 'taken', 'sour'
+    // or 'spilt', with the match after which either of its tiles was free
+    // and it began to keep, or null; and how many matches a pail keeps for.
+    this.pails = null;
+    this.keeps = 0;
+    if (milk) {
+      const tiles = milk.tiles ?? (this.plan ? choosePails(table, this.plan, milk.pails, seeded(seed ^ 0x7f4a7c15), milk.keeps) : []);
+      this.pails = tiles.map((t) => ({ tiles: t.slice(), state: 'fresh', freeAt: null }));
+      this.keeps = milk.keeps;
+      this.age();
+    }
+  }
+
+  // The fresh pail a tile is in, or -1.
+  pailOf(i) {
+    return this.pails ? this.pails.findIndex((p) => p.state === 'fresh' && p.tiles.includes(i)) : -1;
+  }
+
+  // The matches a fresh pail still keeps for, or null while neither of its
+  // tiles is free.
+  freshIn(k) {
+    const p = this.pails[k];
+    return p.freeAt === null ? null : p.freeAt + this.keeps - this.matches;
+  }
+
+  // On the board of the dancer, the matches until the music changes, and
+  // whether there is anyone left to change partners with: a tile held down.
+  get untilDance() {
+    return this.rules.dance ? this.rules.dance - (this.matches % this.rules.dance) : Infinity;
+  }
+
+  get canDance() {
+    for (let i = 0; i < this.layout.count; i++) if (this.present[i] && !this.isFree(i)) return true;
+    return false;
+  }
+
+  // The music changes: each free tile dances off with a tile held down, and
+  // they change places, so long as the board can still be won so (dance.js).
+  // Returns { sides, swaps }, the faces before it and the tiles that changed
+  // places, or null when there was no dance.
+  dance() {
+    const held = [];
+    for (let i = 0; i < this.layout.count; i++) if (this.present[i] && !this.isFree(i)) held.push(i);
+    const free = this.danceR.shuffle(this.freeTiles());
+    if (!free.length || !held.length) return null;
+    const changed = changePartners(this.layout, this.position(), free, held, this.danceR);
+    if (!changed) return null;
+    const sides = this.sides;
+    this.sides = sides.map((s, k) => (k === this.side ? changed.faces : s));
+    this.line = changed.line;
+    this.outlook = 'win';
+    return { sides, swaps: changed.swaps };
+  }
+
+  // The pails taken while fresh, those that soured, and those spilt.
+  pailsIn(state) {
+    return this.pails ? this.pails.filter((p) => p.state === state).length : 0;
+  }
+
+  get pailsTaken() {
+    return this.pailsIn('taken');
+  }
+
+  // Pails with a tile come free begin to keep, and those that have kept as
+  // long as they can sour. Returns the pails that soured.
+  age() {
+    const soured = [];
+    for (const p of this.pails || []) {
+      if (p.state !== 'fresh') continue;
+      if (p.freeAt !== null && this.matches >= p.freeAt + this.keeps) {
+        p.state = 'sour';
+        soured.push(p);
+      } else if (p.freeAt === null && p.tiles.some((t) => this.isFree(t))) p.freeAt = this.matches;
+    }
+    return soured;
+  }
+
+  // Whether a tile is still an egg, its face not yet seen.
+  isEgg(i) {
+    return Boolean(this.eggs) && this.eggs[i] === 1;
+  }
+
+  // The eggs still to hatch.
+  get eggsLeft() {
+    return this.eggs ? this.eggs.reduce((sum, e) => sum + e, 0) : 0;
+  }
+
+  // Eggs that have come free hatch, and stay hatched: an undo never puts a
+  // tile back in its egg. Returns the tiles that hatched.
+  hatch() {
+    const out = [];
+    if (this.eggs) {
+      for (let i = 0; i < this.layout.count; i++) {
+        if (this.eggs[i] && this.isFree(i)) {
+          this.eggs[i] = 0;
+          out.push(i);
+        }
+      }
+    }
+    return out;
+  }
+
+  // On the lake, whether a tile lies in the water: the swan's reflection.
+  inLake(i) {
+    return Boolean(this.mirror) && this.layout.y[i] >= this.layout.height / 2;
+  }
+
+  // The last pair taken, as its entry in the history, or null.
+  lastMatch() {
+    for (let k = this.history.length - 1; k >= 0; k--) if (this.history[k].type === 'match') return this.history[k];
+    return null;
+  }
+
+  // Whether taking a tile now would follow on from the pair taken last, on
+  // the board of geese: whether it lay beside or under one of its tiles.
+  followsFrom(i) {
+    const before = this.rules.goslings ? this.lastMatch() : null;
+    return before !== null && followsOn(this.layout, [before.a, before.b], [i]);
+  }
+
+  // The rings turned to gold so far.
+  get goldRings() {
+    return this.rings ? this.rings.filter((r) => r.gold).length : 0;
+  }
+
+  // Rings whose every tile has now been taken turn to gold. Returns them,
+  // by their places in the rings.
+  gild() {
+    const out = [];
+    if (this.rings) {
+      this.rings.forEach((r, k) => {
+        if (!r.gold && r.tiles.every((t) => !this.present[t])) {
+          r.gold = true;
+          out.push(k);
+        }
+      });
+    }
+    return out;
   }
 
   on(type, fn) {
@@ -180,10 +417,52 @@ export class Game {
     return this.left > 0 && this.pairs().length === 0 && !this.canSave();
   }
 
-  // Free whatever lies on them: ghosts, when they float, and tiles opened
-  // with a skeleton key. A tile floats only while its ghost face is up.
+  // Free whatever lies on them: ghosts, when they float, tiles opened with a
+  // skeleton key, and lords, who leap. A tile floats only while its ghost
+  // face is up.
   loose(i, faces = this.faces) {
-    return this.unlocked[i] === 1 || (this.rules.ghostsFloat && faces[i] === GHOST);
+    return this.unlocked[i] === 1 || (this.lords !== null && this.lords[i] === 1) || (this.rules.ghostsFloat && faces[i] === GHOST);
+  }
+
+  // On the crown, whether a tile is a lord still on the board, and how many
+  // lords are.
+  isLord(i) {
+    return this.lords !== null && this.lords[i] === 1 && this.present[i] === 1;
+  }
+
+  get lordsLeft() {
+    let n = 0;
+    if (this.lords) for (let i = 0; i < this.layout.count; i++) if (this.isLord(i)) n++;
+    return n;
+  }
+
+  // On the bagpipes, whether a tile is a piper still on the board, and how
+  // many pipers are.
+  isPiper(i) {
+    return this.pipers !== null && this.pipers[i] === 1 && this.present[i] === 1;
+  }
+
+  get pipersLeft() {
+    let n = 0;
+    if (this.pipers) for (let i = 0; i < this.layout.count; i++) if (this.isPiper(i)) n++;
+    return n;
+  }
+
+  // A piper among a pair just taken plays: the rest of his kind still on
+  // the board follow him out, from wherever they are. Returns the tiles that
+  // followed.
+  pipe(a, b) {
+    const piper = this.pipers ? [a, b].find((t) => this.pipers[t] === 1) : undefined;
+    if (piper === undefined) return [];
+    const kind = MATCH[this.faces[piper]];
+    const out = [];
+    for (let i = 0; i < this.layout.count; i++) if (this.present[i] && MATCH[this.faces[i]] === kind) out.push(i);
+    for (const i of out) this.present[i] = 0;
+    this.left -= out.length;
+    this.piped += out.length;
+    if (out.length === 2) this.follow(out[0], out[1]);
+    else if (out.length) this.forget();
+    return out;
   }
 
   // How many more matches a tile needs before it thaws: 0 once it has, and
@@ -322,17 +601,90 @@ export class Game {
   }
 
   // Takes a pair. Returns { a, b, treat, turned, souls, thawed, crossed,
-  // checkout, bought, grab, touchdown }: the treat the pair left, if any; whether this match struck
-  // midnight, and if it did, the tiles that woke as lost souls; the tiles
-  // this match thawed; the kind it crossed off the list, or null; and
-  // whether it was the match at checkout; whether it bought a doorbuster;
-  // the tiles of the doorbuster another shopper grabbed after it, or null;
-  // and whether it was a touchdown. Null if the pair cannot be taken.
+  // checkout, bought, grab, touchdown, lovebirds, flock, hatched, gold }: the
+  // treat the pair left, if any; whether this match struck midnight, and if
+  // it did, the tiles that woke as lost souls; the tiles this match thawed;
+  // the kind it crossed off the list, or null; and whether it was the match
+  // at checkout; whether it bought a doorbuster; the tiles of the doorbuster
+  // another shopper grabbed after it, or null; whether it was a touchdown;
+  // whether it was a pair of lovebirds; whether its two tiles touched, and
+  // flocked together; the eggs that hatched as it freed them; the rings it
+  // took the last of, turning them to gold; whether it followed on from the
+  // pair before it, as a gosling, and made a brood; whether it was a swan, a
+  // tile and its reflection, and how many swans it sent swimming off; how
+  // many pails of fresh milk it took, how many it spilt, and how many soured
+  // after it; and the dance after it, if the music changed: { swaps,
+  // before }, the tiles that changed places and the faces before, or
+  // sitOut, when no change of partners would have left a board that can be
+  // won, and they kept them; how many lords in it leapt; and the tiles that
+  // followed a piper in it out. Null if the pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
     const listed = this.onList(a);
-    const entry = { type: 'match', a, b, giving, line: this.line && this.line.slice(), outlook: this.outlook };
+    const kind = MATCH[this.faces[a]];
+    const entry = { type: 'match', a, b, kind, giving, line: this.line && this.line.slice(), outlook: this.outlook };
+    // On a board of turtle doves, a pair of the same kind as the match just
+    // before it is a pair of lovebirds: a kind's two pairs, one straight
+    // after the other.
+    const before = this.lastMatch();
+    const lovebirds = this.rules.lovebirds && before !== null && before.kind === kind;
+    if (lovebirds) {
+      this.lovebirds++;
+      entry.lovebirds = true;
+    }
+    // On a board of songbirds, a pair whose two tiles touch flocks together.
+    const flocked = this.rules.flock && touching(this.layout, a, b);
+    if (flocked) {
+      this.flocks++;
+      entry.flock = true;
+    }
+    // On the board of geese, a pair taken beside or under the pair before it
+    // follows on, as goslings follow their mother: so many in a line make a
+    // brood, and a new line starts from the pair that made it.
+    const gosling = Boolean(this.rules.goslings) && before !== null && followsOn(this.layout, [before.a, before.b], [a, b]);
+    let brood = false;
+    if (this.rules.goslings) {
+      entry.trail = this.trail; // the line as it was, for an undo
+      this.trail = gosling ? this.trail + 1 : 0;
+      if (this.trail === this.rules.goslings) {
+        brood = true;
+        entry.brood = true;
+        this.broods++;
+        this.trail = 0;
+      }
+    }
+    // On the crown, a lord taken while still held down by the usual rule
+    // has leapt.
+    const leapt = [a, b].filter((t) => this.isLord(t) && !isFree(this.layout, this.present, t)).length;
+    if (leapt) {
+      this.leaps += leapt;
+      entry.leaps = leapt;
+    }
+    // On the milk pail, a fresh pail's two tiles taken together take the
+    // pail; either taken with another tile spills it.
+    if (this.pails) entry.pails = this.pails.map((p) => ({ ...p, tiles: p.tiles.slice() })); // as they were, for an undo
+    const fresh = this.pails ? this.pails.filter((p) => p.state === 'fresh') : [];
+    const milked = fresh.filter((p) => p.tiles.includes(a) && p.tiles.includes(b));
+    const spilt = fresh.filter((p) => p.tiles.includes(a) !== p.tiles.includes(b));
+    for (const p of milked) p.state = 'taken';
+    for (const p of spilt) p.state = 'spilt';
+    // On the lake, a tile and its own reflection that match are a swan:
+    // taken together, she's found; a swan one of whose tiles goes with
+    // another swims off.
+    let swan = false;
+    let swamOff = 0;
+    if (this.swans) {
+      entry.swans = this.swans; // as they were, for an undo
+      swan = this.swans.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+      const left = this.swans.filter(([x, y]) => x !== a && x !== b && y !== a && y !== b);
+      swamOff = this.swans.length - left.length - (swan ? 1 : 0);
+      this.swans = left;
+      if (swan) {
+        this.swansFound++;
+        entry.swan = true;
+      }
+    }
     if (listed) {
       entry.crossed = MATCH[this.faces[a]];
       this.crossed.push(entry.crossed);
@@ -353,8 +705,20 @@ export class Game {
     if (this.matches === this.turnAt) entry.souls = this.wake();
     this.history.push(entry);
     this.follow(a, b);
+    // On the bagpipes, a piper plays, and the rest of his kind follow him.
+    const followers = this.pipe(a, b);
+    if (followers.length) entry.followers = followers;
     const grab = this.grab();
     if (grab) entry.grab = grab;
+    const gold = this.gild();
+    if (gold.length) entry.gold = gold;
+    const soured = this.age();
+    // On the board of the dancer, every so many matches the music changes,
+    // and the free tiles change partners.
+    const due = Boolean(this.rules.dance) && this.left > 0 && this.matches % this.rules.dance === 0;
+    const danced = due ? this.dance() : null;
+    if (danced) entry.dance = danced;
+    const sitOut = due && !danced && this.canDance; // no change of partners would leave a board that can be won
     let treat = null;
     if (giving) {
       this.treatPairs++;
@@ -370,6 +734,7 @@ export class Game {
     const thawed = [];
     if (this.ice) for (let i = 0; i < this.layout.count; i++) if (this.present[i] && this.ice[i] === this.matches) thawed.push(i);
     const checkout = Boolean(this.list) && this.matches === this.list.checkout;
+    const hatched = this.hatch();
     const result = {
       a,
       b,
@@ -382,6 +747,21 @@ export class Game {
       bought: bought.length > 0,
       grab: grab ? grab.tiles.slice() : null,
       touchdown,
+      lovebirds,
+      flock: flocked,
+      hatched,
+      gold,
+      gosling,
+      brood,
+      swan,
+      swamOff,
+      milked: milked.length,
+      soured: soured.length,
+      spilt: spilt.length,
+      dance: danced && { swaps: danced.swaps, before: danced.sides[this.side] },
+      sitOut,
+      leapt,
+      piped: followers,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -390,6 +770,16 @@ export class Game {
     if (bought.length) this.emit('bought', result);
     if (grab) this.emit('grab', result);
     if (touchdown) this.emit('touchdown', result);
+    if (lovebirds) this.emit('lovebirds', result);
+    if (flocked) this.emit('flock', result);
+    if (hatched.length) this.emit('hatch', result);
+    if (gold.length) this.emit('gold', result);
+    if (gosling) this.emit('gosling', result);
+    if (swan || swamOff) this.emit('swan', result);
+    if (milked.length || soured.length || spilt.length) this.emit('milk', result);
+    if (danced || sitOut) this.emit('dance', result);
+    if (leapt) this.emit('leap', result);
+    if (followers.length) this.emit('pipe', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
     this.settle();
@@ -428,12 +818,29 @@ export class Game {
       }
       if (last.bought) for (const d of last.bought) d.state = 'open';
       if (last.touchdown) this.touchdowns--;
+      if (last.lovebirds) this.lovebirds--;
+      if (last.flock) this.flocks--;
+      if (last.gold) for (const k of last.gold) this.rings[k].gold = false;
+      if (last.trail !== undefined) this.trail = last.trail;
+      if (last.brood) this.broods--;
+      if (last.swans) this.swans = last.swans;
+      if (last.swan) this.swansFound--;
+      if (last.pails) this.pails = last.pails;
+      if (last.dance) this.sides = last.dance.sides;
+      if (last.leaps) this.leaps -= last.leaps;
+      if (last.followers) {
+        for (const t of last.followers) this.present[t] = 1;
+        this.left += last.followers.length;
+        this.piped -= last.followers.length;
+      }
     } else if (last.type === 'save') {
       this.present[last.slot] = 0; // out of the fridge, and back on the table
       this.present[last.tile] = 1;
     } else {
       this.sides = last.sides;
       if (last.busterTiles) this.busters.forEach((d, k) => (d.tiles = last.busterTiles[k]));
+      if (last.swans) this.swans = last.swans;
+      if (last.pails) this.pails = last.pails;
     }
     this.line = last.line;
     this.outlook = last.outlook;
@@ -484,15 +891,37 @@ export class Game {
 
   // Deals the tiles still on the board onto the same places again, so the
   // board can still be won; a black cat does it for free. Before midnight
-  // both sides are dealt again. False when no shuffle can help, as with two
-  // tiles left one on top of the other.
+  // both sides are dealt again. On the lake, the swans still to be found are
+  // dealt again too, as many as there were, where they can be. False when no
+  // shuffle can help, as with two tiles left one on top of the other.
   shuffle({ cat = false } = {}) {
     if ((cat && !this.treats.cat) || !this.left) return false;
-    const dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead());
+    const swans = this.swans ? this.swans.length : 0;
+    let dealt = null;
+    for (let tries = 0; ; tries++) {
+      const prefer = this.mirror ? plantSwans(this.mirror, swans, swanSteps(this.r, swans, this.left / 2)) : this.prefer;
+      dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead(), prefer);
+      if (!dealt || !this.mirror || tries >= 30 || swansIn(this.layout, this.mirror, dealt.sides[this.side], this.present).length === swans) break;
+    }
     if (!dealt) return false;
     const busterTiles = this.busters && this.busters.map((d) => d.tiles.slice());
-    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles });
+    const pails = this.pails && this.pails.map((p) => ({ ...p, tiles: p.tiles.slice() }));
+    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails });
     this.sides = dealt.sides;
+    if (this.swans) this.swans = swansIn(this.layout, this.mirror, this.faces, this.present);
+    // The pails go with the milk: each fresh pail becomes a pair of the new
+    // deal's order, one with a tile it had if it can, so that its two tiles
+    // match again. It goes on keeping only if a tile of it is free.
+    if (this.pails) {
+      const order = dealt.order.slice();
+      for (const p of this.pails) {
+        if (p.state !== 'fresh') continue;
+        const k = order.findIndex((q) => q.includes(p.tiles[0]) || q.includes(p.tiles[1]));
+        p.tiles = order.splice(Math.max(0, k), 1)[0].slice();
+        if (!p.tiles.some((t) => this.isFree(t))) p.freeAt = null;
+      }
+      this.age();
+    }
     // The sale tags go with the stock: each open doorbuster becomes a pair
     // of the new deal's order, one with a tile it had if it can, so that
     // its two tiles match again.
@@ -517,7 +946,7 @@ export class Game {
     return {
       faces: this.faces,
       present: this.present,
-      unlocked: this.unlocked,
+      unlocked: this.lords ? Uint8Array.from(this.unlocked, (u, i) => u | this.lords[i]) : this.unlocked, // lords are as free as tiles opened with a key
       ghostsFloat: this.rules.ghostsFloat,
       turn: this.turnAhead ? { after: this.turnAt - this.matches, faces: this.sides[1] } : null,
       ice: this.iceAhead(),

@@ -9,7 +9,7 @@
 // since other games on the same site share the browser's cache store.
 
 const PREFIX = 'seasons-';
-const CACHE = `${PREFIX}5`;
+const CACHE = `${PREFIX}15`;
 const SLOW = 3500; // ms to wait on the network before answering from the cache
 
 const FILES = [
@@ -29,6 +29,7 @@ const FILES = [
   'js/night.js',
   'js/score.js',
   'js/thanksgiving.js',
+  'js/christmas.js',
   'js/themes.js',
   'js/ui/board.js',
   'js/ui/draw.js',
@@ -39,6 +40,14 @@ const FILES = [
   'js/engine/deal.js',
   'js/engine/doorbusters.js',
   'js/engine/football.js',
+  'js/engine/flock.js',
+  'js/engine/rings.js',
+  'js/engine/goslings.js',
+  'js/engine/swans.js',
+  'js/engine/milk.js',
+  'js/engine/dance.js',
+  'js/engine/lords.js',
+  'js/engine/pipers.js',
   'js/engine/fridge.js',
   'js/engine/game.js',
   'js/engine/ice.js',

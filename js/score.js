@@ -5,9 +5,16 @@
 // souls earns a bonus, and each lost soul costs a little. On a board with a
 // shopping list, each thing crossed off it earns points, and the whole list
 // more; on a board with doorbusters, each one bought does, though the pairs
-// another shopper grabs are not the player's; and on a football board, a
-// touchdown earns more. Treats are free, and so is undo, though a pair taken
-// back takes its points with it.
+// another shopper grabs are not the player's; on a football board, a
+// touchdown earns more; and on a board of turtle doves, so does each pair of
+// lovebirds, on a board of songbirds each pair that flocks together, on the
+// board of gold rings each ring turned to gold, on the board of geese each
+// line of goslings, on the lake each swan, a tile and its reflection, and on
+// the milk pail each pail of milk taken while it's fresh, its two tiles
+// together, on the crown each lord taken while still held down, a leap, and
+// on the bagpipes each tile that follows a piper out.
+// Treats are free, and so is undo, though a pair taken back takes its points
+// with it.
 
 export const POINTS = {
   pair: 10,
@@ -21,6 +28,14 @@ export const POINTS = {
   list: 100, // the whole list, before checkout
   buster: 50, // each doorbuster bought
   touchdown: 60, // each pair taken from the two end zones: six, as in football, times ten
+  lovebirds: 30, // each kind's second pair, taken straight after its first
+  flock: 20, // each pair whose two tiles touch: birds of a feather
+  ring: 50, // each ring whose every tile is taken, turning to gold
+  brood: 60, // each line of six goslings, pairs each taken beside or under the one before
+  swan: 50, // each swan: a tile and its own reflection in the lake, taken together
+  milk: 40, // each pail of milk taken while it's fresh, its two tiles together
+  leap: 20, // each lord taken while still held down by the usual rule
+  piped: 15, // each tile that follows a piper out
 };
 
 // The tiles a board has: on a board with a fridge, the table's, its
@@ -57,6 +72,20 @@ export function scoreOf(game, seconds, words = TURN) {
     rows.push(['Doorbusters', `${mine} of ${game.busters.length}${gone ? `, ${gone} grabbed` : ''}`, mine * POINTS.buster]);
   }
   if (game.zones) rows.push(['Touchdowns', times(game.touchdowns, POINTS.touchdown), game.touchdowns * POINTS.touchdown]);
+  if (game.rules.lovebirds) rows.push(['Lovebirds', times(game.lovebirds, POINTS.lovebirds), game.lovebirds * POINTS.lovebirds]);
+  if (game.rules.flock) rows.push(['Birds of a feather', times(game.flocks, POINTS.flock), game.flocks * POINTS.flock]);
+  if (game.rings) rows.push(['Gold rings', times(game.goldRings, POINTS.ring), game.goldRings * POINTS.ring]);
+  if (game.rules.goslings) rows.push(['Lines of goslings', times(game.broods, POINTS.brood), game.broods * POINTS.brood]);
+  if (game.swans) rows.push(['Swans', times(game.swansFound, POINTS.swan), game.swansFound * POINTS.swan]);
+  if (game.pails) {
+    const lost = [
+      [game.pailsIn('sour'), 'soured'],
+      [game.pailsIn('spilt'), 'spilt'],
+    ].filter(([n]) => n);
+    rows.push(['Fresh milk', [`${game.pailsTaken} of ${game.pails.length}`, ...lost.map(([n, how]) => `${n} ${how}`)].join(', '), game.pailsTaken * POINTS.milk]);
+  }
+  if (game.lords) rows.push(['Leaping lords', times(game.leaps, POINTS.leap), game.leaps * POINTS.leap]);
+  if (game.pipers) rows.push(['Pied pipers', times(game.piped, POINTS.piped), game.piped * POINTS.piped]);
   if (game.shuffles) rows.push(['Shuffles', times(game.shuffles, POINTS.shuffle), game.shuffles * POINTS.shuffle]);
   if (game.hints) rows.push(['Hints', times(game.hints, POINTS.hint), game.hints * POINTS.hint]);
   if (game.won) {

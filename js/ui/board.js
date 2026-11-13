@@ -1,5 +1,5 @@
 import { LOST } from '../engine/tiles.js';
-import { symbolId, faceName } from './faces.js';
+import { symbolId, faceName, EGG } from './faces.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const LIFT = 0.11; // how far each layer sits up and to the right, in tile widths
@@ -64,6 +64,9 @@ export class Board {
     game.on('undo', (entry) => this.undone(entry));
     game.on('shuffle', () => this.shuffled());
     game.on('key', () => this.refresh());
+    game.on('hatch', ({ hatched }) => this.hatched(hatched));
+    game.on('gold', ({ gold }) => this.gild(gold));
+    game.on('dance', ({ dance }) => dance && this.danced(dance));
     game.on('save', ({ slot }) => {
       this.selected = -1;
       this.paint(slot);
@@ -86,8 +89,10 @@ export class Board {
       button.className = 'tile';
       button.dataset.i = i;
       button.style.zIndex = L.z[i] * 10000 + L.y[i] * 100 + (99 - L.x[i]);
-      // On a football board, each end zone's tiles carry its team's pennant.
+      // On a football board, each end zone's tiles carry its team's pennant;
+      // on the lake, the swan's reflection lies in the water.
       if (this.game.zones && this.game.zones[i]) button.classList.add(this.game.zones[i] < 0 ? 'zone-top' : 'zone-bottom');
+      if (this.game.inLake(i)) button.classList.add('lake');
       const svg = document.createElementNS(SVG, 'svg');
       svg.setAttribute('viewBox', '0 0 60 80');
       svg.setAttribute('aria-hidden', 'true');
@@ -108,6 +113,19 @@ export class Board {
       }
       el.append(button);
     }
+    // On the board of gold rings, a gold ring for each ring, lying under the
+    // tiles where it is, which shines out once the ring's tiles are all taken.
+    this.rings = (this.game.rings || []).map((r, k) => {
+      const ring = document.createElement('div');
+      ring.className = r.gold ? 'gold-ring won' : 'gold-ring';
+      ring.setAttribute('aria-hidden', 'true');
+      ring.innerHTML =
+        `<svg><defs><linearGradient id="gold-${k}" x1="0" y1="0" x2="1" y2="1">` +
+        '<stop offset="0" stop-color="#fff4b8"/><stop offset="0.3" stop-color="#f4c542"/><stop offset="0.62" stop-color="#a8740e"/><stop offset="1" stop-color="#ffe07a"/>' +
+        `</linearGradient></defs><ellipse class="rim"/><ellipse class="band" stroke="url(#gold-${k})"/><ellipse class="shine" pathLength="100"/></svg>`;
+      el.append(ring);
+      return ring;
+    });
 
     el.onclick = (e) => {
       const t = e.target.closest('.tile');
@@ -220,14 +238,42 @@ export class Board {
       t.left = `${Math.round(1.4 * lift + (L.x[i] / 2) * w + L.z[i] * lift)}px`;
       t.top = `${Math.round((deep - L.z[i]) * lift + (L.y[i] / 2) * h)}px`;
     }
+    // Each gold ring goes round the middle of its ring's tiles, on the
+    // bottom layer, as broad as a tile is.
+    (this.game.rings || []).forEach(({ square: [left, top, across, down] }, k) => {
+      const ring = this.rings[k];
+      const width = across * w;
+      const height = down * h;
+      Object.assign(ring.style, { left: `${Math.round(1.4 * lift + left * w)}px`, top: `${Math.round(deep * lift + top * h)}px`, width: `${width}px`, height: `${height}px` });
+      const svg = ring.firstChild;
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      const broad = { rim: 0.62, band: 0.5, shine: 0.1 };
+      for (const e of svg.querySelectorAll('ellipse')) {
+        const inset = e.classList.contains('shine') ? w * 0.1 : 0; // the glint, on the band's top left
+        e.setAttribute('cx', width / 2 - inset / 2);
+        e.setAttribute('cy', height / 2 - inset / 2);
+        e.setAttribute('rx', ((across - 1) * w) / 2 - inset);
+        e.setAttribute('ry', ((down - 1) * h) / 2 - inset);
+        e.setAttribute('stroke-width', w * broad[e.classList[0]]);
+      }
+    });
   }
 
-  // Shows one side of a tile: the side up, unless told otherwise.
-  paint(i, side = this.game.side) {
+  // Rings whose every tile is taken turn to gold: each one's gold ring
+  // shines out where its tiles were.
+  gild(rings) {
+    for (const k of rings) {
+      this.rings[k].classList.add('won');
+      this.restart(this.rings[k], 'gilding');
+    }
+  }
+
+  // Shows one side of a tile: the side up, unless told otherwise; or the
+  // egg it is still inside; or a face given, as it was before a dance.
+  paint(i, side = this.game.side, face = this.game.isEgg(i) ? EGG : this.game.sides[side][i]) {
     const g = this.game;
-    const face = g.sides[side][i];
     const t = this.tiles[i];
-    if (face < 0) {
+    if (face < 0 && face !== EGG) {
       t.use.removeAttribute('href'); // a container never yet used
       return;
     }
@@ -237,13 +283,50 @@ export class Board {
     t.el.setAttribute('aria-label', this.label(i, face));
   }
 
+  // The music changes, and the tiles that change partners twirl, each
+  // showing the face it had until halfway round, then its new partner's.
+  danced({ swaps, before }) {
+    const tiles = swaps.flat();
+    if (still()) {
+      for (const i of tiles) this.paint(i);
+      return this.refresh();
+    }
+    this.busy++;
+    tiles.forEach((i, k) => {
+      const el = this.tiles[i].el;
+      const delay = (k % 6) * 40;
+      this.paint(i, undefined, before[i]);
+      el.style.animationDelay = `${delay}ms`;
+      this.restart(el, 'twirl');
+      setTimeout(() => this.paint(i), delay + 300);
+    });
+    setTimeout(() => {
+      this.busy--;
+      this.refresh();
+    }, 5 * 40 + 650);
+  }
+
+  // Eggs come free and hatch: each shows the tile inside it, with a wobble.
+  hatched(tiles) {
+    for (const i of tiles) {
+      this.paint(i);
+      this.restart(this.tiles[i].el, 'hatching');
+    }
+  }
+
   // A tile's name, as a screen reader says it: its face, and any ice on it;
   // or a container in the fridge, empty, or with the tile saved in it.
-  label(i, face = this.game.face(i)) {
+  label(i, face = this.game.isEgg(i) ? EGG : this.game.face(i)) {
     const g = this.game;
     if (g.inFridge(i)) return g.present[i] && face >= 0 ? `${faceName(face, this.faceSet)}, in the fridge` : 'An empty container in the fridge';
     const name = faceName(face, this.faceSet);
-    return this.tiles[i].ice && g.frozen(i) ? `${name}, frozen: ${thawWords(g.thawIn(i))}` : name;
+    if (this.tiles[i].ice && g.frozen(i)) return `${name}, frozen: ${thawWords(g.thawIn(i))}`;
+    if (g.isLord(i)) return `${name}, a lord: free wherever he is`;
+    if (g.isPiper(i)) return `${name}, a piper: the rest of his kind follow him out`;
+    const pail = g.pails && g.present[i] ? g.pailOf(i) : -1;
+    if (pail < 0) return name;
+    const keeps = g.freshIn(pail);
+    return keeps === null ? `${name}, a pail of fresh milk` : `${name}, a pail of fresh milk: it sours in ${keeps} ${keeps === 1 ? 'match' : 'matches'}`;
   }
 
   // Whether holding a tile shows it up close, in the magnifier given, or
@@ -268,10 +351,11 @@ export class Board {
   }
 
   // A tile's faces as the magnifier shows them, each [face, night]: the side
-  // up and, before the tiles turn over, the side they will turn to.
+  // up and, before the tiles turn over, the side they will turn to; or the
+  // egg it is still inside.
   sidesOf(i) {
     const g = this.game;
-    return (g.turnAhead ? [0, 1] : [g.side]).map((s) => [g.sides[s][i], g.sideNames[s] === 'night']);
+    return (g.turnAhead ? [0, 1] : [g.side]).map((s) => [g.isEgg(i) ? EGG : g.sides[s][i], g.sideNames[s] === 'night']);
   }
 
   // Brings every tile's state up to date: here or gone, free, blocked by
@@ -297,6 +381,15 @@ export class Board {
       el.classList.toggle('frozen', frozen);
       el.classList.toggle('listed', here && g.onList(i));
       el.classList.toggle('buster', here && g.isBuster(i));
+      el.classList.toggle('follows', free && g.followsFrom(i)); // on the board of geese: a gosling's place, following on
+      // On the milk pail, a tile of a fresh pail carries a bottle, and once
+      // either of its tiles is free, the matches it still keeps for.
+      const pail = here ? g.pailOf(i) : -1;
+      const keeps = pail >= 0 ? g.freshIn(pail) : null;
+      el.classList.toggle('pail', pail >= 0);
+      el.classList.toggle('souring', keeps !== null && keeps <= 3);
+      if (pail >= 0) el.dataset.fresh = keeps ?? '';
+      if (g.pails) el.setAttribute('aria-label', this.label(i));
       if (t.ice) {
         if (frozen) t.ice.textContent = g.thawIn(i); // kept as it was while the ice fades
         el.setAttribute('aria-label', this.label(i));
@@ -304,6 +397,9 @@ export class Board {
       if (!here) el.classList.remove('hint');
       el.classList.toggle('selected', i === this.selected);
       el.classList.toggle('unlocked', here && g.unlocked[i] === 1);
+      el.classList.toggle('lord', g.isLord(i)); // on the crown: a lord, free wherever he is
+      el.classList.toggle('piper', g.isPiper(i)); // on the bagpipes: a piper, whom his kind follow out
+      if (g.lords || g.pipers) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }
@@ -363,6 +459,9 @@ export class Board {
       this.paint(entry.a);
       this.paint(entry.b);
       if (entry.souls) this.turnOver(1);
+      if (entry.gold) for (const k of entry.gold) this.rings[k].classList.remove('won');
+      if (entry.dance) for (const i of entry.dance.swaps.flat()) this.paint(i);
+      if (entry.followers) for (const i of entry.followers) this.paint(i);
     } else if (entry.type === 'save') this.paint(entry.tile);
     else this.shuffled();
     this.refresh();

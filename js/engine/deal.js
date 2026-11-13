@@ -16,12 +16,19 @@ import { MATCH } from './tiles.js';
 // once enough pairs have been taken to thaw it, so the order wins through
 // the thaw. ice gives each tile the matches still to make before it thaws.
 //
+// A board can prefer some free tiles to others as it is played through:
+// prefer, given the free tiles, the tiles present and the pairs taken so
+// far, puts them in the order to try them in, as the board of gold rings
+// takes a ring at a time (rings.js), so that a ring's tiles are paired with
+// each other, and the board of the swan pairs a tile with its reflection
+// now and then (swans.js).
+//
 // sides holds the pairs of faces for each side. Returns { sides, order }:
 // each side's faces, filled in where tiles are present, and the order the
 // deal was made in. Null if the places themselves cannot all be taken, as
 // with two tiles left one on top of the other.
-export function deal(L, sides, r, { present = new Uint8Array(L.count).fill(1), turnAt = Infinity, ice = null } = {}) {
-  const order = blankOrder(L, present, r, 20000, ice);
+export function deal(L, sides, r, { present = new Uint8Array(L.count).fill(1), turnAt = Infinity, ice = null, prefer = null } = {}) {
+  const order = blankOrder(L, present, r, 20000, ice, prefer);
   if (!order) return null;
   for (const pairs of sides) {
     if (pairs.length !== order.length) throw new Error(`${L.name} needs ${order.length} pairs, not ${pairs.length}`);
@@ -55,13 +62,14 @@ function regroup(pairs, r) {
 // sides are dealt again; the second keeps its faces, but for one each of any
 // kinds left with an odd number, which are made into pairs. After the turn
 // only the side in play is dealt again. ice, on a board with it, gives the
-// matches each tile still needs to thaw. Returns { sides, order }, with
-// every side whole.
-export function redeal(L, sides, side, ahead, present, r, ice = null) {
+// matches each tile still needs to thaw, and prefer, on a board that has
+// it, the tiles to deal first, as deal() takes them. Returns { sides,
+// order }, with every side whole.
+export function redeal(L, sides, side, ahead, present, r, ice = null, prefer = null) {
   const both = sides.length > 1 && side === 0 && ahead > 0;
   const dealt = both
-    ? deal(L, [pairsOf(sides[0], present), pairsOf(sides[1], present, true)], r, { present, turnAt: ahead, ice })
-    : deal(L, [pairsOf(sides[side], present)], r, { present, ice });
+    ? deal(L, [pairsOf(sides[0], present), pairsOf(sides[1], present, true)], r, { present, turnAt: ahead, ice, prefer })
+    : deal(L, [pairsOf(sides[side], present)], r, { present, ice, prefer });
   if (!dealt) return null;
   const out = sides.map((faces) => Int16Array.from(faces));
   (both ? [0, 1] : [side]).forEach((s, k) => {
@@ -98,9 +106,9 @@ function pairsOf(faces, present, odd = false) {
 // ignored, and with ice, a frozen tile only once it has thawed. Taking a
 // tile never pins another down, and ice only ever thaws, so a random walk
 // nearly always gets through, and the search only has to back out of the
-// odd dead end. Null if there is no such order, or none was found within
-// the budget.
-export function blankOrder(L, start, r, budget = 20000, ice = null) {
+// odd dead end. prefer, if given, orders the free tiles to try (deal() says
+// how). Null if there is no such order, or none was found within the budget.
+export function blankOrder(L, start, r, budget = 20000, ice = null, prefer = null) {
   const present = Uint8Array.from(start);
   const order = [];
   const dead = new Set();
@@ -111,7 +119,8 @@ export function blankOrder(L, start, r, budget = 20000, ice = null) {
     const key = keyOf(present);
     if (dead.has(key)) return false;
     const taken = order.length;
-    const free = r.shuffle(freeTiles(L, present).filter((i) => ice === null || ice[i] <= taken));
+    const shuffled = r.shuffle(freeTiles(L, present).filter((i) => ice === null || ice[i] <= taken));
+    const free = prefer ? prefer(shuffled, present, order) : shuffled;
     for (let i = 0; i < free.length; i++) {
       for (let j = i + 1; j < free.length; j++) {
         const a = free[i];

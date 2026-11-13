@@ -12,7 +12,7 @@ test("there are Halloween's faces and Thanksgiving's, each a drawing of every fa
   equal(FACE_SETS.join(' '), 'halloween thanksgiving', 'the sets');
   const svg = sprite();
   const ids = [...svg.querySelectorAll('symbol')].map((s) => s.id);
-  equal(ids.length, FACES.length * FACE_SETS.length, 'symbols');
+  equal(ids.length, FACES.length * FACE_SETS.length + 1, 'symbols, and the egg'); // the egg a tile hides in, on the hens' board
   equal(new Set(ids).size, ids.length, 'symbols with ids of their own');
   for (const set of FACE_SETS) {
     for (const f of FACES) {
@@ -20,6 +20,7 @@ test("there are Halloween's faces and Thanksgiving's, each a drawing of every fa
       check(symbol && symbol.children.length > 1, `${set}: ${f.key} has no drawing`);
     }
   }
+  check(svg.querySelector('#egg') && svg.querySelector('#egg').children.length > 1, 'the egg has no drawing');
   for (const bad of ['NaN', 'undefined', 'null']) check(!svg.innerHTML.includes(bad), `a drawing has ${bad} in it`);
   return `${ids.length} faces`;
 });

@@ -2,8 +2,9 @@ import { Game } from './engine/game.js';
 import * as layouts from './engine/layouts.js';
 import { HOURS, gameOptions } from './night.js';
 import { DAYS, dayOf, dayOptions } from './thanksgiving.js';
+import { dayOfChristmas } from './christmas.js';
 import { KINDS, MATCH } from './engine/tiles.js';
-import { sprite, symbolId, kindName, FACE_SETS } from './ui/faces.js';
+import { sprite, symbolId, faceName, kindName, FACE_SETS } from './ui/faces.js';
 import { Board } from './ui/board.js';
 import { Magnifier } from './ui/magnifier.js';
 import { Sound } from './ui/sound.js';
@@ -42,9 +43,11 @@ const GIFTS = {
 let gifts = GIFTS.halloween; // the board in play's
 
 // How a board's turning over is told: Halloween's midnight, or its sunrise
-// on a board that starts on its night side; and the Sunday Scaries'
-// sundown, when the weekend turns over to Monday and its lost souls are
-// worries. For each: the clock in the top bar, before the turn and after;
+// on a board that starts on its night side; the Sunday Scaries' sundown,
+// when the weekend turns over to Monday and its lost souls are worries; and
+// Christmas's Twelfth Night, when the drummers drum, the tiles turn over,
+// and its lost souls are lumps of coal, for the board that is left. For
+// each: the clock in the top bar, before the turn and after;
 // what its lost souls are; what it says at the turn, and three matches
 // before; the moon's title; the score's words; and its sound.
 const TURNS = {
@@ -73,6 +76,19 @@ const TURNS = {
     moon: "Hold to see Monday's side (or hold Space)",
     score: { night: 'Sundown', day: 'Sundown', souls: 'Worries', none: 'no worries' },
     ring: () => sound.alarm(),
+  },
+  twelfth: {
+    ahead: (n) => `🌟 <b>${n}</b> to Twelfth Night`,
+    after: () => '🎭 Twelfth Night',
+    soul: '🪨',
+    soulsAhead: 'Lumps of coal if the tiles turned over now',
+    soulsWoke: 'Lumps of coal on the board',
+    turned: () => "Twelfth Night! The drummers drum, and the tiles turn over.",
+    woke: (n) => (n ? `${n} ${n === 1 ? 'tile turns' : 'tiles turn'} to coal: coal matches coal.` : 'Not one lump of coal.'),
+    prompt: 'Three matches to Twelfth Night. Hold the moon to see the other side, and take pairs that match on both sides.',
+    moon: "Hold to see Twelfth Night's side (or hold Space)",
+    score: { night: 'Twelfth Night', day: 'Twelfth Night', souls: 'Lumps of coal', none: 'no coal' },
+    ring: () => sound.drums(),
   },
 };
 let turnWords = TURNS.midnight; // the board in play's
@@ -233,6 +249,76 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     setTimeout(() => board.float(`+${POINTS.touchdown}`, b), 500); // after the pair's own points
     toast(`Touchdown! ${POINTS.touchdown} points.`);
   });
+  game.on('lovebirds', ({ b }) => {
+    sound.coo();
+    setTimeout(() => board.float(`+${POINTS.lovebirds}`, b), 500); // after the pair's own points
+    toast(`Lovebirds! ${POINTS.lovebirds} points.`);
+  });
+  game.on('flock', ({ b }) => {
+    sound.flutter();
+    setTimeout(() => board.float(`+${POINTS.flock}`, b), 500); // after the pair's own points
+    toast(`Birds of a feather! ${POINTS.flock} points.`);
+  });
+  game.on('hatch', ({ hatched }) => {
+    sound.cheep();
+    for (const t of hatched) setTimeout(() => board.float('🐣', t), 300);
+    const names = hatched.map((t) => faceName(game.faces[t], faceSet));
+    toast(names.length > 1 ? `${names.length} eggs hatched: ${names.slice(0, -1).join(', ')} and ${names.at(-1)}.` : `An egg hatched: ${names[0]}.`);
+  });
+  game.on('gold', ({ b, gold }) => {
+    const n = gold.length;
+    sound.ring();
+    setTimeout(() => board.float(`+${n * POINTS.ring}`, b), 500); // after the pair's own points
+    toast(`${n > 1 ? `${['Two', 'Three', 'Four', 'Five'][n - 2]} gold rings` : 'A gold ring'}! ${n * POINTS.ring} points.`);
+  });
+  game.on('gosling', ({ b, brood }) => {
+    if (!brood) {
+      sound.cheep();
+      setTimeout(() => board.float('🐣', b), 300);
+      return;
+    }
+    sound.honk();
+    setTimeout(() => board.float(`+${POINTS.brood}`, b), 500); // after the pair's own points
+    const n = game.rules.goslings;
+    toast(`A line of ${['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'][n] ?? n} goslings! ${POINTS.brood} points.`);
+  });
+  game.on('swan', ({ b, swan, swamOff }) => {
+    if (swan) {
+      sound.swan();
+      setTimeout(() => board.float(`+${POINTS.swan}`, b), 500); // after the pair's own points
+      toast(`A swan and her reflection! ${POINTS.swan} points.`);
+      return;
+    }
+    sound.ripple();
+    toast(swamOff > 1 ? 'Two swans swam off: their tiles went without their reflections.' : 'A swan swam off: her tile went without its reflection.');
+  });
+  game.on('milk', ({ b, milked, soured, spilt }) => {
+    const lost = [spilt && (spilt > 1 ? `${spilt} pails spilt` : 'a pail spilt'), soured && (soured > 1 ? `${soured} pails went sour` : 'a pail went sour')].filter(Boolean).join(', and ');
+    if (milked) {
+      sound.milk();
+      setTimeout(() => board.float(`+${milked * POINTS.milk}`, b), 500); // after the pair's own points
+      toast(`Fresh milk! ${milked * POINTS.milk} points.${lost ? ` But ${lost}.` : ''}`);
+      return;
+    }
+    sound.sour();
+    toast(spilt ? `Oops: ${lost}. A pail's two tiles go together.` : `Too late: ${lost}.`);
+  });
+  game.on('pipe', ({ b, piped }) => {
+    const n = piped.length;
+    sound.bagpipe();
+    for (const t of piped) setTimeout(() => board.float('🎶', t), 200);
+    setTimeout(() => board.float(`+${n * POINTS.piped}`, b), 500); // after the pair's own points
+    toast(`The piper plays, and ${n === 2 ? 'two follow' : n === 1 ? 'one follows' : `${n} follow`} him out! ${n * POINTS.piped} points.`);
+  });
+  game.on('leap', ({ b, leapt }) => {
+    sound.fanfare();
+    setTimeout(() => board.float(`+${leapt * POINTS.leap}`, b), 500); // after the pair's own points
+    toast(`${leapt > 1 ? 'Two lords leapt out' : 'A lord leapt out'}! ${leapt * POINTS.leap} points.`);
+  });
+  game.on('dance', ({ dance }) => {
+    sound.waltz();
+    toast(dance ? 'The music changes, and the free tiles change partners with tiles held down.' : 'The music changes, but the dancers keep their partners this time.');
+  });
   game.on('treat', ({ treat }) => {
     sound.treat();
     toast(gifts.came(gifts.names[treat]));
@@ -298,13 +384,14 @@ let freeKey = 'turtle'; // the board free play deals,
 let freeTurn = 0; // and after how many matches its tiles turn over, if they do
 function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
   if (!FREE[key]) key = 'turtle';
-  // A holiday's board before the holiday opens: a turtle instead.
+  // A holiday's board before the holiday opens: a turtle instead. A
+  // holiday's boards still being made play freely, to try them.
   const owner = holidayOf(FREE[key]);
-  const shut = owner && !isOpen(owner) ? owner : null;
+  const shut = owner && owner.ready && !isOpen(owner) ? owner : null;
   if (shut) [key, turnAt, keep] = ['turtle', 0, null];
   freeKey = key;
   freeTurn = turnAt;
-  const today = dayOf(FREE[key]); // a Thanksgiving day's board plays by its day's rules, and gives its own treats or none
+  const today = dayFor(FREE[key]); // a holiday's day's board plays by its day's rules, and gives its own treats or none
   const { options, ...rest } = today ? dayPlay(today) : { options: {}, faces: holidayFaces() };
   if (turnAt) options.turnAt = turnAt;
   play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...rest });
@@ -319,15 +406,24 @@ function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
 }
 
 // The holiday a board belongs to, which must be open for it to be played:
-// the night's are Halloween's, the week's Thanksgiving's, and the turtle is
-// no one's.
-const holidayOf = (layout) => (HOURS.some((h) => h.layout === layout) ? theme('halloween') : dayOf(layout) ? theme('thanksgiving') : null);
+// the night's are Halloween's, the week's Thanksgiving's, the twelve days'
+// Christmas's, and the turtle is no one's.
+function holidayOf(layout) {
+  if (HOURS.some((h) => h.layout === layout)) return theme('halloween');
+  if (dayOf(layout)) return theme('thanksgiving');
+  return dayOfChristmas(layout) ? theme('christmas') : null;
+}
+
+// The day a board is for, if it is one of Thanksgiving week's or one of
+// Christmas's twelve: played freely, it plays by that day's rules.
+const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout);
 
 // -------------------------------------------------------- Thanksgiving week
 
 // What play() wants for a day's board: its options, the treats it gives or
-// none, its nap, the words its turning over is told in, and Thanksgiving's
-// faces.
+// none, its nap, the words its turning over is told in, and its holiday's
+// faces: Thanksgiving's, or on Christmas's days Halloween's, until
+// Christmas's own are drawn.
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;
@@ -337,7 +433,7 @@ function dayPlay(d) {
     treatBar: Boolean(options.treats),
     napAt: napFrom ? { from: napFrom, to: napFrom + d.nap.matches } : null,
     turnSet: d.words || 'midnight',
-    faces: 'thanksgiving',
+    faces: DAYS.includes(d) ? 'thanksgiving' : 'halloween',
   };
 }
 
@@ -658,14 +754,14 @@ function askToLose({ which, then, go, back, keep = 'Keep playing' }) {
 
 // The holiday whose look the page wears: Halloween's while the Long Night
 // is on the table, Thanksgiving's while its week is, and otherwise the one
-// chosen last, whose faces the board then wears too, unless it is one of the
-// week's days played freely. Another holiday chosen with the turtle on the
-// table changes its tiles with its colours.
+// chosen last, whose faces the board then wears too, unless it is one of a
+// holiday's days played freely. Another holiday chosen with the turtle on
+// the table changes its tiles with its colours.
 function applyTheme() {
   wear(theme(hour >= 0 ? 'halloween' : weekDay >= 0 ? 'thanksgiving' : saved.theme) || theme('halloween'));
   // The day is found by the key free play dealt: a board with a fridge
   // plays on a layout of its own, with the containers added.
-  const faces = hour < 0 && weekDay < 0 && !dayOf(FREE[freeKey]) ? holidayFaces() : faceSet;
+  const faces = hour < 0 && weekDay < 0 && !dayFor(FREE[freeKey]) ? holidayFaces() : faceSet;
   if (faces !== faceSet) board.setFaces((faceSet = faces));
 }
 
@@ -732,7 +828,7 @@ function chooseHolidays(first = false) {
     show();
   };
   const grid = entries.map((e) => ({ label: `${e.theme.icon} ${e.theme.name}`, sub: dated(e), act: () => toggle(e.theme.id) }));
-  const text = "Pick the holidays and seasons you'd like to play, as many as you like. Halloween's and Thanksgiving's boards are ready, and the rest are on their way. Each opens weeks before its day, to build up to it, and stays open to the end of the year. You can change them from the menu.";
+  const text = "Pick the holidays and seasons you'd like to play, as many as you like. Halloween's and Thanksgiving's boards are ready, and the rest are on their way. Each opens weeks before its day, to build up to it, and stays open to the end of the year. Groundhog Day is open all year, every year. You can change them from the menu.";
   showCard('Choose your holidays', text, [[first === true ? 'Start' : 'Done', done], ['All of them', all]], grid);
   $('card-grid').classList.add('themes');
   show();
@@ -804,7 +900,7 @@ function comingSoon(t, opening = false) {
   const others = games.length ? `there are ${games.join(' and ')}${games.length > 1 ? ',' : ''} and the classic turtle` : "there's the classic turtle";
   const text = t.ready
     ? `${t.name} ${comes}, and its boards open on ${short(opensOn(t))}, to build up to it. Until then, ${others}.`
-    : `${t.name} ${comes}. Its boards are on their way; until they come, ${others}.`;
+    : `${t.name} ${comes}. Its boards are on their way${t.always ? ", and they'll be open all year, every year" : ''}; until they come, ${others}.`;
   showCard(`${t.icon} ${t.name}`, text, actions);
   showOptions();
 }
@@ -1010,6 +1106,38 @@ function update() {
   // The touchdowns scored, on a football board.
   $('touchdowns').hidden = !g.zones;
   if (g.zones) $('touchdowns').innerHTML = `🏈 <b>${g.touchdowns}</b>`;
+  // The eggs still to hatch, on a board of hens.
+  $('eggs').hidden = !g.eggs;
+  if (g.eggs) $('eggs').innerHTML = `🥚 <b>${g.eggsLeft}</b>`;
+  // The pairs that flocked together, on a board of songbirds.
+  $('flocks').hidden = !g.rules.flock;
+  if (g.rules.flock) $('flocks').innerHTML = `🐦 <b>${g.flocks}</b>`;
+  // The rings turned to gold, on the board of gold rings.
+  $('rings').hidden = !g.rings;
+  if (g.rings) $('rings').innerHTML = `💍 <b>${g.goldRings}</b>`;
+  // The goslings in the line so far, on the board of geese, of the number
+  // that make a brood.
+  $('goslings').hidden = !g.rules.goslings;
+  if (g.rules.goslings) $('goslings').innerHTML = `🐣 <b>${g.trail}</b>/${g.rules.goslings}`;
+  // The swans found, on the lake, out of those found and still to find.
+  $('swans').hidden = !g.swans;
+  if (g.swans) $('swans').innerHTML = `🦢 <b>${g.swansFound}</b>/${g.swansFound + g.swans.length}`;
+  // The pails of milk taken while fresh, on the milk pail, out of them all.
+  $('milk').hidden = !g.pails;
+  if (g.pails) $('milk').innerHTML = `🥛 <b>${g.pailsTaken}</b>/${g.pails.length}`;
+  // The matches until the music changes, on the board of the dancer, while
+  // there are tiles held down to change partners with.
+  $('dance').hidden = !g.rules.dance || !g.canDance;
+  if (g.rules.dance) $('dance').innerHTML = `💃 <b>${g.untilDance}</b>`;
+  // The lords still on the board, on the crown.
+  $('lords').hidden = !g.lords;
+  if (g.lords) $('lords').innerHTML = `👑 <b>${g.lordsLeft}</b>`;
+  // The pipers still on the board, on the bagpipes.
+  $('pipers').hidden = !g.pipers;
+  if (g.pipers) $('pipers').innerHTML = `🎶 <b>${g.pipersLeft}</b>`;
+  // The lovebirds taken, on a board of turtle doves.
+  $('lovebirds').hidden = !g.rules.lovebirds;
+  if (g.rules.lovebirds) $('lovebirds').innerHTML = `🕊️ <b>${g.lovebirds}</b>`;
   // The nap, on a board with one: the matches until it, and while everyone
   // sleeps, the matches left of it.
   $('nap').hidden = !nap || g.matches >= nap.to;
@@ -1029,7 +1157,7 @@ function update() {
   $('moon').disabled = !g.turnAhead;
   document.body.classList.toggle('night', g.sideName === 'night');
   sky();
-  if ((hour === MIDNIGHT || turnWords === TURNS.sundown) && g.turnAhead && g.untilTurn === 3 && !prompted) {
+  if ((hour === MIDNIGHT || turnWords !== TURNS.midnight) && g.turnAhead && g.untilTurn === 3 && !prompted) {
     prompted = true;
     toast(turnWords.prompt);
   }

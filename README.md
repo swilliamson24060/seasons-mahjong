@@ -17,6 +17,7 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 | Holiday | When | Opens |
 |---|---|---|
 | New Year's | January 1 | December 1 |
+| Groundhog Day | February 2 | all year, every year |
 | Valentine's Day | February 14 | February 1 |
 | Start of Spring | March 20 | March 1 |
 | Summer Beach Season | Memorial Day, the last Monday in May, to Labor Day | May 1 |
@@ -27,12 +28,12 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 | Thanksgiving | the fourth Thursday in November | November 1 |
 | Christmas | December 25 | December 1 |
 
-- On a first visit the game asks which to play, as many as you like, from a card that lists all ten in the order they come round from today, each with its date. Start waits until one is chosen, and All of them chooses every one.
+- On a first visit the game asks which to play, as many as you like, from a card that lists all eleven in the order they come round from today, each with its date. Start waits until one is chosen, and All of them chooses every one.
 - The menu (☾) opens the holiday chosen last. Your holidays, on its card, lists the ones you chose, to go to any of them, and Change your holidays brings back the first card.
 - Each holiday has its own look: its colour, its sky, and its lettering, with Halloween keeping Boneyard's. While the Long Night is on the table the page wears Halloween's, and the turtle wears the holiday chosen last, tiles and all. The cards for choosing wear Seasons' own gold.
 - Halloween's and Thanksgiving's boards are made: the Long Night, and Thanksgiving week. The other holidays' cards say when they fall and that their boards are on their way, with the holidays open and the turtle to play until then.
-- Each holiday opens weeks before its day, to build up to it, and stays open to the end of the year. With the new year every holiday closes again, until its opening day comes round. Until a holiday opens, Your holidays and its card say when it will, and its boards can't be played, from the menu or by their address. The turtle is always there. Progress and best scores are kept through the new year.
-- `js/themes.js` holds the ten: their icons and colours, and when each falls, worked out for any year, as Thanksgiving, Labor Day and the beach season move.
+- Each holiday opens weeks before its day, to build up to it, and stays open to the end of the year; Groundhog Day alone is open all year, every year. With the new year every holiday closes again, until its opening day comes round. Until a holiday opens, Your holidays and its card say when it will, and its boards can't be played, from the menu or by their address. The turtle is always there. Progress and best scores are kept through the new year.
+- `js/themes.js` holds the eleven: their icons and colours, when each falls, worked out for any year, as Thanksgiving, Labor Day and the beach season move, and when each opens.
 
 ## Playing
 
@@ -55,7 +56,20 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
   - On Saturday's, rivalry football's football, the field runs from the end zone at the top to the one at the bottom, their tiles carrying blue and red pennants. A pair taken with a tile in each end zone is a touchdown, for 60 points.
   - On the second Sunday's, the Sunday Scaries' alarm clock, the sun goes down halfway through and every tile turns over to its Monday side, as the Long Night's do at midnight: hold the moon to see Monday coming, and take pairs that match on both sides. A tile left without a partner wakes as a worry, and worries match each other.
 - The week's tiles are Thanksgiving's own, matching just as Halloween's do: cranberries, corn and leaves for the three suits, the harvest's apple, gourd, acorn and pinecone, the turkey, green beans and mashed potatoes, autumn flowers and pies, any two of which match as any two flowers or moons do, and worries for lost souls. They are the week's wherever its boards are played, and the Long Night keeps Halloween's. The turtle, and any other board played freely, wears the tiles of the holiday chosen: Thanksgiving's for Thanksgiving, and Halloween's for the rest until their own are made. Choosing another holiday with the turtle on the table changes its tiles with its colours, and a turtle cleared goes back to the holiday's boards: the week's, or the Long Night.
-- Any board can also be played freely by address: `#play/turtle` for the classic turtle, or `#play/raven/12345/40` for the raven, dealt from seed 12345, turning over after 40 matches. A new deal (N) deals it again. The board played freely is kept like the night's, so a reload goes on with it, and a Thanksgiving day's board plays by its day's rules. A holiday's board plays by address only while the holiday is open; before then, its address deals a turtle.
+- Christmas is the Twelve Days: twelve boards, one for each gift of the song, from a partridge in a pear tree to twelve drummers drumming, all made, to be reached in turn as the week's are. Each is shaped by its gift, and they grow through the twelve days, as the song does, from 80 tiles to 128. Until Christmas's own tiles are drawn, its boards wear Halloween's, and until they go in the menu each plays by its address.
+  - On the first day's, a partridge perched at the top of a pear tree (`#play/peartree`), there is no twist: the gentle start, its card telling the free-tile rule by the pears, which hang free.
+  - On the second day's, two turtle doves beak to beak, making a heart (`#play/doves`), every kind of tile comes as two pairs: take a kind's second pair straight after its first, and they're lovebirds, for 30 points. The top bar counts them (🕊️).
+  - On the third day's, a French hen sitting on her nest (`#play/hen`), a dozen tiles are still eggs: there's no telling what's inside one until it comes free and hatches. The top bar counts the eggs still to hatch (🥚), and a tile held up close shows only its egg.
+  - On the fourth day's, a songbird singing on a branch (`#play/songbird`), birds of a feather flock together: take a pair whose two tiles touch, side by side or one just above the other, for 20 points. The top bar counts them (🐦).
+  - On the fifth day's, five rings linked as the five spots on a die are (`#play/rings`), take every tile of a ring, and it turns to gold where it lay, for 50 points: a cleared board shows all five gold rings. It is dealt a ring at a time, so that a ring's tiles mostly match each other, and a ring can be cleared long before the board is. The top bar counts the gold rings (💍).
+  - On the sixth day's, a goose sitting on her nest of eggs (`#play/goose`), goslings follow their mother in a line: a pair taken beside or just under the pair taken before it follows on, and six in a line score 60 points. The free tiles a pair could follow on from carry a gosling, and the top bar counts the line so far (🐣).
+  - On the seventh day's, a swan gliding on a still lake (`#play/swan`), the bottom half of the board is the top half's reflection, its tiles tinged with blue. Seven tiles match their own reflection, the tile as far below the water as they are above it: take a tile and its reflection together, a swan, for 50 points; take either with another tile, and she swims off. The top bar counts the swans found, out of those found and still to find (🦢).
+  - On the eighth day's, a milk pail (`#play/pail`), eight pairs are pails of fresh milk, each tile marked 🥛. Once either of a pail's tiles is free, its milk keeps for eight matches, counted down on both: dig out the other and take the two together while it's fresh, for 40 points. Take either with another tile and it spills; leave it too long and it sours. The top bar counts the pails taken fresh (🥛).
+  - On the ninth day's, a dancer mid-twirl (`#play/dancer`), every nine matches the music changes: each free tile dances off with a tile still held down, and they change places, twirling, so tiles held down come free and the pairs that were free go back under. The board is always left so it can be won. The top bar counts down to the next change (💃).
+  - On the tenth day's, a crown (`#play/crown`), ten tiles are lords, gilded and crowned 👑: a lord is free wherever he is, under other tiles or hemmed in, and goes with any free tile of his kind. Take one while he's still held down, and he's leapt, for 20 points; or keep him to get out of a tight spot. The top bar counts the lords still on the board (👑).
+  - On the eleventh day's, a set of bagpipes (`#play/bagpipes`), eleven tiles are pipers, tinged green and marked 🎶. Take a piper with a tile of his kind, and he plays: the rest of his kind still on the board follow him out, from wherever they are, buried or not, for 15 points each. The top bar counts the pipers still on the board (🎶).
+  - On the twelfth day's, a drum with its sticks crossed above it (`#play/drum`), it's Twelfth Night: halfway through, the drummers drum and every tile turns over, as the Long Night's do at midnight. Hold the moon to see the other side coming, and before then take pairs that match on both sides: a tile left without a partner turns to coal, and coal matches coal (🪨).
+- Any board can also be played freely by address: `#play/turtle` for the classic turtle, or `#play/raven/12345/40` for the raven, dealt from seed 12345, turning over after 40 matches. A new deal (N) deals it again. The board played freely is kept like the night's, so a reload goes on with it, and a Thanksgiving or Christmas day's board plays by its day's rules. A holiday's board plays by address only while the holiday is open; before then, its address deals a turtle. A holiday whose boards are still being made plays them by address, to try them.
 
 ## The leaderboard
 
@@ -106,20 +120,21 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 ## Where things live
 
 - `index.html`, `css/game.css` and `js/main.js`: the page, the buttons and keys, the cards, choosing the holidays and wearing their looks, the clock, the sky, and keeping the night between visits.
-- `js/themes.js`: the ten holidays and seasons, when each falls in any year, and their colours.
+- `js/themes.js`: the eleven holidays and seasons, when each falls in any year and when it opens, and their colours.
 - `sw.js`, `manifest.webmanifest` and `icons/`: offline play, and installing the game as an app.
 - `tools/itch.py`: the zip for itch.io, and `tools/shots.py`, with `tools/cover.html` and `tools/stage.html`, its cover and screenshots.
 - `js/night.js`: the Long Night's thirteen hours: each one's board, rules, sky and the words before it.
 - `js/thanksgiving.js`: Thanksgiving week's eight days: each one's board, rules, sky and the words before it.
+- `js/christmas.js`: Christmas's Twelve Days, as they are made: each one's gift, board, rules, sky and the words before it.
 - `js/score.js`: the score for a board, worked out from what the game records.
 - `js/leaderboard.js`: the leaderboard's boards, the names it takes, and posting and reading scores; `js/firebase.js` speaks to Firebase, and `js/firebase-config.js` says which project. `firestore.rules` is what Firestore lets players do.
 - `js/ui/sound.js`: the sounds, made with Web Audio as they play: the tiles, the organ, the bells.
-- `js/ui/board.js`: the board on the page: the tiles stacked in their layers and sized to fit, selecting and matching, peeking, the tiles turning over, and the planchette that points out a hint. Players who have asked their device for less motion get no shaking or turning waves.
-- `js/ui/faces.js`: the sets of faces, as SVG symbols, and their names: Halloween's drawn here, in code, one drawing for both sides. `js/ui/thanksgiving-faces.js` draws and names Thanksgiving's, and `js/ui/draw.js` holds what both draw with: the colours that change by night, and where the pips and sticks stand.
+- `js/ui/board.js`: the board on the page: the tiles stacked in their layers and sized to fit, selecting and matching, peeking, the tiles turning over, the gold rings, and the planchette that points out a hint. Players who have asked their device for less motion get no shaking or turning waves.
+- `js/ui/faces.js`: the sets of faces, as SVG symbols, and their names: Halloween's drawn here, in code, one drawing for both sides. `js/ui/thanksgiving-faces.js` draws and names Thanksgiving's, and `js/ui/draw.js` holds what both draw with: the colours that change by night, and where the pips and sticks stand. `js/ui/faces.js` also draws the egg a tile hides in, on the hens' board.
 - `js/ui/magnifier.js`: a held tile up close, above the finger that would hide it, with the side it will turn to.
 - `js/engine/tiles.js`: the 42 faces, which of them match, and the pairs a deal is made from.
 - `js/engine/layout.js`: reading a layout drawn as text, and the free-tile rule. `layouts.js` holds the layouts themselves.
-- `js/engine/deal.js`: dealing so that every board can be won, and the safe shuffle.
+- `js/engine/deal.js`: dealing so that every board can be won, and the safe shuffle; a board can ask for some tiles to be dealt first, as the gold rings are, a ring at a time, the swans, each with her reflection, and the milk pail's pails, two tiles just come free.
 - `js/engine/solver.js`: finds a winning line, for hints and for checking twists.
 - `js/engine/game.js`: one board in play: matching, undo, hints, shuffles, Ghosts float, Treats and the stroke of midnight, when the tiles turn over.
 - `js/engine/midnight.js`: which tiles wake as lost souls when the tiles turn over.
@@ -128,5 +143,13 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 - `js/engine/fridge.js`: the fridge's containers, places added to a board's layout after its tiles, with nothing on them or beside them.
 - `js/engine/doorbusters.js`: choosing Black Friday's doorbusters, pairs of the deal's own order, so that a grab never stops a board being won.
 - `js/engine/football.js`: the football board's end zones, and which pairs are touchdowns.
+- `js/engine/flock.js`: when two tiles touch, for Christmas's birds of a feather.
+- `js/engine/rings.js`: the gold rings' tiles, worked out from the square each ring goes round, and dealing their board a ring at a time.
+- `js/engine/goslings.js`: when a pair follows on from the pair before it, for Christmas's goslings in a line.
+- `js/engine/swans.js`: each tile's reflection in the lake, the swans among the tiles, and dealing the swans so that they come free at different times.
+- `js/engine/milk.js`: choosing the milk pail's pails of fresh milk, pairs the deal's own order takes in time, and dealing it so that there are some all through the board.
+- `js/engine/dance.js`: the dancer's change of partners, free tiles with tiles held down, tried until the solver finds the board can still be won.
+- `js/engine/lords.js`: choosing the crown's lords, tiles held down at the start, each of a kind of his own.
+- `js/engine/pipers.js`: choosing the bagpipes' pipers, each from the first pair of his kind the deal's own order takes, so that two can follow him out.
 - `js/engine/rng.js`: seeded randomness, so a deal can be made again from its seed.
 - `tests/`: the tests, the small runner behind `test.html`, and the plain board drawing.
