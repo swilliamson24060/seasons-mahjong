@@ -16,7 +16,7 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 | Start of Fall | September 22, the usual day of the equinox | August 1 | orange, on russet | next |
 | Halloween | October 31 | October 1 | Boneyard's orange, on purple | the Long Night: thirteen boards |
 | Thanksgiving | the fourth Thursday in November | November 1 | squash, on brown | Thanksgiving week: eight boards, in the menu |
-| Christmas | December 25 | December 1 | red, on pine green | the Twelve Days: twelve boards, all made |
+| Christmas | December 25 | December 1 | red, on pine green | the Twelve Days: twelve boards, in the menu |
 
 ## Choosing them
 
@@ -157,7 +157,8 @@ Twelve boards, one for each gift of the song, from a partridge in a pear tree to
 - Each board is shaped by its gift, and the boards grow through the twelve days, as the song does.
 - The first day's is the gentle start, with no twist, as the first Sunday's is. The twelfth is to be Twelfth Night, when the tiles turn over halfway, as at the Long Night's midnight. The twists between are chosen a day at a time.
 - Christmas's own tiles are to come, as Thanksgiving's are its own; until then its boards wear Halloween's. The ideas so far: ornaments, candy canes and wrapped presents for the three suits, the song's four birds for the monsters, poinsettia, holly, mistletoe and Christmas rose for the flowers, and a lump of coal for the lost soul.
-- While its boards were being made, each played by its address, as the week's did; now all twelve are made, they are to go in the menu, reached in turn, and Christmas marked ready.
+- While its boards were being made, each played by its address, as the week's did. Now all twelve are made, Christmas is ready, and opens on December 1st. Its card in the menu is the twelve days', made as Thanksgiving's is the week's: the two are runs of days, kept in main.js's RUNS, each with its days, the progress it keeps, and the words of its card and its end. The days are in order, each with its gift, or its best score once played, and the Christmas score, the bests added up; each day reached can be played again, and clearing a board opens the next. The twelfth cleared, Twelfth Night is over, and the twelve days seen through.
+- The twelve days' board in play is kept beside the week's and the night's. A reload opens on the holiday chosen last: its board in play, or its card, which offers the day reached next. Before December 1st, Christmas's card says when its boards open, and its boards' addresses deal a turtle; `?date=2026-12-01` on the address plays the game as of that day.
 
 | Day | Gift | Board | Twist |
 |---|---|---|---|
@@ -269,7 +270,7 @@ The twists were chosen a day at a time, and the twelfth's, Twelfth Night, was pl
 
 ## Milestones
 
-**Fri 13 Nov:** Christmas's seventh day, seven swans a-swimming: a swan on a still lake, mirrored in it, with seven swans, each a tile and its own reflection. And the eighth's, eight maids a-milking: a milk pail, with eight pails of fresh milk to dig out before they sour. And the ninth's, nine ladies dancing: a dancer mid-twirl, the free tiles changing partners every nine matches. And the tenth's, ten lords a-leaping: a crown, with ten lords free wherever they are. And the eleventh's, eleven pipers piping: bagpipes, whose pipers lead the rest of their kind out from wherever they are. And the twelfth's, twelve drummers drumming: a drum, turning over halfway on Twelfth Night. All twelve days are made.
+**Fri 13 Nov:** Christmas's seventh day, seven swans a-swimming: a swan on a still lake, mirrored in it, with seven swans, each a tile and its own reflection. And the eighth's, eight maids a-milking: a milk pail, with eight pails of fresh milk to dig out before they sour. And the ninth's, nine ladies dancing: a dancer mid-twirl, the free tiles changing partners every nine matches. And the tenth's, ten lords a-leaping: a crown, with ten lords free wherever they are. And the eleventh's, eleven pipers piping: bagpipes, whose pipers lead the rest of their kind out from wherever they are. And the twelfth's, twelve drummers drumming: a drum, turning over halfway on Twelfth Night. All twelve days are made. Then the twelve days in the menu, the third holiday ready to play, opening on December 1st: Christmas's card lists the twelve days, reached in turn, with their best scores and the Christmas score, made with Thanksgiving week's card as runs of days. A card opened over a day just dealt now offers to go on to it.
 
 **Thu 12 Nov:** Thanksgiving week in the menu, the second holiday ready to play: its card lists the eight days, reached in turn, with their best scores, and the week's board in play is kept beside the night's. Then Thanksgiving's own tiles, the harvest and the feast, which the turtle wears too while Thanksgiving is the holiday chosen. And each holiday opens weeks before its day, to build up to it, and stays open to the end of the year. And Groundhog Day joins the holidays, the one open all year, every year. Then Christmas, planned as the Twelve Days, one board for each gift of the song: the first day's is made, a partridge in a pear tree, and the second's, two turtle doves on a heart, with lovebirds, and the third's, three French hens, with eggs that hatch as they come free, and the fourth's, four calling birds, where birds of a feather flock together, and the fifth's, five gold rings, each turning to gold once its tiles are all taken, and the sixth's, six geese a-laying, whose goslings follow in a line.
 

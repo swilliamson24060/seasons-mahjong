@@ -1,9 +1,9 @@
 // The holidays and seasons of the year, each a theme of the game: its name,
 // its icon, when it falls, and the colour it brings (the night sky behind
 // its boards, and an accent), and when its boards open. A player picks the
-// ones they want. Two are ready to play: Halloween's Long Night, and
-// Thanksgiving week; the others are here so that they can be picked, and
-// their boards come next.
+// ones they want. Three are ready to play: Halloween's Long Night,
+// Thanksgiving week, and Christmas's twelve days; the others are here so
+// that they can be picked, and their boards come next.
 
 // When each falls, worked out for any year, as some move: a fixed day, or
 // the nth weekday of a month, counting -1 for the last.
@@ -38,7 +38,7 @@ export const THEMES = [
   { id: 'fall', name: 'Start of Fall', icon: '🍂', on: fixed(9, 22), opens: fixed(8, 1), accent: '#e8833a', sky: ['#69381f', '#1d0f08'] },
   { id: 'halloween', name: 'Halloween', icon: '🎃', on: fixed(10, 31), opens: fixed(10, 1), accent: '#ff9f1c', sky: ['#2a1d40', '#0e0a17'], ready: true },
   { id: 'thanksgiving', name: 'Thanksgiving', icon: '🦃', on: nth(4, THURSDAY, 11), opens: fixed(11, 1), accent: '#de9445', sky: ['#5a381c', '#1b1008'], ready: true },
-  { id: 'christmas', name: 'Christmas', icon: '🎄', on: fixed(12, 25), opens: fixed(12, 1), accent: '#ef4f5f', sky: ['#163f2e', '#06140e'] },
+  { id: 'christmas', name: 'Christmas', icon: '🎄', on: fixed(12, 25), opens: fixed(12, 1), accent: '#ef4f5f', sky: ['#163f2e', '#06140e'], ready: true },
 ];
 
 export const theme = (id) => THEMES.find((t) => t.id === id);
