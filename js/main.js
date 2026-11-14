@@ -3,12 +3,14 @@ import * as layouts from './engine/layouts.js';
 import { HOURS, gameOptions } from './night.js';
 import { DAYS, dayOf, dayOptions } from './thanksgiving.js';
 import { TWELVE_DAYS, dayOfChristmas } from './christmas.js';
+import { NEW_YEAR, newYearOf } from './newyear.js';
+import { ballDrop } from './ui/ball.js';
 import { KINDS, MATCH } from './engine/tiles.js';
 import { sprite, symbolId, faceName, kindName, FACE_SETS } from './ui/faces.js';
 import { Board } from './ui/board.js';
 import { Magnifier } from './ui/magnifier.js';
 import { Sound } from './ui/sound.js';
-import { POINTS, par, scoreOf } from './score.js';
+import { POINTS, par, scoreOf, coinWorth, toastWorth } from './score.js';
 import { Leaderboard, BOARDS, NIGHT, boardOf, nameOf, nameProblem, tidy } from './leaderboard.js';
 import { THEMES, theme, when, calendar, isOpen, opensOn } from './themes.js';
 
@@ -42,14 +44,20 @@ const GIFTS = {
 };
 let gifts = GIFTS.halloween; // the board in play's
 
+// On New Year's 7, how close a pair came to the lucky coin, as a sign.
+const HEAT = { hot: '🔥', warm: '🌡️', cold: '🧊' };
+
 // How a board's turning over is told: Halloween's midnight, or its sunrise
 // on a board that starts on its night side; the Sunday Scaries' sundown,
-// when the weekend turns over to Monday and its lost souls are worries; and
+// when the weekend turns over to Monday and its lost souls are worries;
 // Christmas's Twelfth Night, when the drummers drum, the tiles turn over,
-// and its lost souls are lumps of coal, for the board that is left. For
-// each: the clock in the top bar, before the turn and after;
+// and its lost souls are lumps of coal, for the board that is left; and
+// New Year's midnight, on the 1, when the ball lands, the clock strikes
+// twelve and the new year comes in, its lost souls sleepyheads who missed
+// it. For each: the clock in the top bar, before the turn and after;
 // what its lost souls are; what it says at the turn, and three matches
-// before; the moon's title; the score's words; and its sound.
+// before; the moon's title; the score's words; its sound; and on New
+// Year's, fireworks over the board.
 const TURNS = {
   midnight: {
     ahead: (n, night) => `${night ? '🕛' : '🌅'} <b>${n}</b> to ${night ? 'midnight' : 'sunrise'}`,
@@ -90,13 +98,28 @@ const TURNS = {
     score: { night: 'Twelfth Night', day: 'Twelfth Night', souls: 'Lumps of coal', none: 'no coal' },
     ring: () => sound.drums(),
   },
+  newyear: {
+    ahead: (n) => `🕛 <b>${n}</b> to midnight`,
+    after: () => '🎆 New Year',
+    soul: '😴',
+    soulsAhead: 'Sleepyheads if the tiles turned over now',
+    soulsWoke: 'Sleepyheads on the board',
+    turned: () => 'Happy New Year! The ball lands, the clock strikes twelve, and the tiles turn over.',
+    woke: (n) => (n ? `${n} ${n === 1 ? 'tile' : 'tiles'} missed midnight, fast asleep: sleepyheads match each other.` : 'Everyone made it to midnight.'),
+    prompt: "Three matches to midnight. Hold the moon to see the new year's side, and take pairs that match on both sides.",
+    moon: "Hold to see the new year's side (or hold Space)",
+    score: { night: 'Midnight', day: 'Midnight', souls: 'Sleepyheads', none: 'everyone awake' },
+    ring: () => sound.newYear(),
+    fireworks: true,
+  },
 };
 let turnWords = TURNS.midnight; // the board in play's
 
 // The set of faces the board in play's tiles wear, and are named by
 // (faces.js): Halloween's on the night's boards, Thanksgiving's on the
-// week's, Christmas's on the twelve days', and on the turtle and the rest
-// outside them, the holiday chosen's (holidayFaces).
+// week's, Christmas's on the twelve days', New Year's on its countdown and
+// New Year's Day, and on the turtle and the rest outside them, the holiday
+// chosen's (holidayFaces).
 let faceSet = 'halloween';
 
 // Every layout by the name an address can give it, for free play: #play/raven/12345.
@@ -109,8 +132,8 @@ const sound = new Sound();
 let game = null;
 let board = null;
 let hour = -1; // the hour of the Long Night being played, or -1
-let runDay = -1; // the day being played of a run of days, Thanksgiving week or Christmas's twelve, or -1; with hour, both -1 for free play
-let runId = null; // the run that day is of: 'thanksgiving' or 'christmas' (RUNS)
+let runDay = -1; // the day being played of a run of days, Thanksgiving week, Christmas's twelve or New Year's boards, or -1; with hour, both -1 for free play
+let runId = null; // the run that day is of: 'thanksgiving', 'christmas' or 'new-year' (RUNS)
 let moves = []; // what has been done on this board, to play it back after a reload
 let elapsed = 0; // seconds played before the clock last started
 let started = 0; // when the clock last started, or 0 while it is held
@@ -122,7 +145,8 @@ let prompted = false;
 // What is kept between visits: the holidays the player chose, and the one
 // whose card the menu opens; the latest hour of the Long Night reached, the
 // best time and the best score for each hour, with the time that score took;
-// the same for Thanksgiving week and for Christmas's twelve days, by the day;
+// the same for Thanksgiving week, for Christmas's twelve days and for New
+// Year's boards, by the day;
 // the boards in play, the night's, the week's, the twelve days' and the one
 // outside them all, each as its seed and its moves; and the player's name on
 // the leaderboard, with what has been posted there.
@@ -136,6 +160,7 @@ let saved = {
   playing: null,
   week: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   twelve: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
+  newyear: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   free: null,
   name: '',
   declined: false,
@@ -318,6 +343,132 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     setTimeout(() => board.float(`+${leapt * POINTS.leap}`, b), 500); // after the pair's own points
     toast(`${leapt > 1 ? 'Two lords leapt out' : 'A lord leapt out'}! ${leapt * POINTS.leap} points.`);
   });
+  // On New Year's 9: a lit pair scores, and a rocket goes up with a whistle
+  // and bursts, the tiles round it sparkling as they light up.
+  game.on('firework', ({ b, litPair, rockets, lit }) => {
+    const words = [];
+    if (litPair) {
+      sound.sparkle();
+      setTimeout(() => board.float(`+${POINTS.lit}`, b), 500); // after the pair's own points
+      words.push(`A lit pair! ${POINTS.lit} points.`);
+    }
+    if (rockets.length) {
+      sound.firework();
+      for (const t of rockets) board.float('🎆', t);
+      setTimeout(() => board.litUp(lit), 450); // as it bursts
+      const what = rockets.length > 1 ? 'Two rockets burst' : 'A rocket bursts';
+      words.push(lit.length ? `${what}, lighting up ${lit.length} ${lit.length === 1 ? 'tile' : 'tiles'}.` : `${what}, with nothing left round it to light.`);
+    }
+    toast(words.join(' '));
+  });
+  // On New Year's 7: each pair says how close it came to the lucky coin,
+  // over where it was taken, until the coin turns up, gleaming, in its tile.
+  game.on('coin', ({ b, found, heat }) => {
+    if (found) {
+      const worth = coinWorth(game.foundAt);
+      sound.coin();
+      board.float('🪙', game.coin);
+      setTimeout(() => board.float(`+${worth}`, game.coin), 500);
+      toast(`You found the lucky coin! ${worth} points.`);
+      return;
+    }
+    sound.heat(heat);
+    board.float(HEAT[heat], b);
+  });
+  // On New Year's 3: a pair taken from the row the star crossed makes its
+  // wish, and every so many matches another star crosses.
+  game.on('star', ({ b, wish, starDue, star }) => {
+    const words = [];
+    if (wish) {
+      sound.wish();
+      board.float('🌠', b);
+      setTimeout(() => board.float(`+${POINTS.wish}`, b), 500); // after the pair's own points
+      words.push(`Your wish comes true! ${POINTS.wish} points.`);
+    }
+    if (starDue && star) {
+      setTimeout(() => sound.star(), wish ? 400 : 0);
+      board.starCrossed();
+      words.push('A shooting star! Make a wish: take a pair from the row it crossed.');
+    }
+    if (words.length) toast(words.join(' '));
+  });
+  // On New Year's Day: a sweet taken in January breaks the resolution, and
+  // a match that sees January out without one keeps it.
+  game.on('resolution', ({ b, gaveIn }) => {
+    const held = game.daysHeld;
+    if (gaveIn) {
+      sound.gaveIn();
+      board.float('💔', b);
+      toast(held ? `You gave in to a sweet: your resolution lasted ${held} ${held === 1 ? 'day' : 'days'}, for ${held * POINTS.held} points.` : "You gave in to a sweet on New Year's Day itself: the resolution is broken.");
+      return;
+    }
+    sound.fanfare();
+    board.float('💪', b);
+    setTimeout(() => board.float(`+${POINTS.resolution}`, b), 500); // after the pair's own points
+    toast(`You made it through January! Your resolution held: ${held * POINTS.held + POINTS.resolution} points. The sweets are fair game now.`);
+  });
+  // On New Year's 2: the two glasses meet, and clink, a toast.
+  game.on('toast', () => {
+    const worth = toastWorth(game);
+    sound.clink();
+    board.clink();
+    setTimeout(() => board.meetingAt && board.floatAt(`+${worth}`, board.meetingAt), 600); // after the glasses' own
+    toast(`Cheers! The glasses meet and clink: a toast, ${worth} points.`);
+  });
+  // On New Year's 4: a couple of a colour of confetti, taken together, is
+  // a perfect match.
+  game.on('confetti', ({ b }) => {
+    sound.confetti();
+    board.float('✨', b);
+    setTimeout(() => board.float(`+${POINTS.perfect}`, b), 500); // after the pair's own points
+    toast(`Perfect match! ${POINTS.perfect} points.`);
+  });
+  // On New Year's 5: burning sparklers taken score what's left of them,
+  // sparklers lit as their tiles come free, and others burn out.
+  game.on('sparkler', ({ b, sparked, kindled, fizzled }) => {
+    const words = [];
+    if (sparked.length) {
+      const pts = sparked.reduce((sum, s) => sum + s.left, 0) * POINTS.spark;
+      sound.sparkler();
+      setTimeout(() => board.float(`+${pts}`, b), 500); // after the pair's own points
+      words.push(`${sparked.length > 1 ? 'Two sparklers' : 'A sparkler'}, still burning! ${pts} points.`);
+    }
+    if (fizzled.length) {
+      sound.fizzle();
+      for (const t of fizzled) board.float('💨', t);
+      words.push(fizzled.length > 1 ? `${fizzled.length} sparklers burnt out.` : 'A sparkler burnt out.');
+    }
+    if (kindled.length) {
+      setTimeout(() => sound.light(), sparked.length ? 300 : 0);
+      for (const t of kindled) board.float('🎇', t);
+      words.push(`${kindled.length > 1 ? `${kindled.length} sparklers are` : 'A sparkler is'} lit: take ${kindled.length > 1 ? 'them' : 'it'} within ${game.burns} matches.`);
+    }
+    toast(words.join(' '));
+  });
+  // On New Year's 6: balloons pop, and every so many matches the net opens
+  // again, the balloons left floating away and more dropping.
+  game.on('balloon', ({ b, popped, net }) => {
+    const words = [];
+    if (popped.length) {
+      sound.pop();
+      setTimeout(() => board.float(`+${popped.length * POINTS.balloon}`, b), 500); // after the pair's own points
+      words.push(`${popped.length > 1 ? 'Pop, pop' : 'Pop'}! ${popped.length * POINTS.balloon} points.`);
+    }
+    if (net) {
+      setTimeout(() => sound.balloons(), popped.length ? 250 : 0);
+      board.netOpened(net);
+      const away = net.floated.length;
+      if (away) words.push(`${away > 1 ? `${away} balloons float` : 'A balloon floats'} away.`);
+      words.push(net.landed.length ? `The net opens: ${net.landed.length === 1 ? 'a balloon drops' : `${net.landed.length} balloons drop`}.` : 'The net opens, but there is nowhere for a balloon to land.');
+    }
+    toast(words.join(' '));
+  });
+  // On New Year's 8: a pair taken in the disco ball's beam dances.
+  game.on('spotlight', ({ b }) => {
+    sound.disco();
+    setTimeout(() => board.float(`+${POINTS.spotlight}`, b), 500); // after the pair's own points
+    toast(`In the spotlight! ${POINTS.spotlight} points.`);
+  });
   game.on('dance', ({ dance }) => {
     sound.waltz();
     toast(dance ? 'The music changes, and the free tiles change partners with tiles held down.' : 'The music changes, but the dancers keep their partners this time.');
@@ -410,23 +561,29 @@ function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
 
 // The holiday a board belongs to, which must be open for it to be played:
 // the night's are Halloween's, the week's Thanksgiving's, the twelve days'
-// Christmas's, and the turtle is no one's.
+// Christmas's, the countdown's and New Year's Day's New Year's, and the
+// turtle is no one's.
 function holidayOf(layout) {
   if (HOURS.some((h) => h.layout === layout)) return theme('halloween');
   if (dayOf(layout)) return theme('thanksgiving');
-  return dayOfChristmas(layout) ? theme('christmas') : null;
+  if (dayOfChristmas(layout)) return theme('christmas');
+  return newYearOf(layout) ? theme('new-year') : null;
 }
 
-// The day a board is for, if it is one of Thanksgiving week's or one of
-// Christmas's twelve: played freely, it plays by that day's rules.
-const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout);
+// The day a board is for, if it is one of Thanksgiving week's, one of
+// Christmas's twelve or one of New Year's, its countdown's or New Year's
+// Day's: played freely, it plays by that day's rules.
+const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(layout);
 
-// ------------------------------- Thanksgiving week, and Christmas's twelve days
+// ------------- Thanksgiving week, Christmas's twelve days, and New Year's boards
 
 // The holidays played as runs of days, reached in turn, as the Long Night's
-// hours are: Thanksgiving week, and Christmas's twelve days. For each: its
-// days; where its progress is kept in saved, as the night's is; and the
-// words its card and its end are told in.
+// hours are: Thanksgiving week, Christmas's twelve days, and New Year's
+// boards, the countdown from the 10 to the 1 and then New Year's Day. For
+// each: its days; where its progress is kept in saved, as the night's is;
+// and the words its card and its end are told in. New Year's also has the
+// ball on its card, dropping a notch with each board of the countdown
+// cleared, and words for each one cleared.
 const RUNS = {
   thanksgiving: {
     days: DAYS,
@@ -450,14 +607,42 @@ const RUNS = {
     score: 'Your Christmas score',
     over: ['Twelfth Night is over', 'You have seen the twelve days of Christmas through, from a partridge in a pear tree to the drummers on Twelfth Night.'],
   },
+  'new-year': {
+    days: NEW_YEAR,
+    progress: () => saved.newyear,
+    title: "The countdown to New Year's",
+    intro: "Ten boards counted down from the 10 to the 1, the ball dropping a notch with each one you clear and landing at midnight, halfway through the 1; then New Year's Day, with a resolution to keep. Each board you reach can be played again.",
+    begin: 'Begin the countdown',
+    back: 'Back to the countdown',
+    meanwhile: "New Year's countdown",
+    score: "Your New Year's score",
+    over: ['Happy New Year!', 'You have counted the old year out, from the 10 down to midnight, and seen the new one in.'],
+    figure: ballFigure,
+    cleared: (at) => {
+      const left = NEW_YEAR.length - 2 - at; // boards still to clear before the 1's midnight
+      if (at < NEW_YEAR.length - 2) return `The ball drops a notch: ${left} ${left === 1 ? 'board' : 'boards'} to midnight.`;
+      return at === NEW_YEAR.length - 2 ? 'The ball has landed: happy New Year!' : '';
+    },
+  },
 };
 
-// A day's name in the middle of a sentence: the first day, or Monday.
-const named = (d) => d.name.replace(/^The /, 'the ');
+// New Year's ball on its pole, for the countdown's card: a notch down for
+// each board of the countdown cleared, and landed once the 1 is cleared, or
+// with the 1 on the table, once its clock has struck midnight; with the year
+// it lands on.
+function ballFigure() {
+  const reached = saved.newyear.reached;
+  const one = NEW_YEAR.length - 2;
+  const landed = reached > one || (runId === 'new-year' && runDay === one && Boolean(game) && game.sides.length > 1 && !game.turnAhead);
+  return ballDrop(Math.min(reached, one + 1), landed, when(theme('new-year')).start.getFullYear());
+}
+
+// A day's name in the middle of a sentence: the first day, Monday, or the 9.
+const named = (d) => d.called || d.name.replace(/^The /, 'the ');
 
 // What play() wants for a day's board: its options, the treats it gives or
 // none, its nap, the words its turning over is told in, and its holiday's
-// faces: Thanksgiving's, or Christmas's.
+// faces: Thanksgiving's, Christmas's or New Year's.
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;
@@ -467,7 +652,7 @@ function dayPlay(d) {
     treatBar: Boolean(options.treats),
     napAt: napFrom ? { from: napFrom, to: napFrom + d.nap.matches } : null,
     turnSet: d.words || 'midnight',
-    faces: TWELVE_DAYS.includes(d) ? 'christmas' : 'thanksgiving',
+    faces: DAYS.includes(d) ? 'thanksgiving' : TWELVE_DAYS.includes(d) ? 'christmas' : NEW_YEAR.includes(d) ? 'new-year' : 'halloween',
   };
 }
 
@@ -570,6 +755,7 @@ function runMenu(id, opening = false) {
   }));
   showCard(`${theme(id).icon} ${r.title}`, `${r.intro} ${runScore(id)}`.trim(), actions, days);
   $('card-grid').classList.add('themes'); // room for the days' names
+  if (r.figure) showFigure(r.figure());
   showOptions();
 }
 
@@ -597,7 +783,8 @@ function wonDay(total, time, lines, timing) {
       ['Play the turtle', toTurtle],
     ], [], lines);
   } else {
-    showCard(`${r.days[at].name}: cleared`, `${timing}${note}`, [
+    const words = r.cleared ? ` ${r.cleared(at)}` : '';
+    showCard(`${r.days[at].name}: cleared`, `${timing}${note}${words}`, [
       [`On to ${named(r.days[at + 1])}`, () => beginDay(id, at + 1)],
       ['Play it again', () => beginDay(id, at)],
     ], [], lines);
@@ -609,6 +796,12 @@ function turned({ souls }) {
   const night = game.sideName === 'night';
   turnWords.ring(night);
   toast(`${turnWords.turned(night)} ${turnWords.woke(woke)}`);
+  // On New Year's, fireworks over the board: as the clock finishes
+  // striking twelve, or with no sound, once the tiles have turned.
+  if (turnWords.fireworks) {
+    const wait = sound.on ? 3600 : 1000;
+    ['🎆', '🎉', '🎇', '🥳', '🎆'].forEach((s, k) => setTimeout(() => board.float(s, game.freeTiles()[k * 3] ?? -1), wait + k * 220));
+  }
   const earned = woke ? woke * POINTS.soul : POINTS.clean;
   setTimeout(() => board.float(signed(earned), -1, earned < 0), 900); // once the tiles have turned
   update();
@@ -870,7 +1063,7 @@ function chooseHolidays(first = false) {
     show();
   };
   const grid = entries.map((e) => ({ label: `${e.theme.icon} ${e.theme.name}`, sub: dated(e), act: () => toggle(e.theme.id) }));
-  const text = "Pick the holidays and seasons you'd like to play, as many as you like. Halloween's, Thanksgiving's and Christmas's boards are ready, and the rest are on their way. Each opens weeks before its day, to build up to it, and stays open to the end of the year. Groundhog Day is open all year, every year. You can change them from the menu.";
+  const text = "Pick the holidays and seasons you'd like to play, as many as you like. Halloween's, Thanksgiving's, Christmas's and New Year's boards are ready, and the rest are on their way. Each opens weeks before its day, to build up to it, and stays open to the end of the year. Groundhog Day is open all year, every year. You can change them from the menu.";
   showCard('Choose your holidays', text, [[first === true ? 'Start' : 'Done', done], ['All of them', all]], grid);
   $('card-grid').classList.add('themes');
   show();
@@ -881,7 +1074,12 @@ function chooseHolidays(first = false) {
 // Thanksgiving and the twelve days' for Christmas, while each is open; and
 // for the others, whose boards are to come, and for those three before they
 // open, a card to say when.
-const MENUS = { halloween: (opening) => menu(opening), thanksgiving: (opening) => runMenu('thanksgiving', opening), christmas: (opening) => runMenu('christmas', opening) };
+const MENUS = {
+  halloween: (opening) => menu(opening),
+  thanksgiving: (opening) => runMenu('thanksgiving', opening),
+  christmas: (opening) => runMenu('christmas', opening),
+  'new-year': (opening) => runMenu('new-year', opening),
+};
 function openTheme(opening = false) {
   if (!saved.holidays) return chooseHolidays(opening);
   const t = theme(saved.theme);
@@ -1178,6 +1376,36 @@ function update() {
   // The pipers still on the board, on the bagpipes.
   $('pipers').hidden = !g.pipers;
   if (g.pipers) $('pipers').innerHTML = `🎶 <b>${g.pipersLeft}</b>`;
+  // The rockets still to set off, on New Year's 9.
+  $('rockets').hidden = !g.rockets;
+  if (g.rockets) $('rockets').innerHTML = `🚀 <b>${g.rocketsLeft}</b>`;
+  // The pairs that have danced in the disco ball's beam, on New Year's 8.
+  $('disco').hidden = !g.rules.disco;
+  if (g.rules.disco) $('disco').innerHTML = `🪩 <b>${g.spotlights}</b>`;
+  // The balloons to pop, and the matches until the net opens again, on New
+  // Year's 6.
+  $('balloons').hidden = !g.balloons;
+  if (g.balloons) $('balloons').innerHTML = `🎈 <b>${g.balloonsLeft}</b> · ⏳ <b>${g.untilDrop}</b>`;
+  // On New Year's 7, how close the last pair came to the lucky coin, or
+  // that it is found.
+  $('coin').hidden = g.coin < 0;
+  if (g.coin >= 0) $('coin').innerHTML = g.foundAt ? '🪙 <b>found</b>' : `🪙 ${g.reading ? `${HEAT[g.reading]} <b>${g.reading}</b>` : '<b>?</b>'}`;
+  // On New Year's 5, the sparklers still to take, unlit or burning.
+  $('sparklers').hidden = !g.sparklers;
+  if (g.sparklers) $('sparklers').innerHTML = `🎇 <b>${g.sparklersLeft}</b>`;
+  // On New Year's 4, the perfect matches taken.
+  $('confetti').hidden = !g.confetti;
+  if (g.confetti) $('confetti').innerHTML = `✨ <b>${g.perfects}</b>`;
+  // On New Year's 3, the wishes made, and the matches until the next star.
+  $('stars').hidden = !g.starEvery;
+  if (g.starEvery) $('stars').innerHTML = `🌠 <b>${g.wishes}</b> · ⏳ <b>${g.untilStar}</b>`;
+  // On New Year's Day, the days of January the resolution has held, or
+  // whether it was kept or broken.
+  $('resolution').hidden = !g.sweets;
+  if (g.sweets) $('resolution').innerHTML = g.brokenAt ? `💔 <b>day ${g.brokenAt}</b>` : g.resolutionKept ? '💪 <b>kept</b>' : `📅 <b>${g.daysHeld}</b>/${g.january}`;
+  // On New Year's 2, the places still between the two glasses, or the toast.
+  $('glasses').hidden = !g.path;
+  if (g.path) $('glasses').innerHTML = g.toastAt ? '🥂 <b>cheers!</b>' : `🥂 <b>${g.glassesApart}</b>`;
   // The lovebirds taken, on a board of turtle doves.
   $('lovebirds').hidden = !g.rules.lovebirds;
   if (g.rules.lovebirds) $('lovebirds').innerHTML = `🕊️ <b>${g.lovebirds}</b>`;
@@ -1387,6 +1615,7 @@ function toast(text) {
 function showCard(title, text, actions, grid = [], lines = []) {
   shown = null;
   paused = false;
+  showFigure(null);
   $('card-options').hidden = true;
   $('card-input').hidden = true;
   $('card-ranks').hidden = true;
@@ -1426,6 +1655,14 @@ function showCard(title, text, actions, grid = [], lines = []) {
   }
   $('card').hidden = false;
   row.firstChild.focus();
+}
+
+// A picture on the card, beside its words, as New Year's ball on its pole
+// is on the countdown's; or none.
+function showFigure(svg) {
+  const box = $('card-figure');
+  box.innerHTML = svg || '';
+  box.hidden = !svg;
 }
 
 function hideCard() {

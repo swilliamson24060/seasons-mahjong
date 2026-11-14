@@ -351,6 +351,13 @@ body.covered #board {
   --index-xm-monster: #8a4b1c;
   --index-xm-flower: #a8326e;
   --index-xm-moon: #1f7fa6;
+  /* New Year's: the clocks' navy, the party horns' purple, January's red, Father Time's brown, the clover's green and the seasons' teal. */
+  --index-ny-eyes: #2b4fa8;
+  --index-ny-bones: #7b3fb0;
+  --index-ny-graves: #c42a2a;
+  --index-ny-monster: #7a5214;
+  --index-ny-flower: #2e8a3e;
+  --index-ny-moon: #1d7f8c;
   position: absolute;
   width: calc(var(--tile-w) - var(--gap));
   height: calc(var(--tile-h) - var(--gap));
@@ -422,6 +429,282 @@ body.covered #board {
   pointer-events: none;
 }
 
+/* On New Year's 9, a rocket carries 🚀, waiting to be set off; and a tile
+   a rocket's burst has lit glows the lilac of a firework, edges and all,
+   with a sparkle on it, and turns gold like any tile when chosen: two lit
+   tiles taken together are a lit pair. A tile catching the light flashes
+   as it does. */
+.tile.rocket::after,
+.tile.lit::after {
+  content: '🚀';
+  position: absolute;
+  top: -10%;
+  right: -10%;
+  font-size: calc(var(--tile-w) * 0.38);
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+.tile.lit::after {
+  content: '✨';
+}
+
+.tile.lit {
+  --face-1: #fcefff;
+  --face-2: #e6c6f5;
+  --edge: #c09ad6;
+  --edge-deep: #946bb0;
+}
+
+.tile.sparkle {
+  animation: sparkle 0.7s ease-out;
+}
+
+@keyframes sparkle {
+  0% {
+    filter: brightness(1.7) drop-shadow(0 0 9px #ffd54a);
+    transform: scale(1.08);
+  }
+}
+
+/* On New Year's 3, the row a shooting star has crossed glows a starry
+   blue until the next star, and fades once its wish is made; a star
+   streaks across it as it comes. Its tiles are a cool, bright white. */
+.star-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 99999;
+  pointer-events: none;
+  transition:
+    top 0.3s ease,
+    opacity 0.6s ease;
+}
+
+.star-band.wished {
+  opacity: 0;
+}
+
+.star-band::after {
+  content: '';
+  position: absolute;
+  inset: -6% 0;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 9% 40%, rgba(255, 255, 255, 0.95) 0 1px, transparent 2px),
+    radial-gradient(circle at 27% 65%, rgba(210, 225, 255, 0.9) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 46% 30%, rgba(255, 255, 255, 0.95) 0 1px, transparent 2px),
+    radial-gradient(circle at 64% 70%, rgba(230, 215, 255, 0.9) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 83% 35%, rgba(255, 255, 255, 0.95) 0 1px, transparent 2px),
+    linear-gradient(rgba(120, 160, 255, 0), rgba(140, 180, 255, 0.34) 25%, rgba(185, 160, 255, 0.34) 75%, rgba(120, 160, 255, 0));
+  mix-blend-mode: screen;
+}
+
+.star-band::before {
+  content: '🌠';
+  position: absolute;
+  top: 50%;
+  right: -12%;
+  transform: translateY(-50%);
+  font-size: calc(var(--tile-w) * 0.6);
+  line-height: 1;
+  opacity: 0;
+}
+
+.star-band.streak::before {
+  animation: streak 0.9s ease-out;
+}
+
+@keyframes streak {
+  15% {
+    opacity: 1;
+  }
+  100% {
+    right: 105%;
+    opacity: 0;
+  }
+}
+
+.tile.starlit {
+  --face-1: #f6f8ff;
+  --face-2: #dfe7ff;
+}
+
+/* On New Year's 2, the two glasses of champagne stand along the 2, each at
+   the top right of its place, as badges do, so that the tile under it
+   still shows, and glide on a place at a time; when they meet they clink,
+   tilting together, and stay so. The tiles still in their way are ringed
+   in champagne gold, not filled with it, so as not to look chosen. */
+.glass {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--tile-w) * 0.36);
+  height: calc(var(--tile-w) * 0.72);
+  z-index: 99999;
+  pointer-events: none;
+  transition: transform 0.5s ease;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 5px rgba(255, 226, 140, 0.6));
+}
+
+.glass svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform-origin: 50% 100%;
+  transition: transform 0.3s ease;
+}
+
+.glass.clinked svg {
+  transform: rotate(var(--tilt));
+}
+
+.glass.clinking svg {
+  animation: clink 0.9s ease-out;
+}
+
+@keyframes clink {
+  0% {
+    transform: rotate(0);
+  }
+  35% {
+    transform: rotate(calc(var(--tilt) * 1.7));
+  }
+  50% {
+    transform: rotate(calc(var(--tilt) * 0.5));
+  }
+  68% {
+    transform: rotate(calc(var(--tilt) * 1.3));
+  }
+  100% {
+    transform: rotate(var(--tilt));
+  }
+}
+
+.tile.in-way::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 calc(var(--tile-w) * 0.06) #e3ad35,
+    inset 0 0 calc(var(--tile-w) * 0.18) rgba(255, 205, 80, 0.75);
+  pointer-events: none;
+}
+
+/* On New Year's Day, a sweet carries its treat, 🍩 or another, in the
+   corner where badges go; through January, while the resolution holds, it
+   is tinted a frosting pink, tempting, and after, a tile like any other. */
+.tile.sweet::after {
+  content: attr(data-sweet);
+  position: absolute;
+  top: -12%;
+  right: -10%;
+  font-size: calc(var(--tile-w) * 0.42);
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+.tile.tempting {
+  --face-1: #fff1f7;
+  --face-2: #f6cde0;
+  --edge: #d9a1b9;
+  --edge-deep: #b07490;
+}
+
+/* On New Year's 8, the disco ball's beam lies across the board, a row
+   deep, glinting, over the tiles in its light, and glides down a row with
+   every match; the ball hangs at its left end. The tiles in it are a cool
+   white. */
+.disco-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 99999;
+  pointer-events: none;
+  transition: top 0.45s ease;
+}
+
+.disco-beam::after {
+  content: '';
+  position: absolute;
+  inset: -8% 0;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 14% 35%, rgba(255, 255, 255, 0.9) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 33% 70%, rgba(255, 220, 250, 0.85) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 52% 30%, rgba(220, 240, 255, 0.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 71% 65%, rgba(255, 255, 255, 0.85) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 90% 40%, rgba(255, 230, 250, 0.9) 0 2px, transparent 3px),
+    linear-gradient(rgba(255, 255, 255, 0), rgba(215, 232, 255, 0.34) 25%, rgba(255, 226, 252, 0.34) 75%, rgba(255, 255, 255, 0));
+  mix-blend-mode: screen;
+}
+
+.disco-beam::before {
+  content: '🪩';
+  position: absolute;
+  left: calc(var(--tile-w) * -0.32);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: calc(var(--tile-w) * 0.5);
+  line-height: 1;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.85));
+}
+
+.tile.spotlit {
+  --face-1: #ffffff;
+  --face-2: #e6efff;
+}
+
+/* On New Year's 7, the tile the lucky coin turned up in shows it, 🪙, until
+   the tile is taken, gleaming gold. */
+.tile.coin {
+  --face-1: #fff7da;
+  --face-2: #f2d98f;
+}
+
+.tile.coin::after {
+  content: '🪙';
+  position: absolute;
+  top: -12%;
+  right: -10%;
+  font-size: calc(var(--tile-w) * 0.42);
+  line-height: 1;
+  filter: drop-shadow(0 0 4px rgba(255, 213, 74, 0.9));
+  pointer-events: none;
+}
+
+/* On New Year's 6, a tile with a balloon on it carries 🎈, to be popped by
+   taking it; a balloon drops on to its tile as the net opens. */
+.tile.balloon::after {
+  content: '🎈';
+  position: absolute;
+  top: -14%;
+  right: -10%;
+  font-size: calc(var(--tile-w) * 0.42);
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+.tile.landing::after {
+  animation: landing 0.7s ease-out;
+}
+
+@keyframes landing {
+  0% {
+    transform: translateY(-260%);
+    opacity: 0;
+  }
+  70% {
+    transform: translateY(12%);
+    opacity: 1;
+  }
+}
+
 /* On the lake, the swan's reflection lies in the water: its tiles are
    tinged with blue, edges and all. */
 .tile.lake {
@@ -456,6 +739,12 @@ body.covered #board {
   --index-xm-monster: #f0c49a;
   --index-xm-flower: #f5a3d0;
   --index-xm-moon: #9fe3ff;
+  --index-ny-eyes: #a8c4ff;
+  --index-ny-bones: #d9a6ff;
+  --index-ny-graves: #ff9a9a;
+  --index-ny-monster: #f0c98a;
+  --index-ny-flower: #93e6a8;
+  --index-ny-moon: #8fe3f0;
 }
 
 .tile.night svg {
@@ -466,9 +755,14 @@ body.covered #board {
   filter: drop-shadow(0 0 4px rgba(127, 211, 236, 0.9));
 }
 
-/* Christmas's lost soul is a lump of coal, glowing as an ember does. */
+/* Christmas's lost soul is a lump of coal, glowing as an ember does; New
+   Year's is a sleepyhead, glowing a dreamy lilac. */
 [data-faces='christmas'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(255, 128, 48, 0.9));
+}
+
+[data-faces='new-year'] .tile.soul svg {
+  filter: drop-shadow(0 0 4px rgba(201, 176, 255, 0.95));
 }
 
 .tile.selected {
@@ -549,6 +843,85 @@ body.covered #board {
   }
   70% {
     transform: rotate(-3deg);
+  }
+}
+
+/* On New Year's 4, every tile has caught a fleck of confetti: red hearts,
+   gold stars, silver dots and blue diamonds, so that the colours can be
+   told apart by their shapes alone. */
+.tile[data-confetti]::after {
+  position: absolute;
+  top: -8%;
+  right: -6%;
+  font: 900 calc(var(--tile-w) * 0.34) / 1 system-ui, -apple-system, sans-serif;
+  text-shadow:
+    0 0 2px #fff,
+    0 0 2px #fff,
+    0 1px 2px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.tile[data-confetti='red']::after {
+  content: '\2665\FE0E';
+  color: #e0304a;
+}
+
+.tile[data-confetti='gold']::after {
+  content: '\2605';
+  color: #e39a0c;
+}
+
+.tile[data-confetti='silver']::after {
+  content: '\25CF';
+  color: #8e99a8;
+}
+
+.tile[data-confetti='blue']::after {
+  content: '\25C6';
+  color: #2f6fd0;
+}
+
+/* On New Year's 5, a sparkler waits grey and unlit while its tile is held
+   down; lit, it glows, with the matches it has left to burn, amber at the
+   last, and flickers as it burns. */
+.tile.sparkler::before {
+  content: '🎇';
+  position: absolute;
+  top: -12%;
+  right: -12%;
+  font-size: calc(var(--tile-w) * 0.38);
+  line-height: 1;
+  filter: grayscale(1) opacity(0.6);
+  pointer-events: none;
+}
+
+.tile.sparkler.burning::before {
+  content: '🎇' attr(data-burn);
+  top: 3%;
+  right: 4%;
+  padding: 0.1em 0.22em 0.1em 0.08em;
+  border-radius: 9px;
+  background: #fff6d6;
+  box-shadow:
+    0 0 6px rgba(255, 196, 64, 0.9),
+    inset 0 0 0 1px #e8b84a;
+  color: #7a4a06;
+  font: 800 max(10px, calc(var(--tile-w) * 0.3)) / 1 system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  filter: none;
+  animation: flicker 0.35s ease-in-out infinite alternate;
+}
+
+.tile.sparkler.burning.short::before {
+  background: #ffe1a1;
+  color: #9a3412;
+}
+
+@keyframes flicker {
+  to {
+    box-shadow:
+      0 0 11px rgba(255, 214, 96, 1),
+      inset 0 0 0 1px #e8b84a;
   }
 }
 
@@ -1013,6 +1386,31 @@ body.covered #board {
   color: var(--muted);
 }
 
+/* A picture beside the card's words, as New Year's ball on its pole is on
+   the countdown's, with the grid and the buttons below them both. */
+#card-figure {
+  float: right;
+  width: 56px;
+  height: 130px;
+  margin: 0 0 8px 10px;
+}
+
+#card-figure[hidden] {
+  display: none;
+}
+
+#card-figure svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#card .hours,
+#card .actions,
+#card .score {
+  clear: both;
+}
+
 #card .actions {
   display: flex;
   gap: 8px;
@@ -1191,14 +1589,23 @@ body.covered #board {
 @media (prefers-reduced-motion: reduce) {
   .tile,
   .planchette,
-  .gold-ring {
+  .gold-ring,
+  .disco-beam,
+  .star-band,
+  .glass,
+  .glass svg {
     transition: none;
   }
   .tile.hint,
   .tile.shake,
   .tile.jiggle,
   .tile.flip,
-  .tile.twirl {
+  .tile.twirl,
+  .tile.sparkle,
+  .tile.landing::after,
+  .tile.sparkler.burning::before,
+  .star-band.streak::before,
+  .glass.clinking svg {
     animation: none;
   }
   .tile.hint {

@@ -1,9 +1,10 @@
 // The holidays and seasons of the year, each a theme of the game: its name,
 // its icon, when it falls, and the colour it brings (the night sky behind
 // its boards, and an accent), and when its boards open. A player picks the
-// ones they want. Three are ready to play: Halloween's Long Night,
-// Thanksgiving week, and Christmas's twelve days; the others are here so
-// that they can be picked, and their boards come next.
+// ones they want. Four are ready to play: Halloween's Long Night,
+// Thanksgiving week, Christmas's twelve days, and New Year's countdown,
+// with New Year's Day after it; the others are here so that they can be
+// picked, and their boards come next.
 
 // When each falls, worked out for any year, as some move: a fixed day, or
 // the nth weekday of a month, counting -1 for the last.
@@ -28,7 +29,7 @@ const THURSDAY = 4;
 // to come. Groundhog Day, the day that comes round again and again, has no
 // opening day: it is open `always`, all year, every year.
 export const THEMES = [
-  { id: 'new-year', name: "New Year's", icon: '🎉', on: fixed(1, 1), opens: fixed(12, 1), accent: '#f2c14e', sky: ['#243266', '#080b1f'] },
+  { id: 'new-year', name: "New Year's", icon: '🎉', on: fixed(1, 1), opens: fixed(12, 1), accent: '#f2c14e', sky: ['#243266', '#080b1f'], ready: true },
   { id: 'groundhog', name: 'Groundhog Day', icon: '🦫', on: fixed(2, 2), always: true, accent: '#8ccff5', sky: ['#34546b', '#0d1820'] },
   { id: 'valentines', name: "Valentine's Day", icon: '💘', on: fixed(2, 14), opens: fixed(2, 1), accent: '#ff6b9a', sky: ['#5c2042', '#1c0913'] },
   { id: 'spring', name: 'Start of Spring', icon: '🌷', on: fixed(3, 20), opens: fixed(3, 1), accent: '#8ad66d', sky: ['#2f6650', '#0e221b'] },

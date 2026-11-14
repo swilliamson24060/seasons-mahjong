@@ -3,14 +3,15 @@ import { FACES, KINDS, MATCH, FACE } from '../js/engine/tiles.js';
 import { sprite, symbolId, faceName, kindName, FACE_SETS } from '../js/ui/faces.js';
 import { DAYS } from '../js/thanksgiving.js';
 import { TWELVE_DAYS } from '../js/christmas.js';
+import { COUNTDOWN } from '../js/newyear.js';
 import { Game } from '../js/engine/game.js';
 import { TURTLE } from '../js/engine/layouts.js';
 import { Board } from '../js/ui/board.js';
 
 const INDEXED = ['eyes', 'bones', 'graves', 'monster', 'flower', 'moon'];
 
-test("there are Halloween's faces, Thanksgiving's and Christmas's, each a drawing of every face", () => {
-  equal(FACE_SETS.join(' '), 'halloween thanksgiving christmas', 'the sets');
+test("there are Halloween's faces, Thanksgiving's, Christmas's and New Year's, each a drawing of every face", () => {
+  equal(FACE_SETS.join(' '), 'halloween thanksgiving christmas new-year', 'the sets');
   const svg = sprite();
   const ids = [...svg.querySelectorAll('symbol')].map((s) => s.id);
   equal(ids.length, FACES.length * FACE_SETS.length + 1, 'symbols, and the egg'); // the egg a tile hides in, on the hens' board
@@ -26,10 +27,10 @@ test("there are Halloween's faces, Thanksgiving's and Christmas's, each a drawin
   return `${ids.length} faces`;
 });
 
-test("Halloween's faces keep their names, and Thanksgiving's and Christmas's have names of their own", () => {
+test("Halloween's faces keep their names, and Thanksgiving's, Christmas's and New Year's have names of their own", () => {
   for (const f of FACES) equal(faceName(f.id), f.name, f.key);
   for (const k of KINDS) equal(kindName(k.id), k.name, k.key);
-  for (const set of ['thanksgiving', 'christmas']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year']) {
     const names = new Map();
     for (const f of FACES) {
       const name = faceName(f.id, set);
@@ -57,6 +58,14 @@ test("Halloween's faces keep their names, and Thanksgiving's and Christmas's hav
   equal(['vampire', 'werewolf', 'mummy', 'zombie'].map((k) => faceName(FACE[k], 'christmas')).join(', '), 'Partridge, Turtle dove, French hen, Calling bird', "the song's four birds, for the monsters");
   equal(kindName(MATCH[FACE.nightshade], 'christmas'), 'Christmas plant', "Christmas's flowers");
   equal(kindName(MATCH[FACE['full-moon']], 'christmas'), 'Snowflake', "Christmas's moons");
+  equal(faceName(FACE['eyes-3'], 'new-year'), 'Three of Clocks', "New Year's three of eyes");
+  equal(faceName(FACE['bones-9'], 'new-year'), 'Nine of Party horns', "New Year's nine of bones");
+  equal(faceName(FACE['graves-1'], 'new-year'), 'One of Calendars', "New Year's one of graves");
+  equal(['vampire', 'werewolf', 'mummy', 'zombie'].map((k) => faceName(FACE[k], 'new-year')).join(', '), 'Father Time, Baby New Year, Night owl, Polar bear', 'four who see the new year in, for the monsters');
+  equal(['lantern', 'brew', 'ghost'].map((k) => faceName(FACE[k], 'new-year')).join(', '), "Party hat, Champagne, New Year's ball", 'the red, the green and the white');
+  equal(kindName(MATCH[FACE.nightshade], 'new-year'), 'Lucky charm', "New Year's flowers");
+  equal(kindName(MATCH[FACE['full-moon']], 'new-year'), 'Season', "New Year's moons");
+  equal(['new-moon', 'waxing-moon', 'full-moon', 'waning-moon'].map((k) => faceName(FACE[k], 'new-year')).join(', '), 'Winter, Spring, Summer, Fall', 'the seasons of the year to come, in turn');
 });
 
 test("on Twelfth Night a tile left without a partner turns to coal, as Christmas's lost soul is drawn", () => {
@@ -64,9 +73,14 @@ test("on Twelfth Night a tile left without a partner turns to coal, as Christmas
   check(TWELVE_DAYS.at(-1).text.includes('turns to coal'), "Twelfth Night's card says what a tile left without a partner turns to");
 });
 
+test("at midnight on the 1 a tile left without a partner is a sleepyhead, as New Year's lost soul is drawn", () => {
+  equal(faceName(FACE['lost-soul'], 'new-year'), 'Sleepyhead', "New Year's lost soul");
+  check(COUNTDOWN.at(-1).text.includes('sleepyheads match each other'), "the 1's card says what a tile left without a partner becomes");
+});
+
 test("each set's corner numbers have a colour by day and by night", async () => {
   const css = await (await fetch('css/game.css')).text();
-  for (const prefix of ['index', 'index-tg', 'index-xm']) {
+  for (const prefix of ['index', 'index-tg', 'index-xm', 'index-ny']) {
     for (const group of INDEXED) {
       const found = css.match(new RegExp(`--${prefix}-${group}:\\s*#[0-9a-f]{6};`, 'g')) || [];
       equal(found.length, 2, `--${prefix}-${group}, by day and by night`);
@@ -100,6 +114,8 @@ test("a board's tiles can change to another set's faces, each tile the same face
   wears('thanksgiving');
   board.setFaces('christmas');
   wears('christmas');
+  board.setFaces('new-year');
+  wears('new-year');
   board.setFaces('halloween');
   wears('halloween');
 });

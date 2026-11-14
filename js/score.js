@@ -11,8 +11,18 @@
 // board of gold rings each ring turned to gold, on the board of geese each
 // line of goslings, on the lake each swan, a tile and its reflection, and on
 // the milk pail each pail of milk taken while it's fresh, its two tiles
-// together, on the crown each lord taken while still held down, a leap, and
-// on the bagpipes each tile that follows a piper out.
+// together, on the crown each lord taken while still held down, a leap, on
+// the bagpipes each tile that follows a piper out, on New Year's 9 each lit
+// pair, two tiles lit by rockets' bursts taken together, on New Year's 8
+// each pair that dances in the disco ball's beam, on New Year's 7 the lucky
+// coin, worth more the sooner it's found, on New Year's 6 each balloon
+// popped before the next net opens, on New Year's 5 each sparkler taken
+// while it still burns, the more the more of it is left, on New Year's 4
+// each perfect match, a couple of a colour of confetti taken together, on
+// New Year's 3 each wish made on a shooting star, and on New Year's 2 the
+// toast, as the two glasses meet, worth more the more pairs are still on
+// the board; and on New Year's Day each match the resolution held through
+// January, leaving the sweets alone, and the whole month more.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -36,11 +46,31 @@ export const POINTS = {
   milk: 40, // each pail of milk taken while it's fresh, its two tiles together
   leap: 20, // each lord taken while still held down by the usual rule
   piped: 15, // each tile that follows a piper out
+  lit: 30, // each lit pair: two tiles lit by rockets' bursts, taken together
+  spotlight: 30, // each pair taken with both its tiles in the disco ball's beam
+  balloon: 15, // each balloon popped, its tile taken before the next net opens
+  coin: 200, // the lucky coin, found as the first match frees its tile,
+  coinFade: 5, // less this for every match before it is found,
+  coinLeast: 25, // and never less than this
+  spark: 10, // each match a sparkler still had left to burn when it was taken
+  perfect: 5, // each couple of a colour of confetti taken together
+  wish: 15, // each wish made on a shooting star, a pair from the row it crossed
+  toast: 5, // each pair still on the board as the two glasses meet and clink, a toast
+  held: 5, // each match of January the resolution held, the sweets left alone,
+  resolution: 100, // and holding it through the whole month
 };
+
+// What the lucky coin is worth, found as the match given frees its tile.
+export const coinWorth = (match) => Math.max(POINTS.coinLeast, POINTS.coin - POINTS.coinFade * (match - 1));
 
 // The tiles a board has: on a board with a fridge, the table's, its
 // containers aside.
 const tilesOf = (game) => game.tableCount ?? game.layout.count;
+
+// On New Year's 2, the pairs still on the board as the glasses met, and
+// what the toast is worth: so much for each of them.
+export const pairsAtToast = (game) => tilesOf(game) / 2 - game.toastAt;
+export const toastWorth = (game) => POINTS.toast * pairsAtToast(game);
 
 // Par: five seconds a tile, or six on a board that turns over, as that wants planning.
 export const par = (game) => tilesOf(game) * (game.sides.length > 1 ? 6 : 5);
@@ -86,6 +116,31 @@ export function scoreOf(game, seconds, words = TURN) {
   }
   if (game.lords) rows.push(['Leaping lords', times(game.leaps, POINTS.leap), game.leaps * POINTS.leap]);
   if (game.pipers) rows.push(['Pied pipers', times(game.piped, POINTS.piped), game.piped * POINTS.piped]);
+  if (game.rockets) rows.push(['Lit pairs', times(game.litPairs, POINTS.lit), game.litPairs * POINTS.lit]);
+  if (game.rules.disco) rows.push(['In the spotlight', times(game.spotlights, POINTS.spotlight), game.spotlights * POINTS.spotlight]);
+  if (game.balloons) {
+    const how = [`${game.popped} of ${game.dropped} popped`, game.floated && `${game.floated} floated away`].filter(Boolean).join(', ');
+    rows.push(['Balloons', how, game.popped * POINTS.balloon]);
+  }
+  if (game.coin >= 0) rows.push(['Lucky coin', game.foundAt ? `found on match ${game.foundAt}` : 'still hidden', game.foundAt ? coinWorth(game.foundAt) : 0]);
+  if (game.sparklers) {
+    const taken = game.sparklers.filter((s) => s.state === 'taken');
+    const out = game.sparklers.filter((s) => s.state === 'out').length;
+    const how = [`${taken.length} of ${game.sparklers.length} taken burning`, out && `${out} burnt out`].filter(Boolean).join(', ');
+    rows.push(['Sparklers', how, taken.reduce((sum, s) => sum + s.left, 0) * POINTS.spark]);
+  }
+  if (game.confetti) rows.push(['Perfect matches', times(game.perfects, POINTS.perfect), game.perfects * POINTS.perfect]);
+  if (game.starEvery) rows.push(['Wishes', `${game.wishes} of ${game.starCount} stars`, game.wishes * POINTS.wish]);
+  if (game.sweets) {
+    const held = game.daysHeld;
+    const days = `${held} ${held === 1 ? 'day' : 'days'}`;
+    const how = game.brokenAt ? `broken on day ${game.brokenAt}, after ${days}` : game.resolutionKept ? 'kept through January' : `${days} of ${game.january} so far`;
+    rows.push(['Resolution', how, held * POINTS.held + (game.resolutionKept ? POINTS.resolution : 0)]);
+  }
+  if (game.path) {
+    const n = pairsAtToast(game);
+    rows.push(['A toast', game.toastAt ? `on match ${game.toastAt}, with ${n} ${n === 1 ? 'pair' : 'pairs'} left` : 'the glasses still apart', game.toastAt ? toastWorth(game) : 0]);
+  }
   if (game.shuffles) rows.push(['Shuffles', times(game.shuffles, POINTS.shuffle), game.shuffles * POINTS.shuffle]);
   if (game.hints) rows.push(['Hints', times(game.hints, POINTS.hint), game.hints * POINTS.hint]);
   if (game.won) {

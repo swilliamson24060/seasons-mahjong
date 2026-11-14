@@ -276,6 +276,134 @@ export class Sound {
     [880, 987.8, 1108.7, 1318.5, 1108.7, 1318.5].forEach((f, k) => this.ping(f, this.now + 0.1 + k * 0.11, { type: 'square', gain: 0.025, attack: 0.01, fall: 0.12 }));
   }
 
+  // A rocket going up with a whistle, and bursting: a bang, and the crackle
+  // of its sparks.
+  firework() {
+    if (!this.on) return;
+    const at = this.now;
+    const o = this.ctx.createOscillator();
+    o.frequency.setValueAtTime(700, at);
+    o.frequency.exponentialRampToValueAtTime(2600, at + 0.42);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(0.04, at + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + 0.45);
+    o.connect(g).connect(this.bus);
+    o.start(at);
+    o.stop(at + 0.5);
+    const bang = at + 0.45;
+    this.ping(70, bang, { gain: 0.3, attack: 0.002, fall: 0.35, into: this.master });
+    this.rustle(bang, 0.3, 700, 200, 0.16);
+    for (let k = 0; k < 9; k++) this.rustle(bang + 0.12 + k * 0.05 + Math.random() * 0.03, 0.05, 5200, 3200, 0.05);
+  }
+
+  // A pair dancing in the disco ball's beam: a beat to dance to, its kick
+  // and its hi-hat, and a chord on top.
+  disco() {
+    if (!this.on) return;
+    const t = this.now;
+    for (let k = 0; k < 4; k++) {
+      const at = t + k * 0.13;
+      if (k % 2 === 0) this.ping(62, at, { gain: 0.26, attack: 0.002, fall: 0.16, into: this.master });
+      this.rustle(at + 0.065, 0.04, 8000, 6000, 0.05);
+    }
+    [523.3, 659.3, 784, 987.8].forEach((f) => this.ping(f, t + 0.26, { type: 'square', gain: 0.016, attack: 0.005, fall: 0.3 }));
+  }
+
+  // A shooting star crossing: a swish across the sky, and a shimmer.
+  star() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.6, 7000, 1500, 0.06);
+    [2637, 3136, 3520].forEach((f, k) => this.ping(f, this.now + 0.1 + k * 0.07, { gain: 0.025, fall: 0.6 }));
+  }
+
+  // A wish made: a rising run of bells.
+  wish() {
+    if (!this.on) return;
+    [1047, 1319, 1568, 2093].forEach((f, k) => this.bell(f, this.now + k * 0.09, 0.035, 1.2));
+  }
+
+  // A resolution broken: the crunch of a sweet, and a falling sigh.
+  gaveIn() {
+    if (!this.on) return;
+    for (let k = 0; k < 3; k++) this.rustle(this.now + k * 0.09, 0.07, 2600, 1400, 0.12);
+    [392, 370, 349, 311].forEach((f, k) => this.ping(f, this.now + 0.35 + k * 0.22, { type: 'triangle', gain: 0.06, fall: 0.3 }));
+  }
+
+  // A toast: two glasses clinking, ringing high and clear, and the
+  // champagne fizzing.
+  clink() {
+    if (!this.on) return;
+    this.bell(2794, this.now, 0.045, 0.9);
+    this.bell(3322, this.now + 0.015, 0.035, 0.8);
+    this.rustle(this.now + 0.08, 1.1, 5000, 9000, 0.025);
+  }
+
+  // A perfect match: a party popper, its paper fluttering, and a chime.
+  confetti() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.05, 2500, 1500, 0.2);
+    this.rustle(this.now + 0.05, 0.5, 5000, 2500, 0.05);
+    [1319, 1976].forEach((f, k) => this.ping(f, this.now + 0.08 + k * 0.08, { gain: 0.04, fall: 0.35 }));
+  }
+
+  // A sparkler lit: a match struck, and the fizz catching.
+  light() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.12, 2000, 5000, 0.08);
+    this.rustle(this.now + 0.1, 0.5, 6000, 7000, 0.04);
+  }
+
+  // A burning sparkler taken: its crackle, bright and quick.
+  sparkler() {
+    if (!this.on) return;
+    for (let k = 0; k < 7; k++) this.rustle(this.now + k * 0.045 + Math.random() * 0.02, 0.035, 7000, 4500, 0.07);
+    this.ping(2093, this.now + 0.05, { gain: 0.03, fall: 0.3 });
+  }
+
+  // A sparkler burnt out: a last fizz, falling away.
+  fizzle() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.4, 3000, 400, 0.05);
+  }
+
+  // How close a pair came to the lucky coin: hot, two notes rising; warm,
+  // one; cold, a low one, quietly.
+  heat(level) {
+    if (!this.on) return;
+    const notes = { hot: [784, 1047], warm: [659], cold: [262] }[level] || [];
+    notes.forEach((f, k) => this.ping(f, this.now + k * 0.09, { gain: 0.05, fall: 0.3 }));
+  }
+
+  // The lucky coin found: it spins down and settles, ringing, with a
+  // sparkle over it.
+  coin() {
+    if (!this.on) return;
+    [1319, 1760, 1319, 1760, 2093].forEach((f, k) => this.ping(f, this.now + k * 0.07, { type: 'triangle', gain: 0.05, fall: 0.25 }));
+    this.bell(2637, this.now + 0.4, 0.04, 1.2);
+  }
+
+  // A balloon popping: a sharp snap of noise and a little thump.
+  pop() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.06, 3000, 1200, 0.22);
+    this.ping(180, this.now, { gain: 0.12, attack: 0.002, fall: 0.08, into: this.master });
+  }
+
+  // The net opening: a swish as it lets go, and the balloons bouncing down,
+  // soft and low, one after another.
+  balloons() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.4, 600, 2400, 0.08);
+    [0.3, 0.42, 0.5, 0.62].forEach((t, k) => this.ping(220 - k * 18, this.now + t, { gain: 0.08, attack: 0.01, fall: 0.18 }));
+  }
+
+  // A lit pair taken: a twinkle of bright notes.
+  sparkle() {
+    if (!this.on) return;
+    [1568, 2093, 2637, 3136, 4186].forEach((f, k) => this.ping(f, this.now + k * 0.05, { gain: 0.04, fall: 0.35 }));
+  }
+
   // A lord leaping out: a trumpet call, rising.
   fanfare() {
     if (!this.on) return;
@@ -329,6 +457,18 @@ export class Sound {
   midnight() {
     if (!this.on) return;
     for (let k = 0; k < 12; k++) this.bell(196, this.now + k * 0.42, 0.13, 2.4);
+  }
+
+  // Midnight on New Year's: the clock strikes twelve, and the new year comes
+  // in with a firework's bang and crackle, and a fanfare.
+  newYear() {
+    if (!this.on) return;
+    for (let k = 0; k < 12; k++) this.bell(262, this.now + k * 0.3, 0.1, 1.6);
+    const at = this.now + 12 * 0.3;
+    this.ping(70, at, { gain: 0.3, attack: 0.002, fall: 0.35, into: this.master });
+    this.rustle(at, 0.3, 700, 200, 0.16);
+    for (let k = 0; k < 9; k++) this.rustle(at + 0.12 + k * 0.05 + Math.random() * 0.03, 0.05, 5200, 3200, 0.05);
+    [[67, 0.2, 0.12], [72, 0.34, 0.12], [76, 0.48, 0.12], [79, 0.62, 0.5]].forEach(([note, t, length]) => this.organ(note, at + t, length, 0.08));
   }
 
   sunrise() {

@@ -1401,6 +1401,619 @@ export const DRUM = parseLayout('Drum', [
   `,
 ]);
 
+// New Year's first board, the start of the countdown: the number 10, the 1
+// with its flag and its foot beside the 0, a tall ring, each with a ridge
+// along it on the second layer, sitting across the join of the two tiles
+// beneath: 88 tiles on two layers, nine across.
+export const TEN = parseLayout('Ten', [
+  `
+  .##..###.
+  ###.#####
+  .##.##.##
+  .##.##.##
+  .##.##.##
+  .##.##.##
+  .##.##.##
+  .##.##.##
+  .##.#####
+  ###..###.
+  `,
+  `
+  .....vvv.
+  .>.......
+  .>..>..>.
+  .>..>..>.
+  .>..>..>.
+  .>..>..>.
+  .>..>..>.
+  .>..>..>.
+  .>...vvv.
+  `,
+]);
+
+// New Year's second board: the number 9, its loop a ring round an open
+// middle, its stem coming down on the right and curling round to the left
+// at the foot, with a ridge along it all on the second layer and a crest on
+// the third along the top of the loop, its bottom, and the curl: 98 tiles
+// on three layers, nine across.
+export const NINE = parseLayout('Nine', [
+  `
+  ..#####..
+  .#######.
+  ###...###
+  ##.....##
+  ###...###
+  .########
+  ..#######
+  ......###
+  ......###
+  .....###.
+  .######..
+  ..####...
+  `,
+  `
+  ..vvvvv..
+  .........
+  >......>.
+  >......>.
+  >......>.
+  ..vvvvv#.
+  .......#.
+  .......#.
+  .......#.
+  ......#..
+  ..vvvv...
+  `,
+  `
+  ..++++...
+  .........
+  .........
+  .........
+  .........
+  ..++++...
+  .........
+  .........
+  .........
+  .........
+  ..+++....
+  `,
+]);
+
+// New Year's third board: the number 8, two rings stacked, the top one the
+// smaller, each round an open middle and joined at the waist, with a ridge
+// along them on the second layer and a crest on the third along the top,
+// the waist and the foot: 104 tiles on three layers, nine across, twelve
+// rows deep for the disco ball's light to sweep down.
+export const EIGHT = parseLayout('Eight', [
+  `
+  ..#####..
+  .#######.
+  ###...###
+  ###...###
+  .#######.
+  ..#####..
+  .#######.
+  ###...###
+  ##.....##
+  ###...###
+  .#######.
+  ..#####..
+  `,
+  `
+  ...vvv...
+  .........
+  .#.....#.
+  .#.....#.
+  ..vvvvv..
+  .........
+  .........
+  .#.....#.
+  .#.....#.
+  .#.....#.
+  ..vvvvv..
+  `,
+  `
+  ...++....
+  .........
+  .........
+  .........
+  ..++++...
+  .........
+  .........
+  .........
+  .........
+  .........
+  ..++++...
+  `,
+]);
+
+// New Year's fourth board: the number 7, its bar across the top, a tick
+// hanging from its left end, and its stem slanting down to the left, four
+// tiles wide; a ridge along the bar and the stem on the second layer, a
+// crest along them on the third, and three tiles on the bar's crest on the
+// fourth: 110 tiles on four layers, nine across.
+export const SEVEN = parseLayout('Seven', [
+  `
+  #########
+  #########
+  ##...####
+  .....####
+  ....####.
+  ....####.
+  ...####..
+  ...####..
+  ..####...
+  ..####...
+  .####....
+  .####....
+  `,
+  `
+  vvvvvvvvv
+  .........
+  ......##.
+  ......##.
+  .....##..
+  .....##..
+  ....##...
+  ....##...
+  ...##....
+  ...##....
+  ..##.....
+  ..##.....
+  `,
+  `
+  ++++++++.
+  .........
+  ......>..
+  ......>..
+  .....>...
+  .....>...
+  ....>....
+  ....>....
+  ...>.....
+  ...>.....
+  ..>......
+  ..>......
+  `,
+  `
+  ..v.v.v..
+  `,
+]);
+
+// New Year's fifth board: the number 6, its stem coming down on the left
+// from a curl at the top into a ring round an open middle at the foot, with
+// a ridge along it all on the second layer, a crest on the third, and on
+// the fourth a crest along the top and the foot of the ring: 114 tiles on
+// four layers, nine across.
+export const SIX = parseLayout('Six', [
+  `
+  ...####..
+  ..######.
+  .###.....
+  ###......
+  ###......
+  #######..
+  ########.
+  ###...###
+  ##.....##
+  ###...###
+  .#######.
+  ..#####..
+  `,
+  `
+  ...vvvv..
+  .........
+  .#.......
+  .#.......
+  .#.......
+  .vvvvvv..
+  .........
+  .#.....#.
+  .#.....#.
+  .#.....#.
+  ..vvvvv..
+  `,
+  `
+  ...+++...
+  .........
+  .#.......
+  .#.......
+  .#.......
+  .+++++...
+  .........
+  .#.....#.
+  .#.....#.
+  .#.....#.
+  ..++++...
+  `,
+  `
+  .........
+  .........
+  .........
+  .........
+  .........
+  ..vvvv...
+  .........
+  .........
+  .........
+  .........
+  ...vvv...
+  `,
+]);
+
+// New Year's sixth board: the number 5, its flag across the top, its stem
+// coming down on the left into its belly, which bulges out to the right and
+// round to the foot, its tail turned up at the left; with a ridge along it
+// all on the second layer, a crest on the third, and one tile on the flag's
+// crest on the fourth: 122 tiles on four layers, nine across.
+export const FIVE = parseLayout('Five', [
+  `
+  #########
+  #########
+  ###......
+  ###......
+  #######..
+  ########.
+  .....####
+  ......###
+  ......###
+  ##...####
+  ########.
+  .######..
+  `,
+  `
+  vvvvvvvvv
+  .........
+  .#.......
+  .#.......
+  .vvvvvv..
+  .........
+  .......#.
+  .......#.
+  .......#.
+  >......#.
+  .vvvvvv..
+  `,
+  `
+  ++++++++.
+  .........
+  .#.......
+  .#.......
+  .+++++...
+  .........
+  .......#.
+  .......#.
+  .......#.
+  .......#.
+  .+++++...
+  `,
+  `
+  ....v....
+  `,
+]);
+
+// New Year's seventh board: the number 4, its left stroke coming down to
+// its crossbar, which runs right across, past its stem, standing the full
+// height on a foot; with a ridge down the strokes and along the bar on the
+// second layer, a crest on the third, and on the fourth the tops of the
+// strokes and the bar's crest: 128 tiles on four layers, nine across.
+export const FOUR = parseLayout('Four', [
+  `
+  ###..###.
+  ###..###.
+  ###..###.
+  ###..###.
+  ###..###.
+  ###..###.
+  #########
+  #########
+  .....###.
+  .....###.
+  .....###.
+  ....#####
+  `,
+  `
+  .#....#..
+  .#....#..
+  .#....#..
+  .#....#..
+  .#....#..
+  .#....#..
+  vvvvvvvvv
+  .........
+  ......#..
+  ......#..
+  ......#..
+  ......#..
+  `,
+  `
+  .#....#..
+  .#....#..
+  .#....#..
+  .#....#..
+  .#....#..
+  .#....#..
+  ++++++++.
+  .........
+  ......#..
+  ......#..
+  ......#..
+  ......#..
+  `,
+  `
+  .#....#..
+  .#....#..
+  .#....#..
+  ......#..
+  .........
+  .........
+  .v.v.v.v.
+  `,
+]);
+
+// New Year's eighth board: the number 3, its bar across the top, curling
+// down at the left, its two bowls bulging out to the right on either side
+// of its middle bar, and its foot across the bottom, curling up at the
+// left; a ridge along its bars and its right side on the second layer, a
+// crest on the third and the fourth, and on the fifth the tops of the
+// bars' crests and of the right side above and below the middle bar: 134
+// tiles on five layers, nine across, twelve rows for the stars to cross.
+export const THREE = parseLayout('Three', [
+  `
+  .#######.
+  #########
+  #.....###
+  ......###
+  ...######
+  ...######
+  ......###
+  ......###
+  ......###
+  #.....###
+  #########
+  .#######.
+  `,
+  `
+  .vvvvvvv.
+  .........
+  .......#.
+  .......#.
+  ...vvvvv.
+  .........
+  .......#.
+  .......#.
+  .......#.
+  .......#.
+  .vvvvvvv.
+  `,
+  `
+  .++++++..
+  .........
+  .......#.
+  .......#.
+  ...++++..
+  .........
+  .......#.
+  .......#.
+  .......#.
+  .......#.
+  .++++++..
+  `,
+  `
+  ..v.v.v..
+  .........
+  .......#.
+  .......#.
+  ....v.v..
+  .........
+  .......#.
+  .......#.
+  .......#.
+  .......#.
+  ..v.v.v..
+  `,
+  `
+  ..+..+...
+  .........
+  .......#.
+  .......#.
+  ....+....
+  .........
+  .......#.
+  .......#.
+  .........
+  .........
+  ..+..+...
+  `,
+]);
+
+// New Year's ninth board: the number 2, its arc over the top, curling down
+// at the left, coming down the right and slanting down to the left to its
+// broad foot across the bottom. Along its stroke runs the way the toast's
+// two glasses glide, a rail of tiles beside it on the second layer, and on
+// every other place of it a tile in their way; the 2's crest is piled over
+// the top of its arc to the fourth layer, and its foot to the third: 138
+// tiles on four layers, nine across.
+export const TWO = parseLayout('Two', [
+  `
+  .#######.
+  #########
+  ###...###
+  ###...###
+  .....####
+  ....####.
+  ...####..
+  ..####...
+  .####....
+  ####.....
+  #########
+  #########
+  `,
+  `
+  .#######.
+  ##.#.#.##
+  #.#...#.#
+  #.#...###
+  .....##.#
+  ....##.#.
+  ...##.#..
+  ..##.#...
+  .##.#....
+  ##.#.....
+  #.#.#.#..
+  #########
+  `,
+  `
+  ..#####..
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .#######.
+  `,
+  `
+  ...###...
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  `,
+]);
+
+// New Year's last board: the number 1, its stem four tiles thick, its flag
+// slanting down to the left from the top, and its broad foot across the
+// bottom; a ridge down the stem on the second layer, sitting across the
+// joins beneath, two tiles on the third and a ridge on the fourth, rising
+// to a peak all the way down; a ridge along the flag; and the foot piled up
+// to the fifth: the full set of 144 tiles on five layers, nine across, the
+// most of the ten.
+export const ONE = parseLayout('One', [
+  `
+  ..#####..
+  .######..
+  ##.####..
+  #..####..
+  ...####..
+  ...####..
+  ...####..
+  ...####..
+  ...####..
+  ...####..
+  #########
+  #########
+  `,
+  `
+  ...>.>...
+  .>.>.>...
+  >..>.>...
+  ...>.>...
+  ...>.>...
+  ...>.>...
+  ...>.>...
+  ...>.>...
+  ...>.>...
+  ...>.>...
+  vvvvvvvvv
+  `,
+  `
+  ....##...
+  ....##...
+  ....##...
+  ....##...
+  ....##...
+  ....##...
+  ....##...
+  ....##...
+  ....##...
+  ....##...
+  ++++++++.
+  `,
+  `
+  ....>....
+  ....>....
+  ....>....
+  ....>....
+  ....>....
+  ....>....
+  ....>....
+  ....>....
+  ....>....
+  ....>....
+  .vvvvvvv.
+  `,
+  `
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  .........
+  ..++++...
+  `,
+]);
+
+// New Year's Day: a wall calendar turned to January. Its rings hook
+// through the top of the page, over the month's band, which is piled up to
+// the fourth layer as a crest; below, inside the page's edges, the month's
+// five weeks, a row of days each, with the paper showing between them, and
+// on each week three days marked on the layer above, where the sweets of
+// its resolution can sit: 118 tiles on four layers, nine across.
+export const JANUARY = parseLayout('January', [
+  `
+  .#.#.#.#.
+  #########
+  #########
+  #########
+  #.......#
+  #########
+  #.......#
+  #########
+  #.......#
+  #########
+  #.......#
+  #########
+  `,
+  `
+  .v.v.v.v.
+  vvvvvvvvv
+  .........
+  ..#.#.#..
+  .........
+  ..#.#.#..
+  .........
+  ..#.#.#..
+  .........
+  ..#.#.#..
+  .........
+  ..#.#.#..
+  `,
+  `
+  .........
+  ++++++++.
+  `,
+  `
+  .........
+  .vvvvvvv.
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [

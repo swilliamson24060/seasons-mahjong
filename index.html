@@ -49,6 +49,15 @@
       <span id="dance" title="Matches until the music changes, and each free tile changes places with a tile held down" hidden></span>
       <span id="lords" title="Lords still on the board: each is free wherever he is, and one taken while held down has leapt" hidden></span>
       <span id="pipers" title="Pipers still on the board: take one, and the rest of his kind follow him out" hidden></span>
+      <span id="rockets" title="Rockets still to set off: take one, and it bursts, lighting up the tiles round it" hidden></span>
+      <span id="disco" title="Pairs that have danced in the spotlight: both their tiles in the disco ball's beam" hidden></span>
+      <span id="balloons" title="Balloons to pop, and the matches until the net opens again and the balloons left float away" hidden></span>
+      <span id="coin" title="How close your last pair came to the lucky coin: hot, a tile away or less, warm, three or less, or cold" hidden></span>
+      <span id="sparklers" title="Sparklers still to take: each lights as its tile comes free, and burns down over five matches" hidden></span>
+      <span id="confetti" title="Perfect matches: two tiles of a kind that caught the same colour of confetti, taken together" hidden></span>
+      <span id="stars" title="Wishes made, and the matches until the next shooting star" hidden></span>
+      <span id="glasses" title="Places still between the two glasses: each glides one on with every match, unless a tile is in its way, and they clink when they meet" hidden></span>
+      <span id="resolution" title="Days of January your resolution has held, a match each: take a sweet before February and it's broken" hidden></span>
       <span id="left"></span>
       <span id="score" title="Score"></span>
       <span id="time"></span>
@@ -71,6 +80,7 @@
   <div id="card" hidden>
     <div class="inner" role="dialog" aria-modal="true" aria-labelledby="card-title">
       <h2 id="card-title"></h2>
+      <div id="card-figure" hidden></div>
       <p id="card-text"></p>
       <input id="card-input" type="text" maxlength="16" autocomplete="nickname" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="Your name" hidden>
       <table class="score" id="card-score" hidden></table>

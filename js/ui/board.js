@@ -1,5 +1,6 @@
 import { LOST } from '../engine/tiles.js';
 import { symbolId, faceName, EGG } from './faces.js';
+import { COLOURS } from '../engine/confetti.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const LIFT = 0.11; // how far each layer sits up and to the right, in tile widths
@@ -29,6 +30,27 @@ function planchette() {
     '</svg>';
   return el;
 }
+
+// A glass of champagne, for the toast on New Year's 2: a tall flute, the
+// champagne in it golden and fizzing, on a slender stem. k tells the two
+// glasses' champagne apart.
+function flute(k) {
+  return (
+    '<svg viewBox="0 0 24 48">' +
+    `<defs><linearGradient id="fizz-${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3c4"/><stop offset="1" stop-color="#eab53c"/></linearGradient></defs>` +
+    '<path d="M5 1.5 H19 L17.6 19 Q16.8 27 12 27 Q7.2 27 6.4 19 Z" fill="rgba(255,255,255,0.22)"/>' +
+    `<path d="M5.6 8 H18.4 L17.6 19 Q16.8 27 12 27 Q7.2 27 6.4 19 Z" fill="url(#fizz-${k})"/>` +
+    '<g fill="#fffbe8"><circle cx="10" cy="21" r="0.9"/><circle cx="13.6" cy="16" r="0.75"/><circle cx="11.2" cy="12" r="0.6"/><circle cx="14.2" cy="22.5" r="0.6"/></g>' +
+    '<path d="M5 1.5 H19 L17.6 19 Q16.8 27 12 27 Q7.2 27 6.4 19 Z" fill="none" stroke="#fffdf5" stroke-width="1.3" stroke-linejoin="round"/>' +
+    '<path d="M7.6 4 L8.6 18" stroke="#fff" stroke-width="1.1" stroke-linecap="round" opacity="0.75"/>' +
+    '<path d="M12 27 V43" stroke="#fffdf5" stroke-width="1.7" stroke-linecap="round"/>' +
+    '<ellipse cx="12" cy="44" rx="6.2" ry="1.9" fill="#fffdf5"/>' +
+    '</svg>'
+  );
+}
+
+// The treats New Year's Day's sweets carry, one to a sweet, in turn.
+const SWEETS = ['🍩', '🍪', '🧁', '🍫', '🍬', '🍰'];
 
 // The board on the page: one button per tile, stacked so that each layer
 // sits up and to the right of the one under it, with the tiles' sides
@@ -128,6 +150,45 @@ export class Board {
       el.append(ring);
       return ring;
     });
+    // On New Year's 3, the row the shooting star crossed, glowing.
+    this.starBand = null;
+    if (this.game.starEvery) {
+      this.starBand = document.createElement('div');
+      this.starBand.className = 'star-band';
+      this.starBand.setAttribute('aria-hidden', 'true');
+      el.append(this.starBand);
+    }
+    // On New Year's 2, the two glasses of champagne, standing at their
+    // places along the 2, with the bottom tile at each place of the path,
+    // which a glass stands on while it is there.
+    this.glassEls = null;
+    if (this.game.path) {
+      const g = this.game;
+      this.glassEls = [0, 1].map((k) => {
+        const glass = document.createElement('div');
+        glass.className = 'glass';
+        glass.setAttribute('aria-hidden', 'true');
+        glass.innerHTML = flute(k);
+        el.append(glass);
+        return glass;
+      });
+      this.baseAt = g.path.map(([x, y]) => {
+        for (let i = 0; i < L.count; i++) if (L.z[i] === 0 && L.x[i] === x && L.y[i] === y) return i;
+        return -1;
+      });
+    }
+    // On New Year's Day, the treat each sweet carries.
+    this.sweetOf = new Map();
+    if (this.game.sweets) for (let i = 0; i < L.count; i++) if (this.game.sweets[i]) this.sweetOf.set(i, SWEETS[this.sweetOf.size % SWEETS.length]);
+    // On New Year's 8, the disco ball's beam, across the board over the
+    // tiles in its light, the ball itself at its end.
+    this.beam = null;
+    if (this.game.rules.disco) {
+      this.beam = document.createElement('div');
+      this.beam.className = 'disco-beam';
+      this.beam.setAttribute('aria-hidden', 'true');
+      el.append(this.beam);
+    }
 
     el.onclick = (e) => {
       const t = e.target.closest('.tile');
@@ -240,6 +301,10 @@ export class Board {
       t.left = `${Math.round(1.4 * lift + (L.x[i] / 2) * w + L.z[i] * lift)}px`;
       t.top = `${Math.round((deep - L.z[i]) * lift + (L.y[i] / 2) * h)}px`;
     }
+    this.rowTop = (row) => Math.round(deep * lift + row * h); // where a row of the bottom layer starts
+    this.rowHeight = h;
+    this.spotOf = (x, y, z) => [1.4 * lift + (x / 2) * w + z * lift, (deep - z) * lift + (y / 2) * h]; // a tile's top left, were one there
+    this.placeBeam();
     // Each gold ring goes round the middle of its ring's tiles, on the
     // bottom layer, as broad as a tile is.
     (this.game.rings || []).forEach(({ square: [left, top, across, down] }, k) => {
@@ -259,6 +324,70 @@ export class Board {
         e.setAttribute('stroke-width', w * broad[e.classList[0]]);
       }
     });
+  }
+
+  // Moves the disco ball's beam to the rows its light is on now, gliding
+  // there from where it was.
+  placeBeam() {
+    this.placeStar();
+    this.placeGlasses();
+    if (!this.beam || !this.rowTop) return;
+    const s = this.beam.style;
+    s.top = `${this.rowTop(this.game.lightTop)}px`;
+    s.height = `${this.game.rules.disco * this.rowHeight}px`;
+  }
+
+  // On New Year's 3, the glow on the row the star crossed, fading once its
+  // wish is made; and a star streaking across a row as it comes.
+  placeStar() {
+    if (!this.starBand || !this.rowTop) return;
+    const star = this.game.star;
+    this.starBand.classList.toggle('wished', !star || star.wished);
+    if (!star) return;
+    this.starBand.style.top = `${this.rowTop(star.row)}px`;
+    this.starBand.style.height = `${this.rowHeight}px`;
+  }
+
+  starCrossed() {
+    this.placeStar();
+    if (this.starBand) this.restart(this.starBand, 'streak');
+  }
+
+  // On New Year's 2, where each glass stands now, at the top right of its
+  // place, as a tile's badges sit, so that the tile there still shows: on
+  // the bottom tile there, or the table once that is taken. Once they have
+  // met, the two stand together between their places, tilted to each other.
+  placeGlasses() {
+    if (!this.glassEls || !this.spotOf) return;
+    const g = this.game;
+    const w = this.tileWidth;
+    const feet = [g.glasses.left, g.glasses.right].map((k) => {
+      const [x, y] = g.path[k];
+      const base = this.baseAt[k];
+      const [left, top] = this.spotOf(x, y, base >= 0 && g.present[base] ? 1 : 0);
+      return [left + w * 0.8, top + w * 0.36];
+    });
+    const met = Boolean(g.toastAt);
+    if (met) {
+      const [mx, my] = [(feet[0][0] + feet[1][0]) / 2, Math.max(feet[0][1], feet[1][1])];
+      feet[0] = [mx - w * 0.17, my];
+      feet[1] = [mx + w * 0.17, my];
+    }
+    this.glassEls.forEach((glass, k) => {
+      glass.style.transform = `translate(${Math.round(feet[k][0] - glass.offsetWidth / 2)}px, ${Math.round(feet[k][1] - glass.offsetHeight)}px)`;
+      glass.classList.toggle('clinked', met);
+      glass.style.setProperty('--tilt', k ? '-16deg' : '16deg');
+    });
+    this.meetingAt = met ? [(feet[0][0] + feet[1][0]) / 2, feet[0][1] - w * 0.6] : null;
+  }
+
+  // The glasses meet: they clink, tilting together, and a toast rises
+  // from them.
+  clink() {
+    this.placeGlasses();
+    if (!this.glassEls) return;
+    for (const glass of this.glassEls) this.restart(glass, 'clinking');
+    if (this.meetingAt) this.floatAt('🥂', this.meetingAt);
   }
 
   // Rings whose every tile is taken turn to gold: each one's gold ring
@@ -308,6 +437,20 @@ export class Board {
     }, 5 * 40 + 650);
   }
 
+  // A net of balloons opens: the balloons left float up and away from their
+  // tiles, and the new ones drop on to theirs.
+  netOpened({ landed, floated }) {
+    this.refresh();
+    for (const i of floated) this.float('🎈', i);
+    for (const i of landed) this.restart(this.tiles[i].el, 'landing');
+  }
+
+  // A rocket bursts: the tiles it lights up sparkle as they catch the light.
+  litUp(tiles) {
+    this.refresh();
+    for (const i of tiles) this.restart(this.tiles[i].el, 'sparkle');
+  }
+
   // Eggs come free and hatch: each shows the tile inside it, with a wobble.
   hatched(tiles) {
     for (const i of tiles) {
@@ -325,6 +468,21 @@ export class Board {
     if (this.tiles[i].ice && g.frozen(i)) return `${name}, frozen: ${thawWords(g.thawIn(i))}`;
     if (g.isLord(i)) return `${name}, a lord: free wherever he is`;
     if (g.isPiper(i)) return `${name}, a piper: the rest of his kind follow him out`;
+    if (g.isRocket(i)) return `${name}, a rocket: take it and it bursts, lighting up the tiles round it`;
+    if (g.isLit(i)) return `${name}, lit up: take it with another lit tile for a lit pair`;
+    if (g.inSpotlight(i)) return `${name}, in the spotlight`;
+    if (g.hasBalloon(i)) return `${name}, with a balloon on it: take it before the net opens again`;
+    if (g.foundAt && i === g.coin && g.present[i]) return `${name}, where the lucky coin was hidden`;
+    if (g.confetti && g.confetti[i] >= 0) return `${name}, with ${COLOURS[g.confetti[i]]} confetti`;
+    if (g.inStarRow(i)) return `${name}, in the shooting star's row`;
+    if (g.inGlassesWay(i)) return `${name}, in the glasses' way`;
+    if (g.tempting(i)) return `${name}, a sweet: leave it alone through January to keep your resolution`;
+    if (g.isSweet(i)) return `${name}, a sweet, fair game now`;
+    const spark = g.sparklerOf(i);
+    if (spark) {
+      const left = spark.state === 'lit' ? g.burnLeft(spark) : 0;
+      return spark.state === 'lit' ? `${name}, a sparkler burning: ${left} ${left === 1 ? 'match' : 'matches'} left` : `${name}, a sparkler, lit once it comes free`;
+    }
     const pail = g.pails && g.present[i] ? g.pailOf(i) : -1;
     if (pail < 0) return name;
     const keeps = g.freshIn(pail);
@@ -401,10 +559,35 @@ export class Board {
       el.classList.toggle('unlocked', here && g.unlocked[i] === 1);
       el.classList.toggle('lord', g.isLord(i)); // on the crown: a lord, free wherever he is
       el.classList.toggle('piper', g.isPiper(i)); // on the bagpipes: a piper, whom his kind follow out
-      if (g.lords || g.pipers) el.setAttribute('aria-label', this.label(i));
+      el.classList.toggle('rocket', g.isRocket(i)); // on New Year's 9: a rocket, to set off
+      el.classList.toggle('lit', g.isLit(i)); // and a tile a rocket's burst has lit
+      el.classList.toggle('spotlit', g.inSpotlight(i)); // on New Year's 8: a tile in the disco ball's beam
+      el.classList.toggle('balloon', g.hasBalloon(i)); // on New Year's 6: a tile with a balloon on it, to pop
+      el.classList.toggle('coin', Boolean(g.foundAt) && i === g.coin && here); // on New Year's 7: where the lucky coin turned up
+      // On New Year's 5, a sparkler, unlit, or burning with the matches it
+      // has left, amber at the last.
+      const spark = g.sparklerOf(i);
+      const burning = Boolean(spark) && spark.state === 'lit';
+      el.classList.toggle('sparkler', Boolean(spark));
+      el.classList.toggle('burning', burning);
+      el.classList.toggle('short', burning && g.burnLeft(spark) <= 2);
+      if (burning) el.dataset.burn = g.burnLeft(spark);
+      el.classList.toggle('starlit', g.inStarRow(i)); // on New Year's 3: in the row the star crossed, its wish to make
+      el.classList.toggle('in-way', g.inGlassesWay(i)); // on New Year's 2: in the glasses' way
+      // On New Year's Day, a sweet carries its treat, and through January,
+      // while the resolution holds, it is a tempting pink.
+      el.classList.toggle('sweet', g.isSweet(i));
+      el.classList.toggle('tempting', g.tempting(i));
+      if (g.isSweet(i)) el.dataset.sweet = this.sweetOf.get(i);
+      else delete el.dataset.sweet;
+      // On New Year's 4, the fleck of confetti a tile caught.
+      if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
+      else delete el.dataset.confetti;
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }
+    this.placeBeam();
   }
 
   press(i) {
@@ -429,6 +612,8 @@ export class Board {
       return;
     }
     if (this.sound) this.sound.select();
+    // On New Year's Day, a sweet chosen in January is a temptation.
+    if (g.tempting(i)) this.say('Tempting… but taking a sweet before February breaks your resolution.');
     this.select(i);
   }
 
@@ -543,13 +728,16 @@ export class Board {
   }
 
   // A few words, such as the points a move earned, rising from a tile or
-  // the middle of the board and fading away.
+  // the middle of the board, or a point on it, and fading away.
   float(text, i = -1, cost = false) {
+    this.floatAt(text, this.centre(i), cost);
+  }
+
+  floatAt(text, [x, y], cost = false) {
     const el = document.createElement('div');
     el.className = cost ? 'float cost' : 'float';
     el.textContent = text;
     el.setAttribute('aria-hidden', 'true');
-    const [x, y] = this.centre(i);
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
     this.el.append(el);

@@ -14,6 +14,15 @@ import { choosePails, possiblePails, pailSteps, plantPails } from './milk.js';
 import { changePartners } from './dance.js';
 import { chooseLords } from './lords.js';
 import { choosePipers } from './pipers.js';
+import { sparksOf, chooseRockets, litPairsIn } from './fireworks.js';
+import { lightAt, inLight, dancesIn } from './disco.js';
+import { landing, spots, poppedIn } from './balloons.js';
+import { heatOf, hideCoin } from './coin.js';
+import { chooseSparklers } from './sparklers.js';
+import { scatter } from './confetti.js';
+import { inRow, wishRows, starRow } from './stars.js';
+import { pathOf, over, inTheWay, clearingTheWay, glide, together } from './glasses.js';
+import { chooseSweets, resisting, holdsOut } from './sweets.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -22,12 +31,15 @@ export const TREATS = ['candle', 'key', 'cat'];
 // One board in play: which tiles are left and which can be taken, undo,
 // hints, shuffles, treats, ice, the shopping list and the stroke of
 // midnight, the fridge, doorbusters, touchdowns, lovebirds, eggs, flocks,
-// gold rings, goslings, swans, fresh milk, the dance, leaping lords and
-// pipers. Nothing here touches the page; the board listens with on() for
-// what happens: 'match', 'thaw', 'list', 'checkout', 'bought', 'grab',
-// 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold', 'gosling', 'swan',
-// 'milk', 'dance', 'leap', 'pipe', 'save', 'turn', 'treat', 'key',
-// 'shuffle', 'undo', 'win' and 'stuck'.
+// gold rings, goslings, swans, fresh milk, the dance, leaping lords, pipers,
+// fireworks, the disco ball, the balloon drop, the lucky coin, sparklers,
+// confetti, shooting stars and a toast for two. Nothing here touches the
+// page; the board listens with on() for what happens: 'match', 'thaw',
+// 'list', 'checkout', 'bought', 'grab', 'touchdown', 'lovebirds', 'flock',
+// 'hatch', 'gold', 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe',
+// 'firework', 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti',
+// 'star', 'toast', 'save', 'turn', 'treat', 'key', 'shuffle', 'undo', 'win'
+// and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
@@ -60,9 +72,33 @@ export const TREATS = ['candle', 'key', 'cat'];
 // dance, for the board of the dancer: every how many matches the free tiles
 // change partners (dance.js); lords, for the crown: how many lords there
 // are, free wherever they are, or for a board whose faces are set, which
-// tiles they are (lords.js); and pipers, for the bagpipes: how many pipers
+// tiles they are (lords.js); pipers, for the bagpipes: how many pipers
 // there are, whom the rest of their kind follow out, or which tiles they
-// are (pipers.js).
+// are (pipers.js); fireworks, for New Year's 9: how many rockets there
+// are, each lighting up the tiles round it as it bursts, or which tiles
+// they are (fireworks.js); disco, for New Year's 8: how many rows deep the
+// band of the disco ball's light is, sweeping down the board a row with
+// every match (disco.js); balloons, for New Year's 6: { every, drop }, a
+// net of balloons opening as the board starts and every so many matches,
+// dropping so many balloons onto free tiles with no other of their kind
+// free (balloons.js); coin, for New Year's 7: { hot, warm }, a lucky coin
+// hidden under a tile, saying after each pair whether it came within so
+// many tiles of it, or for a board whose faces are set, { hot, warm, tile },
+// the tile it is under (coin.js); sparklers, for New Year's 5: { count,
+// burns }, how many sparklers there are, each lit as its tile comes free and
+// burning for so many matches, or for a board whose faces are set, { tiles,
+// burns } (sparklers.js); confetti, for New Year's 4: whether every tile
+// has caught a fleck of confetti, of each kind two of the same colour, or
+// for a board whose faces are set, each tile's colour (confetti.js); and
+// stars, for New Year's 3: how often a shooting star crosses a row where a
+// wish can be made, as the board starts and every so many matches after
+// (stars.js); and toast, for New Year's 2: { path }, the places, [column,
+// row] each, along which two glasses glide toward each other from its two
+// ends, a place a match, wherever the way is clear (glasses.js); and
+// sweets, for New Year's Day: { count, days }, how many sweets sit free on
+// top of the board, and for how many matches, January, the resolution is
+// to leave them alone, or for a board whose faces are set, { tiles, days }
+// (sweets.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -70,7 +106,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0 } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -81,7 +117,7 @@ export class Game {
     this.tableCount = n;
     this.fridgeSize = fridge;
     this.seed = seed;
-    this.rules = { ghostsFloat, treats, lovebirds, flock, goslings, swans, dance };
+    this.rules = { ghostsFloat, treats, lovebirds, flock, goslings, swans, dance, disco };
     this.danceR = seeded(seed ^ 0x1d872b41); // who dances with whom
     this.lords = null; // until the lords are chosen, below
     this.treatFaces = treatFaces;
@@ -108,17 +144,41 @@ export class Game {
     this.broods = 0;
     // On the board of the swan on the lake, each tile's reflection.
     this.mirror = swans ? mirrorOf(table) : null;
+    // On New Year's Day, the sweets, 1 for a tile that is one, chosen by
+    // where they lie, before the deal, so that it can be made to leave them
+    // alone through January; and January, the matches it lasts.
+    this.sweets = null;
+    this.january = 0;
+    if (sweets) {
+      this.sweets = new Uint8Array(layout.count);
+      for (const i of sweets.tiles || chooseSweets(table, onTable, sweets.count, seeded(seed ^ 0x7f4a7c15))) this.sweets[i] = 1;
+      this.january = sweets.days;
+    }
     // The board of gold rings is dealt, and shuffled, a ring at a time, in
     // an order of its own; the board of the swan with its swans, a tile and
-    // its reflection, coming free at different times; and the milk pail
-    // with pairs that could be pails all through it.
+    // its reflection, coming free at different times; the milk pail with
+    // pairs that could be pails all through it; New Year's 2 with each
+    // tile in the glasses' way paired with one free along with it, so that
+    // their way can be cleared from the start (glasses.js); and New Year's
+    // Day leaving its sweets till after January (sweets.js).
     this.prefer = this.rings
       ? ringByRing(layout, this.rings.map((r) => r.tiles), seeded(seed ^ 0x68e31da4).shuffle(this.rings.map((_, k) => k)))
       : swans
         ? plantSwans(this.mirror, swans, swanSteps(seeded(seed ^ 0x3c6ef372), swans, pairs))
         : milk && !milk.tiles
           ? plantPails(table, pailSteps(seeded(seed ^ 0x2f8f9e1d), milk.pails, pairs), milk.keeps)
-          : null;
+          : toast
+            ? clearingTheWay(inTheWay(layout, pathOf(toast.path)))
+            : this.sweets
+              ? resisting(this.sweets, this.january)
+              : null;
+    // On New Year's 9, the rockets, 1 for a tile that is one, chosen by
+    // where they lie, before the deal, so that it can be made with them.
+    this.rockets = null;
+    if (fireworks) {
+      this.rockets = new Uint8Array(layout.count);
+      for (const i of Array.isArray(fireworks) ? fireworks : chooseRockets(table, onTable, fireworks, seeded(seed ^ 0x9b05688c))) this.rockets[i] = 1;
+    }
     if (faces || sides) {
       const given = sides || [faces];
       if (given.length !== (turns ? 2 : 1)) throw new Error(`${table.name} needs ${turns ? 2 : 1} sides of faces`);
@@ -132,8 +192,12 @@ export class Game {
       // flocks, so that one can always be had; on the board of the swan
       // until it has its swans, no more and no fewer, each a pair of the
       // deal's own order and of a kind with another pair on the board, which
-      // can take a while; and on the milk pail until it has enough pairs
-      // that could be pails.
+      // can take a while; on the milk pail until it has enough pairs that
+      // could be pails; on New Year's 9 until its own order takes a lit
+      // pair; on New Year's 8 until a pair of its own order dances in the
+      // disco ball's light; on New Year's 6 until its own order pops a
+      // balloon; and on New Year's Day until its own order leaves the sweets
+      // alone through January.
       const swansAsWanted = (faces, order) => {
         const found = swansIn(layout, this.mirror, faces, onTable);
         const planned = (a, b) => order.some(([p, q]) => (p === a && q === b) || (p === b && q === a));
@@ -144,7 +208,11 @@ export class Game {
         (!lovebirds || order.some(([a], k) => k > 0 && MATCH[sides[0][a]] === MATCH[sides[0][order[k - 1][0]]])) &&
         (!flock || order.some(([a, b]) => touching(layout, a, b))) &&
         (!swans || swansAsWanted(sides[0], order)) &&
-        (!milk || possiblePails(table, order, milk.keeps).length >= milk.pails);
+        (!milk || possiblePails(table, order, milk.keeps).length >= milk.pails) &&
+        (!this.rockets || litPairsIn(layout, order, this.rockets, onTable) > 0) &&
+        (!disco || dancesIn(layout, order, disco) > 0) &&
+        (!balloons || poppedIn(layout, order, onTable, balloons, seed, sides[0], (f) => MATCH[f]) > 0) &&
+        (!this.sweets || holdsOut(order, this.sweets, this.january));
       let dealt = null;
       for (let tries = 0; ; tries++) {
         dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { present: onTable, turnAt, ice: this.ice, prefer: this.prefer });
@@ -175,6 +243,28 @@ export class Game {
       this.pipers = new Uint8Array(layout.count);
       for (const i of Array.isArray(pipers) ? pipers : choosePipers(table, this.sides[0], onTable, pipers, seeded(seed ^ 0x510e527f), this.plan)) this.pipers[i] = 1;
     }
+    // On New Year's 9, the tiles the rockets' bursts have lit, 1 for a lit
+    // tile; the rockets set off; and the lit pairs taken.
+    this.lit = this.rockets && new Uint8Array(layout.count);
+    this.bursts = 0;
+    this.litPairs = 0;
+    this.spotlights = 0; // on New Year's 8, the pairs that have danced in the disco ball's light
+    // On New Year's 6, the balloon drops: how often and how many; the
+    // balloons on the board, 1 for a tile with one on it; and the nets
+    // opened, the balloons dropped, popped and floated away so far.
+    this.drops = balloons;
+    this.balloons = null;
+    this.nets = 0;
+    this.dropped = 0;
+    this.popped = 0;
+    this.floated = 0;
+    // On New Year's 7, the lucky coin: how near is hot and how near warm,
+    // the tile it is under, or -1, the match it was found on, 0 while it is
+    // still hidden, and the last pair's reading.
+    this.coinRules = coin;
+    this.coin = coin ? (coin.tile ?? hideCoin(table, onTable, seeded(seed ^ 0x3f84d5b5))) : -1;
+    this.foundAt = 0;
+    this.reading = null;
     this.left = n;
     this.matches = 0;
     this.unlocked = new Uint8Array(layout.count);
@@ -232,6 +322,180 @@ export class Game {
       this.keeps = milk.keeps;
       this.age();
     }
+    // The first net of balloons opens as the board starts.
+    if (balloons) {
+      this.balloons = new Uint8Array(layout.count);
+      this.dropBalloons();
+    }
+    // On New Year's 5, the sparklers, each its tile; 'unlit', 'lit', 'taken'
+    // or 'out'; the match after which it was lit, or null; and the matches
+    // it had left to burn when it was taken. And how many matches one burns.
+    this.sparklers = null;
+    this.burns = 0;
+    if (sparklers) {
+      const tiles = sparklers.tiles ?? (this.plan ? chooseSparklers(table, this.sides[0], onTable, sparklers.count, seeded(seed ^ 0x1f83d9ab), this.plan, sparklers.burns) : []);
+      this.sparklers = tiles.map((tile) => ({ tile, state: 'unlit', litAt: null, left: 0 }));
+      this.burns = sparklers.burns;
+      this.kindle();
+    }
+    // On New Year's 4, the colour of confetti each tile caught, by its place
+    // in confetti.js's COLOURS, and the perfect matches taken: couples of a
+    // colour taken together.
+    this.confetti = null;
+    this.perfects = 0;
+    if (confetti) this.confetti = Array.isArray(confetti) ? Int8Array.from(confetti) : this.plan ? scatter(layout, this.plan, this.sides[0], seeded(seed ^ 0x2b992ddf)) : null;
+    // On New Year's 3, the shooting stars: how often one crosses; the star
+    // crossing now, { row, wished }, or null; how many have crossed; and the
+    // wishes made. The first crosses as the board starts.
+    this.starEvery = stars;
+    this.star = null;
+    this.starCount = 0;
+    this.wishes = 0;
+    if (stars) this.shootStar();
+    // On New Year's 2, the path along which the two glasses glide, their
+    // places along it, { left, right }, and the match they met on, 0 till
+    // then.
+    this.path = toast && pathOf(toast.path);
+    this.glasses = toast && { left: 0, right: this.path.length - 1 };
+    this.toastAt = 0;
+    // On New Year's Day, the match the resolution was broken on, a sweet
+    // taken in January, or 0 while it holds.
+    this.brokenAt = 0;
+  }
+
+  // On New Year's Day, whether a tile still on the board is a sweet; whether
+  // the resolution still holds, with January still to see through; and
+  // whether a tile is a sweet that would break it.
+  isSweet(i) {
+    return this.sweets !== null && this.sweets[i] === 1 && this.present[i] === 1;
+  }
+
+  get resolving() {
+    return this.sweets !== null && !this.brokenAt && this.matches < this.january;
+  }
+
+  tempting(i) {
+    return this.resolving && this.isSweet(i);
+  }
+
+  // The days of January the resolution held, a match each, and whether it
+  // held through the month.
+  get daysHeld() {
+    if (!this.sweets) return 0;
+    return this.brokenAt ? this.brokenAt - 1 : Math.min(this.matches, this.january);
+  }
+
+  get resolutionKept() {
+    return this.sweets !== null && !this.brokenAt && this.matches >= this.january;
+  }
+
+  // On New Year's 2, whether a tile still on the board is in the glasses'
+  // way, over a place between them, before they meet; and the places
+  // between them, still to glide.
+  inGlassesWay(i) {
+    if (!this.path || this.toastAt || !this.present[i]) return false;
+    for (let k = this.glasses.left + 1; k < this.glasses.right; k++) if (over(this.layout, i, this.path[k])) return true;
+    return false;
+  }
+
+  get glassesApart() {
+    return this.path ? this.glasses.right - this.glasses.left - 1 : 0;
+  }
+
+  // On New Year's 3, a shooting star crosses a row where a wish can be made
+  // (stars.js), or none, with nowhere one can. Returns the star, or null.
+  shootStar() {
+    const rows = wishRows(this.layout, this.present, this.faces, (f) => MATCH[f]);
+    const row = starRow(rows, this.seed, this.starCount);
+    this.starCount++;
+    this.star = row >= 0 ? { row, wished: false } : null;
+    return this.star;
+  }
+
+  // Whether a tile still on the board lies in the row of the star crossing
+  // now, its wish still to make; and the matches until the next star.
+  inStarRow(i) {
+    return this.star !== null && !this.star.wished && this.present[i] === 1 && inRow(this.layout, i, this.star.row);
+  }
+
+  get untilStar() {
+    return this.starEvery ? this.starEvery - (this.matches % this.starEvery) : Infinity;
+  }
+
+  // On New Year's 5, the sparkler a tile still on the board is, unlit or
+  // burning, or undefined; the matches a burning one has left to burn; and
+  // how many sparklers are still to be taken, unlit or burning.
+  sparklerOf(i) {
+    return this.sparklers && this.present[i] ? this.sparklers.find((s) => s.tile === i && (s.state === 'unlit' || s.state === 'lit')) : undefined;
+  }
+
+  burnLeft(s) {
+    return s.litAt + this.burns - this.matches;
+  }
+
+  get sparklersLeft() {
+    return this.sparklers ? this.sparklers.filter((s) => this.sparklerOf(s.tile)).length : 0;
+  }
+
+  // Sparklers whose tiles have come free are lit. Returns their tiles.
+  kindle() {
+    const out = [];
+    for (const s of this.sparklers || []) {
+      if (s.state === 'unlit' && this.present[s.tile] && this.isFree(s.tile)) {
+        s.state = 'lit';
+        s.litAt = this.matches;
+        out.push(s.tile);
+      }
+    }
+    return out;
+  }
+
+  // Burning sparklers that have burnt as long as they can burn out.
+  // Returns their tiles.
+  burnOut() {
+    const out = [];
+    for (const s of this.sparklers || []) {
+      if (s.state === 'lit' && this.burnLeft(s) <= 0) {
+        s.state = 'out';
+        out.push(s.tile);
+      }
+    }
+    return out;
+  }
+
+  // On New Year's 6, a net opens: the balloons still on the board float
+  // away, and new ones drop onto free tiles with no other of their kind
+  // free (balloons.js). Returns { landed, floated }, the tiles of each.
+  dropBalloons() {
+    const floated = [];
+    for (let i = 0; i < this.layout.count; i++) {
+      if (this.balloons[i]) {
+        this.balloons[i] = 0;
+        if (this.present[i]) floated.push(i);
+      }
+    }
+    const landed = landing(spots(this.layout, this.present, this.faces, (f) => MATCH[f]), this.drops.drop, this.seed, this.nets);
+    for (const i of landed) this.balloons[i] = 1;
+    this.nets++;
+    this.dropped += landed.length;
+    this.floated += floated.length;
+    return { landed, floated };
+  }
+
+  // Whether a tile still on the board has a balloon on it, and how many do;
+  // and the matches until the next net opens.
+  hasBalloon(i) {
+    return this.balloons !== null && this.balloons[i] === 1 && this.present[i] === 1;
+  }
+
+  get balloonsLeft() {
+    let n = 0;
+    if (this.balloons) for (let i = 0; i < this.layout.count; i++) if (this.hasBalloon(i)) n++;
+    return n;
+  }
+
+  get untilDrop() {
+    return this.drops ? this.drops.every - (this.matches % this.drops.every) : Infinity;
   }
 
   // The fresh pail a tile is in, or -1.
@@ -448,6 +712,50 @@ export class Game {
     return n;
   }
 
+  // On New Year's 9, whether a tile is a rocket still to be set off, or a
+  // tile still on the board that a burst has lit; and how many rockets are
+  // left.
+  isRocket(i) {
+    return this.rockets !== null && this.rockets[i] === 1 && this.present[i] === 1;
+  }
+
+  isLit(i) {
+    return this.lit !== null && this.lit[i] === 1 && this.present[i] === 1;
+  }
+
+  get rocketsLeft() {
+    let n = 0;
+    if (this.rockets) for (let i = 0; i < this.layout.count; i++) if (this.isRocket(i)) n++;
+    return n;
+  }
+
+  // On New Year's 8, the row at the top of the disco ball's band of light,
+  // or -1 on a board without one; and whether a tile still on the board is
+  // in the light.
+  get lightTop() {
+    return this.rules.disco ? lightAt(this.layout, this.matches, this.rules.disco) : -1;
+  }
+
+  inSpotlight(i) {
+    return Boolean(this.rules.disco) && this.present[i] === 1 && inLight(this.layout, i, this.lightTop, this.rules.disco);
+  }
+
+  // The rockets in a pair just taken burst, lighting up the tiles round
+  // them still on the board. Returns the tiles newly lit.
+  burst(set) {
+    const out = [];
+    for (const t of set) {
+      for (const i of sparksOf(this.layout, this.present, t)) {
+        if (!this.lit[i]) {
+          this.lit[i] = 1;
+          out.push(i);
+        }
+      }
+    }
+    this.bursts += set.length;
+    return out;
+  }
+
   // A piper among a pair just taken plays: the rest of his kind still on
   // the board follow him out, from wherever they are. Returns the tiles that
   // followed.
@@ -616,8 +924,22 @@ export class Game {
   // after it; and the dance after it, if the music changed: { swaps,
   // before }, the tiles that changed places and the faces before, or
   // sitOut, when no change of partners would have left a board that can be
-  // won, and they kept them; how many lords in it leapt; and the tiles that
-  // followed a piper in it out. Null if the pair cannot be taken.
+  // won, and they kept them; how many lords in it leapt; the tiles that
+  // followed a piper in it out; whether it was a lit pair, its two tiles
+  // lit by a burst, the rockets in it, and the tiles their bursts lit;
+  // whether it danced in the disco ball's light; the balloons it popped, and
+  // the net that opened after it, if one did: { landed, floated }, the tiles
+  // the new balloons dropped on and those the old ones floated away from;
+  // whether it found the lucky coin, or else how close it came to it: 'hot',
+  // 'warm' or 'cold', or null with no coin still to find; and the burning
+  // sparklers it took, each { tile, left }, with the matches it had left to
+  // burn, and the sparklers that went out and were lit after it, by their
+  // tiles; whether it was a perfect match, two tiles that caught the same
+  // colour of confetti; and whether it made the wish of the star crossing,
+  // and whether another star was due after it, and the star that crossed,
+  // or null where there was nowhere a wish could be made; and whether the
+  // glasses came together after it, for a toast. Null if the pair cannot be
+  // taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -699,9 +1021,62 @@ export class Game {
       this.touchdowns++;
       entry.touchdown = true;
     }
+    // On New Year's 8, a pair taken with both its tiles in the disco ball's
+    // light dances in the spotlight.
+    const spotlight = this.inSpotlight(a) && this.inSpotlight(b);
+    if (spotlight) {
+      this.spotlights++;
+      entry.spotlight = true;
+    }
+    // On New Year's 9, a pair whose two tiles a burst has lit is a lit pair.
+    const litPair = this.isLit(a) && this.isLit(b);
+    if (litPair) {
+      this.litPairs++;
+      entry.litPair = true;
+    }
+    const rockets = this.rockets ? [a, b].filter((t) => this.rockets[t] === 1) : [];
+    // On New Year's 3, a pair with both its tiles in the row of the star
+    // crossing makes its wish.
+    if (this.starEvery) entry.stars = { star: this.star && { ...this.star }, count: this.starCount, wishes: this.wishes }; // as they were, for an undo
+    const wish = this.inStarRow(a) && this.inStarRow(b);
+    if (wish) {
+      this.star.wished = true;
+      this.wishes++;
+    }
+    // On New Year's 4, two tiles that caught the same colour of confetti,
+    // taken together, are a perfect match.
+    const perfect = Boolean(this.confetti) && this.confetti[a] >= 0 && this.confetti[a] === this.confetti[b];
+    if (perfect) {
+      this.perfects++;
+      entry.perfect = true;
+    }
+    // On New Year's 6, a balloon on a tile taken pops.
+    const pops = [a, b].filter((t) => this.hasBalloon(t));
+    // On New Year's 5, a burning sparkler in the pair is taken, with what is
+    // left of it to burn; one never lit goes out with its tile.
+    const sparked = [];
+    if (this.sparklers) {
+      entry.sparklers = this.sparklers.map((s) => ({ ...s })); // as they were, for an undo
+      for (const t of [a, b]) {
+        const s = this.sparklerOf(t);
+        if (!s) continue;
+        if (s.state === 'lit') {
+          s.left = this.burnLeft(s);
+          s.state = 'taken';
+          sparked.push({ tile: t, left: s.left });
+        } else s.state = 'out';
+      }
+    }
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
+    // A rocket in the pair bursts, lighting up the tiles round it.
+    let lit = [];
+    if (rockets.length) {
+      entry.litBefore = this.lit.slice(); // as they were, for an undo
+      entry.rockets = rockets.length;
+      lit = this.burst(rockets);
+    }
     if (this.matches === this.turnAt) entry.souls = this.wake();
     this.history.push(entry);
     this.follow(a, b);
@@ -713,6 +1088,54 @@ export class Game {
     const gold = this.gild();
     if (gold.length) entry.gold = gold;
     const soured = this.age();
+    // On New Year's 6, the balloons popped go, and every so many matches a
+    // net opens: the balloons left float away, and more drop.
+    const netDue = Boolean(this.balloons) && this.left > 0 && this.matches % this.drops.every === 0;
+    if (pops.length || netDue) entry.balloons = { on: this.balloons.slice(), nets: this.nets, dropped: this.dropped, popped: this.popped, floated: this.floated }; // as they were, for an undo
+    for (const t of pops) this.balloons[t] = 0;
+    this.popped += pops.length;
+    const net = netDue ? this.dropBalloons() : null;
+    // On New Year's 7, the lucky coin is found as its tile comes free; until
+    // then, each pair says how close it came.
+    const seeking = this.coin >= 0 && !this.foundAt;
+    const found = seeking && this.isFree(this.coin);
+    let heat = null;
+    if (seeking) {
+      entry.reading = this.reading; // as it was, for an undo
+      if (found) {
+        this.foundAt = this.matches;
+        entry.found = true;
+      } else heat = this.reading = heatOf(this.layout, [a, b], this.coin, this.coinRules);
+    }
+    // On New Year's 5, sparklers that have burnt as long as they can go out,
+    // and those whose tiles have come free are lit.
+    const fizzled = this.sparklers ? this.burnOut() : [];
+    const kindled = this.sparklers ? this.kindle() : [];
+    // On New Year's Day, a sweet taken in January breaks the resolution,
+    // and a match that sees January out without one keeps it.
+    let gaveIn = false;
+    let keptMonth = false;
+    if (this.sweets && !this.brokenAt && this.matches <= this.january) {
+      if (this.sweets[a] || this.sweets[b]) {
+        this.brokenAt = this.matches;
+        entry.gaveIn = true;
+        gaveIn = true;
+      } else if (this.matches === this.january) keptMonth = true;
+    }
+    // On New Year's 2, the glasses glide on toward each other where their
+    // way is clear, and clink as they come together.
+    let toasted = false;
+    if (this.path && !this.toastAt) {
+      entry.glasses = this.glasses; // as they were, for an undo
+      this.glasses = glide(this.layout, this.present, this.path, this.glasses);
+      if (together(this.glasses)) {
+        this.toastAt = this.matches;
+        toasted = true;
+      }
+    }
+    // On New Year's 3, every so many matches another star crosses.
+    const starDue = Boolean(this.starEvery) && this.left > 0 && this.matches % this.starEvery === 0;
+    const star = starDue ? this.shootStar() : null;
     // On the board of the dancer, every so many matches the music changes,
     // and the free tiles change partners.
     const due = Boolean(this.rules.dance) && this.left > 0 && this.matches % this.rules.dance === 0;
@@ -762,6 +1185,24 @@ export class Game {
       sitOut,
       leapt,
       piped: followers,
+      litPair,
+      rockets,
+      lit,
+      spotlight,
+      popped: pops,
+      net,
+      found,
+      heat,
+      sparked,
+      kindled,
+      fizzled,
+      perfect,
+      wish,
+      star,
+      starDue,
+      toasted,
+      gaveIn,
+      keptMonth,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -780,6 +1221,15 @@ export class Game {
     if (danced || sitOut) this.emit('dance', result);
     if (leapt) this.emit('leap', result);
     if (followers.length) this.emit('pipe', result);
+    if (litPair || rockets.length) this.emit('firework', result);
+    if (spotlight) this.emit('spotlight', result);
+    if (pops.length || net) this.emit('balloon', result);
+    if (seeking) this.emit('coin', result);
+    if (sparked.length || kindled.length || fizzled.length) this.emit('sparkler', result);
+    if (perfect) this.emit('confetti', result);
+    if (wish || starDue) this.emit('star', result);
+    if (toasted) this.emit('toast', result);
+    if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
     this.settle();
@@ -833,6 +1283,23 @@ export class Game {
         this.left += last.followers.length;
         this.piped -= last.followers.length;
       }
+      if (last.litPair) this.litPairs--;
+      if (last.spotlight) this.spotlights--;
+      if (last.balloons) Object.assign(this, { balloons: last.balloons.on, nets: last.balloons.nets, dropped: last.balloons.dropped, popped: last.balloons.popped, floated: last.balloons.floated });
+      if (last.found) this.foundAt = 0;
+      if ('reading' in last) this.reading = last.reading;
+      if (last.sparklers) this.sparklers = last.sparklers;
+      if (last.perfect) this.perfects--;
+      if (last.stars) Object.assign(this, { star: last.stars.star, starCount: last.stars.count, wishes: last.stars.wishes });
+      if (last.glasses) {
+        this.glasses = last.glasses;
+        this.toastAt = 0;
+      }
+      if (last.gaveIn) this.brokenAt = 0;
+      if (last.litBefore) {
+        this.lit = last.litBefore;
+        this.bursts -= last.rockets;
+      }
     } else if (last.type === 'save') {
       this.present[last.slot] = 0; // out of the fridge, and back on the table
       this.present[last.tile] = 1;
@@ -841,6 +1308,7 @@ export class Game {
       if (last.busterTiles) this.busters.forEach((d, k) => (d.tiles = last.busterTiles[k]));
       if (last.swans) this.swans = last.swans;
       if (last.pails) this.pails = last.pails;
+      if (last.confetti) this.confetti = last.confetti;
     }
     this.line = last.line;
     this.outlook = last.outlook;
@@ -898,16 +1366,24 @@ export class Game {
     if ((cat && !this.treats.cat) || !this.left) return false;
     const swans = this.swans ? this.swans.length : 0;
     let dealt = null;
+    // On New Year's Day, while the resolution holds, the board is dealt
+    // again so that the sweets can still be left alone through what is left
+    // of January.
+    const january = this.resolving ? this.january - this.matches : 0;
     for (let tries = 0; ; tries++) {
-      const prefer = this.mirror ? plantSwans(this.mirror, swans, swanSteps(this.r, swans, this.left / 2)) : this.prefer;
+      const prefer = this.mirror ? plantSwans(this.mirror, swans, swanSteps(this.r, swans, this.left / 2)) : this.sweets ? (january ? resisting(this.sweets, january) : null) : this.prefer;
       dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead(), prefer);
-      if (!dealt || !this.mirror || tries >= 30 || swansIn(this.layout, this.mirror, dealt.sides[this.side], this.present).length === swans) break;
+      const fine = (d) => (!this.mirror || swansIn(this.layout, this.mirror, d.sides[this.side], this.present).length === swans) && (!january || holdsOut(d.order, this.sweets, january));
+      if (!dealt || tries >= 30 || fine(dealt)) break;
     }
     if (!dealt) return false;
     const busterTiles = this.busters && this.busters.map((d) => d.tiles.slice());
     const pails = this.pails && this.pails.map((p) => ({ ...p, tiles: p.tiles.slice() }));
-    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails });
+    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails, confetti: this.confetti });
     this.sides = dealt.sides;
+    // The confetti goes with the tiles: scattered again over the new deal,
+    // a couple of each kind with two pairs left among the pairs of its order.
+    if (this.confetti) this.confetti = scatter(this.layout, dealt.order, this.faces, this.r);
     if (this.swans) this.swans = swansIn(this.layout, this.mirror, this.faces, this.present);
     // The pails go with the milk: each fresh pail becomes a pair of the new
     // deal's order, one with a tile it had if it can, so that its two tiles

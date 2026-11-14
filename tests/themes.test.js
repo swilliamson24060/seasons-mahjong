@@ -4,14 +4,14 @@ import { THEMES, theme, when, calendar, isOpen, opensOn, today } from '../js/the
 const day = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 const ids = (list) => list.map((e) => e.theme.id).join(' ');
 
-test('there are the eleven holidays and seasons, each once, with Halloween, Thanksgiving and Christmas ready to play', () => {
+test("there are the eleven holidays and seasons, each once, with Halloween, Thanksgiving, Christmas and New Year's ready to play", () => {
   equal(THEMES.length, 11, 'themes');
   equal(new Set(THEMES.map((t) => t.id)).size, 11, 'different themes');
   const names = THEMES.map((t) => t.name);
   for (const name of ['Thanksgiving', 'Christmas', "New Year's", 'Groundhog Day', "Valentine's Day", 'Start of Spring', 'Summer Beach Season', 'Independence Day', 'Labor Day', 'Start of Fall', 'Halloween']) {
     check(names.includes(name), `${name} is missing`);
   }
-  equal(THEMES.filter((t) => t.ready).map((t) => t.id).join(), 'halloween,thanksgiving,christmas', 'the ones ready');
+  equal(THEMES.filter((t) => t.ready).map((t) => t.id).join(), 'new-year,halloween,thanksgiving,christmas', 'the ones ready');
 });
 
 test('the holidays that move fall on their weekdays', () => {
@@ -64,7 +64,11 @@ test('a holiday made can be played from its opening day to the end of the year, 
   check(isOpen(christmas, new Date(2026, 11, 1, 9)), 'Christmas is shut on the 1st of December');
   check(isOpen(christmas, new Date(2026, 11, 31, 23)), "Christmas is shut on New Year's Eve");
   check(!isOpen(christmas, new Date(2027, 0, 1, 9)), "Christmas is open on New Year's Day");
-  check(!isOpen(theme('new-year'), new Date(2026, 11, 20)), "New Year's, whose boards are still to come, is open");
+  const newYear = theme('new-year');
+  check(!isOpen(newYear, new Date(2026, 10, 30, 20)), "New Year's is open on the 30th of November");
+  check(isOpen(newYear, new Date(2026, 11, 1, 9)), "New Year's is shut on the 1st of December");
+  check(isOpen(newYear, new Date(2026, 11, 31, 23, 59)), "New Year's is shut on New Year's Eve");
+  check(!isOpen(newYear, new Date(2027, 0, 1, 0, 1)), "New Year's is open once the new year has begun");
   equal(day(opensOn(halloween, new Date(2027, 2, 1))), '2027-10-1', 'in March, Halloween opens in October');
   equal(day(opensOn(halloween, new Date(2026, 10, 12))), '2027-10-1', 'once open, it next opens the year after');
   equal(day(opensOn(thanksgiving, new Date(2026, 9, 15))), '2026-11-1', 'in October, Thanksgiving opens in November');

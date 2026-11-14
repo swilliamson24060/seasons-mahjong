@@ -8,8 +8,8 @@ import { isFree } from './layout.js';
 
 // When each tile first comes free, taking the pairs of an order in turn
 // from the tiles present at the start: the pairs taken before it, or -1 for
-// a tile never free.
-function freedAt(L, start, order) {
+// a tile never free. The sparklers (sparklers.js) want it too.
+export function freedAt(L, start, order) {
   const present = Uint8Array.from(start);
   const at = new Int16Array(L.count).fill(-1);
   const look = (k) => {
