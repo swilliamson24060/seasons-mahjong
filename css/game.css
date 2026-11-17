@@ -358,6 +358,13 @@ body.covered #board {
   --index-ny-monster: #7a5214;
   --index-ny-flower: #2e8a3e;
   --index-ny-moon: #1d7f8c;
+  /* Groundhog Day's: the burrows' earth, the candles' flame, the scrolls' ink, the weather prophets' woods, the crocus's purple and the cardinal's red. */
+  --index-gh-eyes: #7a4a1e;
+  --index-gh-bones: #c4560e;
+  --index-gh-graves: #2b4f8a;
+  --index-gh-monster: #2e6b47;
+  --index-gh-flower: #7a3fb0;
+  --index-gh-moon: #b8233f;
   position: absolute;
   width: calc(var(--tile-w) - var(--gap));
   height: calc(var(--tile-h) - var(--gap));
@@ -745,6 +752,12 @@ body.covered #board {
   --index-ny-monster: #f0c98a;
   --index-ny-flower: #93e6a8;
   --index-ny-moon: #8fe3f0;
+  --index-gh-eyes: #f0c08a;
+  --index-gh-bones: #ffb27a;
+  --index-gh-graves: #a8c4ff;
+  --index-gh-monster: #93e6b0;
+  --index-gh-flower: #d9a6ff;
+  --index-gh-moon: #ff9aae;
 }
 
 .tile.night svg {
@@ -756,13 +769,18 @@ body.covered #board {
 }
 
 /* Christmas's lost soul is a lump of coal, glowing as an ember does; New
-   Year's is a sleepyhead, glowing a dreamy lilac. */
+   Year's is a sleepyhead, glowing a dreamy lilac; and Groundhog Day's is
+   the groundhog's shadow, glowing the pale blue of snow at dusk. */
 [data-faces='christmas'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(255, 128, 48, 0.9));
 }
 
 [data-faces='new-year'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(201, 176, 255, 0.95));
+}
+
+[data-faces='groundhog'] .tile.soul svg {
+  filter: drop-shadow(0 0 4px rgba(176, 196, 232, 0.95));
 }
 
 .tile.selected {

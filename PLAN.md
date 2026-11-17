@@ -408,12 +408,31 @@ The same faces as Halloween's, matching just as those do, drawn as New Year's: o
 
 The day that keeps coming round, open all year, every year: one board a day, the same deal for everyone, played again and again until it goes just right. `js/groundhog.js` holds it.
 
-- Its board is a groundhog peeking out of his burrow: his ears up and his eyes two holes, his snout raised between them and his nose on top of it, his paws on the edge of the mound of earth, piled up at its middle: 118 tiles on three layers, nine across. It has no twist but the day itself, and wears Halloween's tiles until Groundhog Day's own are drawn.
+- Its board is a groundhog peeking out of his burrow: his ears up and his eyes two holes, his snout raised between them and his nose on top of it, his paws on the edge of the mound of earth, piled up at its middle: 118 tiles on three layers, nine across. It has no twist but the day itself, and wears Groundhog Day's own tiles (below). With Groundhog Day chosen, the turtle wears them too.
 - Each day's board is dealt from a seed made from the date alone (`daySeed`), by the clock where it's played, so everyone has the same board that day, and the next day brings a new one. Every day's board through a year can be won, as measured.
 - It is played as often as one likes, the same tiles in the same places each time: Play it again after clearing it, and giving it up starts the same board over. The board in play is kept, as the other holidays' are, but only through its day: the next day, the card offers that day's board.
 - In main.js it is a run of one board (RUNS' `groundhog`, `daily`), so that the board in play, its sky and its look come as the other runs' do; its own card (`dailyMenu`) shows the best today and how often it was cleared, the days in a row cleared, counted from yesterday until today's is (`streakOf`), and the week's days with their bests, today's to play.
 - Cleared under par, the groundhog sees no shadow: an early spring (🌷). Otherwise he sees it, and it's six more weeks of winter (❄️). The top bar names the day's board by its date (🦫 Groundhog Day Nov 17).
 - Each day's best and clears are kept by the date, a little over a year of them. A leaderboard for the board of the day, everyone's on the same deal, would need its boards in the Firebase rules, and is for later.
+
+### Groundhog Day's tiles
+
+The same faces as Halloween's, matching just as those do, drawn as Groundhog Day: only the drawings and the names are Groundhog Day's. `js/ui/groundhog-faces.js` holds them, and `faces.html?set=groundhog` shows them all.
+
+| Halloween's | Groundhog Day's |
+|---|---|
+| Eyes, one to nine | Burrows, a ring of earth with snow on its top round a dark hole, two eyes peeping out; the one the groundhog's own, in a snowy mound, as the snow comes down |
+| Bones | Candles, beeswax and lit, for Candlemas, the old feast on the same day; the one a candle in a brass chamberstick, its flame glowing |
+| Graves | Scrolls, for the forecast proclaimed: rolled at the top and the foot, with two lines of writing, a seal of red wax, and the number big in the middle |
+| The monsters (E, S, W, N) | Four weather prophets, each of whom comes out on the second of February to look for his shadow, in one land or another: the groundhog in his top hat, a hedgehog, a badger, and a bear, just woken, yawning, with snow on his head |
+| Jack-o'-lantern, witch's brew, ghost | The sun, beaming, a weather vane, green with verdigris, its rooster on its arrow, and a cloud, red, green and white, as the dragons they stand for are: in sunshine the groundhog sees his shadow, and under a cloud he doesn't |
+| The poison garden | Spring's first flowers: a snowdrop, a crocus, a daffodil and a tulip, any two of which match |
+| The moons | Songbirds, singing for spring, each on a snowy branch in a round of pale sky: a robin, a bluebird, a cardinal and a chickadee, any two of which match |
+| The lost soul | His shadow, standing up on the snow, its eyes wide |
+
+- The middle burrow of the five and the nine is ringed with spring's green grass, the rest with earth, as a dots tile's middle dot is red.
+- Each group's corner number has a colour of its own, by day and by night: the burrows' earth brown, the candles' flame orange, the scrolls' ink blue, the weather prophets' woodland green, the crocus's purple and the cardinal's red.
+- The shadow glows the pale blue of snow at dusk, on the board and held up close, where Halloween's lost souls glow blue, Christmas's coal like an ember and New Year's sleepyheads lilac.
 
 ## Still Boneyard's
 
@@ -430,7 +449,7 @@ The day that keeps coming round, open all year, every year: one board a day, the
 
 ## Milestones
 
-**Tue 17 Nov:** Groundhog Day, the fifth holiday ready to play, and the one open all year, every year: the board of the day, a groundhog peeking out of his burrow, dealt from the date so everyone has the same board each day, played again and again until it goes just right, with the best today, the days in a row cleared and the week's days on its card, and the groundhog's forecast as it's cleared, an early spring under par or six more weeks of winter.
+**Tue 17 Nov:** Groundhog Day, the fifth holiday ready to play, and the one open all year, every year: the board of the day, a groundhog peeking out of his burrow, dealt from the date so everyone has the same board each day, played again and again until it goes just right, with the best today, the days in a row cleared and the week's days on its card, and the groundhog's forecast as it's cleared, an early spring under par or six more weeks of winter. Then Groundhog Day's own tiles: burrows, candles for Candlemas and scrolls; four weather prophets, the groundhog in his top hat, a hedgehog, a badger and a bear; the sun, a weather vane and a cloud; spring flowers and songbirds; and his shadow, which the turtle wears too while Groundhog Day is the holiday chosen.
 
 **Sat 14 Nov:** New Year's ninth board, the 2, a toast for two: two glasses of champagne gliding toward each other along the 2's stroke, a place with every match unless a tile lies in their way, and clinking as they meet, a toast worth more the sooner. Its board was drawn again for it, a tile on every other place of the way between rails, and dealt so the way can be cleared from the start. And the tenth, the 1, midnight: the full set of 144 tiles on a bold 1, turning over halfway as the ball lands and the clock strikes twelve, a tile left without a partner a sleepyhead who missed it. All ten boards of the countdown are made. Then New Year's Day after them, the morning after: a calendar turned to January, with a resolution to keep, six sweets to leave alone through January's 31 matches. Then New Year's in the menu, the fourth holiday ready to play, opening on December 1st: its card lists the countdown's ten boards and New Year's Day, reached in turn, with the ball on its pole beside them, dropping a notch with each board cleared and landing at midnight on the 1, the year lit beneath it. Then New Year's own tiles: clocks at five to midnight, party horns and calendar pages; Father Time, Baby New Year, a night owl and a polar bear; a party hat, champagne and New Year's ball; lucky charms and the seasons of the year to come; and sleepyheads for midnight on the 1, which the turtle wears too while New Year's is the holiday chosen.
 

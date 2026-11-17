@@ -119,8 +119,8 @@ let turnWords = TURNS.midnight; // the board in play's
 // The set of faces the board in play's tiles wear, and are named by
 // (faces.js): Halloween's on the night's boards, Thanksgiving's on the
 // week's, Christmas's on the twelve days', New Year's on its countdown and
-// New Year's Day, and on the turtle and the rest outside them, the holiday
-// chosen's (holidayFaces).
+// New Year's Day, Groundhog Day's on its board of the day, and on the
+// turtle and the rest outside them, the holiday chosen's (holidayFaces).
 let faceSet = 'halloween';
 
 // Every layout by the name an address can give it, for free play: #play/raven/12345.
@@ -661,7 +661,7 @@ const named = (d) => d.called || d.name.replace(/^The /, 'the ');
 
 // What play() wants for a day's board: its options, the treats it gives or
 // none, its nap, the words its turning over is told in, and its holiday's
-// faces: Thanksgiving's, Christmas's or New Year's.
+// faces: Thanksgiving's, Christmas's, New Year's or Groundhog Day's.
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;
@@ -671,7 +671,7 @@ function dayPlay(d) {
     treatBar: Boolean(options.treats),
     napAt: napFrom ? { from: napFrom, to: napFrom + d.nap.matches } : null,
     turnSet: d.words || 'midnight',
-    faces: DAYS.includes(d) ? 'thanksgiving' : TWELVE_DAYS.includes(d) ? 'christmas' : NEW_YEAR.includes(d) ? 'new-year' : 'halloween',
+    faces: DAYS.includes(d) ? 'thanksgiving' : TWELVE_DAYS.includes(d) ? 'christmas' : NEW_YEAR.includes(d) ? 'new-year' : d === GROUNDHOG_DAY ? 'groundhog' : 'halloween',
   };
 }
 

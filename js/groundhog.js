@@ -8,8 +8,8 @@ import { GROUNDHOG } from './engine/layouts.js';
 // early spring; otherwise he sees it, and it's six more weeks of winter.
 // Its board is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), a groundhog peeking out of his burrow, with no twist but
-// the day itself. Until Groundhog Day's own tiles are drawn, it wears
-// Halloween's.
+// the day itself, and it wears Groundhog Day's own tiles
+// (ui/groundhog-faces.js).
 
 export const GROUNDHOG_DAY = {
   name: 'Groundhog Day',

@@ -10,8 +10,8 @@ import { Board } from '../js/ui/board.js';
 
 const INDEXED = ['eyes', 'bones', 'graves', 'monster', 'flower', 'moon'];
 
-test("there are Halloween's faces, Thanksgiving's, Christmas's and New Year's, each a drawing of every face", () => {
-  equal(FACE_SETS.join(' '), 'halloween thanksgiving christmas new-year', 'the sets');
+test("there are Halloween's faces, Thanksgiving's, Christmas's, New Year's and Groundhog Day's, each a drawing of every face", () => {
+  equal(FACE_SETS.join(' '), 'halloween thanksgiving christmas new-year groundhog', 'the sets');
   const svg = sprite();
   const ids = [...svg.querySelectorAll('symbol')].map((s) => s.id);
   equal(ids.length, FACES.length * FACE_SETS.length + 1, 'symbols, and the egg'); // the egg a tile hides in, on the hens' board
@@ -27,10 +27,10 @@ test("there are Halloween's faces, Thanksgiving's, Christmas's and New Year's, e
   return `${ids.length} faces`;
 });
 
-test("Halloween's faces keep their names, and Thanksgiving's, Christmas's and New Year's have names of their own", () => {
+test("Halloween's faces keep their names, and Thanksgiving's, Christmas's, New Year's and Groundhog Day's have names of their own", () => {
   for (const f of FACES) equal(faceName(f.id), f.name, f.key);
   for (const k of KINDS) equal(kindName(k.id), k.name, k.key);
-  for (const set of ['thanksgiving', 'christmas', 'new-year']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog']) {
     const names = new Map();
     for (const f of FACES) {
       const name = faceName(f.id, set);
@@ -66,6 +66,14 @@ test("Halloween's faces keep their names, and Thanksgiving's, Christmas's and Ne
   equal(kindName(MATCH[FACE.nightshade], 'new-year'), 'Lucky charm', "New Year's flowers");
   equal(kindName(MATCH[FACE['full-moon']], 'new-year'), 'Season', "New Year's moons");
   equal(['new-moon', 'waxing-moon', 'full-moon', 'waning-moon'].map((k) => faceName(FACE[k], 'new-year')).join(', '), 'Winter, Spring, Summer, Fall', 'the seasons of the year to come, in turn');
+  equal(faceName(FACE['eyes-3'], 'groundhog'), 'Three of Burrows', "Groundhog Day's three of eyes");
+  equal(faceName(FACE['bones-9'], 'groundhog'), 'Nine of Candles', "Groundhog Day's nine of bones");
+  equal(faceName(FACE['graves-1'], 'groundhog'), 'One of Scrolls', "Groundhog Day's one of graves");
+  equal(['vampire', 'werewolf', 'mummy', 'zombie'].map((k) => faceName(FACE[k], 'groundhog')).join(', '), 'Groundhog, Hedgehog, Badger, Bear', 'the four weather prophets, for the monsters');
+  equal(['lantern', 'brew', 'ghost'].map((k) => faceName(FACE[k], 'groundhog')).join(', '), 'Sun, Weather vane, Cloud', 'the red, the green and the white');
+  equal(kindName(MATCH[FACE.nightshade], 'groundhog'), 'Spring flower', "Groundhog Day's flowers");
+  equal(kindName(MATCH[FACE['full-moon']], 'groundhog'), 'Songbird', "Groundhog Day's moons");
+  equal(faceName(FACE['lost-soul'], 'groundhog'), 'Shadow', "Groundhog Day's lost soul, the groundhog's shadow");
 });
 
 test("on Twelfth Night a tile left without a partner turns to coal, as Christmas's lost soul is drawn", () => {
@@ -80,7 +88,7 @@ test("at midnight on the 1 a tile left without a partner is a sleepyhead, as New
 
 test("each set's corner numbers have a colour by day and by night", async () => {
   const css = await (await fetch('css/game.css')).text();
-  for (const prefix of ['index', 'index-tg', 'index-xm', 'index-ny']) {
+  for (const prefix of ['index', 'index-tg', 'index-xm', 'index-ny', 'index-gh']) {
     for (const group of INDEXED) {
       const found = css.match(new RegExp(`--${prefix}-${group}:\\s*#[0-9a-f]{6};`, 'g')) || [];
       equal(found.length, 2, `--${prefix}-${group}, by day and by night`);
@@ -116,6 +124,8 @@ test("a board's tiles can change to another set's faces, each tile the same face
   wears('christmas');
   board.setFaces('new-year');
   wears('new-year');
+  board.setFaces('groundhog');
+  wears('groundhog');
   board.setFaces('halloween');
   wears('halloween');
 });
