@@ -36,6 +36,7 @@ import './faces.test.js';
 import './site.test.js';
 import './score.test.js';
 import './magnifier.test.js';
+import './board.test.js';
 import './leaderboard.test.js';
 import './themes.test.js';
 import { drawBoard } from './preview.js';

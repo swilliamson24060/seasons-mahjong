@@ -8,7 +8,7 @@ import { GROUNDHOG_DAY, groundhogOf, dayKey, daySeed, streakOf, weekTo } from '.
 import { ballDrop } from './ui/ball.js';
 import { KINDS, MATCH } from './engine/tiles.js';
 import { sprite, symbolId, faceName, kindName, FACE_SETS } from './ui/faces.js';
-import { Board } from './ui/board.js';
+import { Board, tileFit } from './ui/board.js';
 import { Magnifier } from './ui/magnifier.js';
 import { Sound } from './ui/sound.js';
 import { POINTS, par, scoreOf, coinWorth, toastWorth } from './score.js';
@@ -533,20 +533,32 @@ function beginHour(at, keep = null) {
   }
 }
 
-// A board outside the night, as often as you like: the turtle, or any of the
-// night's boards by name, with or without a midnight. It wears the faces of
-// the holiday chosen, as the page wears its look, and a day's board its
-// holiday's. Like the night's, the board in play is kept, to go on with
-// after a reload or a visit to the night: `keep` is that board.
+// The turtles, by their keys: the classic, fifteen tiles across, and the
+// upright one, nine across, for a phone held upright.
+const TURTLES = ['turtle', 'upright_turtle'];
+
+// The turtle to deal: the classic, unless the upright one's tiles come out
+// bigger in the space the board has, as they do on a phone held upright.
+function turtleKey() {
+  const { width, height } = $('table').getBoundingClientRect();
+  return tileFit(layouts.UPRIGHT_TURTLE, width, height) > tileFit(layouts.TURTLE, width, height) ? 'upright_turtle' : 'turtle';
+}
+
+// A board outside the night, as often as you like: the turtle that fits the
+// screen, or any of the night's boards by name, with or without a midnight.
+// It wears the faces of the holiday chosen, as the page wears its look, and
+// a day's board its holiday's. Like the night's, the board in play is kept,
+// to go on with after a reload or a visit to the night: `keep` is that
+// board.
 let freeKey = 'turtle'; // the board free play deals,
 let freeTurn = 0; // and after how many matches its tiles turn over, if they do
-function freePlay(key = 'turtle', seed = newSeed(), turnAt = 0, keep = null) {
-  if (!FREE[key]) key = 'turtle';
+function freePlay(key = turtleKey(), seed = newSeed(), turnAt = 0, keep = null) {
+  if (!FREE[key]) key = turtleKey();
   // A holiday's board before the holiday opens: a turtle instead. A
   // holiday's boards still being made play freely, to try them.
   const owner = holidayOf(FREE[key]);
   const shut = owner && owner.ready && !isOpen(owner) ? owner : null;
-  if (shut) [key, turnAt, keep] = ['turtle', 0, null];
+  if (shut) [key, turnAt, keep] = [turtleKey(), 0, null];
   freeKey = key;
   freeTurn = turnAt;
   const today = dayFor(FREE[key]); // a holiday's day's board plays by its day's rules, and gives its own treats or none
@@ -936,7 +948,7 @@ function won() {
         : isOpen(theme('halloween'))
           ? ['Back to the Long Night', toNight]
           : ['Your holidays', showHolidays];
-    showCard('The board is clear!', timing, [['Deal again', () => freePlay(freeKey, newSeed(), freeTurn)], back], [], lines);
+    showCard('The board is clear!', timing, [['Deal again', dealAgain], back], [], lines);
     return;
   }
   const spec = HOURS[hour];
@@ -1058,11 +1070,15 @@ function toNight() {
 // player has agreed to give up any other board begun outside the night.
 function toTurtle() {
   const f = saved.free;
-  if (f && f.key === 'turtle') freePlay('turtle', f.seed, f.turnAt, f);
+  if (f && TURTLES.includes(f.key)) freePlay(f.key, f.seed, f.turnAt, f);
   else if (f && f.moves.length) {
-    askToLose({ which: `your ${FREE[f.key].name.toLowerCase()}`, then: 'a turtle is dealt', go: () => freePlay('turtle'), back: () => menu(), keep: 'Keep it' });
-  } else freePlay('turtle');
+    askToLose({ which: `your ${FREE[f.key].name.toLowerCase()}`, then: 'a turtle is dealt', go: () => freePlay(turtleKey()), back: () => menu(), keep: 'Keep it' });
+  } else freePlay(turtleKey());
 }
+
+// Another deal of the board free play dealt last: a turtle deals the one
+// that fits the screen now, which may have been turned since.
+const dealAgain = () => freePlay(TURTLES.includes(freeKey) ? turtleKey() : freeKey, newSeed(), freeTurn);
 
 // Gives up the board in play, once the player has said so: the same hour of
 // the night or day of a run deals again, or the same board outside them.
@@ -1071,7 +1087,7 @@ function giveUp() {
   askToLose({
     which: 'this board',
     then: hour >= 0 ? `${HOURS[hour].name} deals again` : at >= 0 ? (RUNS[id].daily ? "today's board starts over" : `${named(RUNS[id].days[at])} deals again`) : 'a new one is dealt',
-    go: hour >= 0 ? () => beginHour(hour) : at >= 0 ? () => beginDay(id, at) : () => freePlay(freeKey, newSeed(), freeTurn),
+    go: hour >= 0 ? () => beginHour(hour) : at >= 0 ? () => beginDay(id, at) : dealAgain,
     back: () => (hideCard(), run()),
   });
 }
@@ -1079,7 +1095,7 @@ function giveUp() {
 // A new deal outside the night: at once, unless this one has moves to lose.
 function newDeal() {
   if (!finished && moves.length) giveUp();
-  else freePlay(freeKey, newSeed(), freeTurn);
+  else dealAgain();
 }
 
 // Asks before throwing away a board with moves on it: which board, and what
@@ -1946,7 +1962,7 @@ else if (isOpen(theme('halloween'))) {
   openTheme(true); // the holidays to choose, on a first visit
 } else if (f && f.moves.length) freePlay(f.key, f.seed, f.turnAt, f);
 else {
-  freePlay('turtle');
+  freePlay(turtleKey());
   openTheme(true);
 }
 postScores(); // any bests that could not go up last time

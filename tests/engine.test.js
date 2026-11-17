@@ -1,6 +1,6 @@
 import { test, check, equal, throws } from './run.js';
 import { parseLayout, makeLayout, isFree } from '../js/engine/layout.js';
-import { TURTLE, PUMPKIN } from '../js/engine/layouts.js';
+import { TURTLE, UPRIGHT_TURTLE, PUMPKIN } from '../js/engine/layouts.js';
 import { FACES, SET, FACE, MATCH, LOST, dealPairs } from '../js/engine/tiles.js';
 import { deal, redeal } from '../js/engine/deal.js';
 import { soulsAt } from '../js/engine/midnight.js';
@@ -70,6 +70,16 @@ test('the turtle has 144 tiles on layers of 87, 36, 16, 4 and 1, 15 tiles across
   equal(layers.join(), '87,36,16,4,1', 'layers');
   equal(TURTLE.width / 2, 15, 'tiles across');
   equal(TURTLE.height / 2, 8, 'tiles down');
+});
+
+test('the upright turtle has the 144 on six layers of 64, 38, 20, 12, 6 and 4, nine tiles across and ten down', () => {
+  equal(UPRIGHT_TURTLE.count, 144, 'tiles');
+  const layers = [0, 0, 0, 0, 0, 0];
+  for (const z of UPRIGHT_TURTLE.z) layers[z]++;
+  equal(layers.join(), '64,38,20,12,6,4', 'layers');
+  equal(UPRIGHT_TURTLE.width / 2, 9, 'tiles across');
+  equal(UPRIGHT_TURTLE.height / 2, 10, 'tiles down');
+  equal(UPRIGHT_TURTLE.name, TURTLE.name, 'it is called the turtle too');
 });
 
 test('the pumpkin has 82 tiles, nine across, and its deals can be won, by day or through midnight', () => {
@@ -160,6 +170,10 @@ test('the turtle starts with 35 free tiles', () => {
   equal(freeString(TURTLE, full(TURTLE)).split('1').length - 1, 35, 'free tiles');
 });
 
+test('the upright turtle starts with 47 free tiles', () => {
+  equal(freeString(UPRIGHT_TURTLE, full(UPRIGHT_TURTLE)).split('1').length - 1, 47, 'free tiles');
+});
+
 // ---------------------------------------------------------------- dealing
 
 test('the same seed deals the same board', () => {
@@ -180,6 +194,20 @@ test('1,000 turtle deals each use the whole set and can be won in the order they
   }
 });
 
+test("300 upright turtle deals each use the whole set and can be won, by day or through midnight", () => {
+  for (let seed = 1; seed <= 300; seed++) {
+    const r = seeded(seed);
+    const day = deal(UPRIGHT_TURTLE, [dealPairs(r, 72)], r);
+    check(day, `seed ${seed} could not be dealt`);
+    const count = new Map();
+    for (const f of day.sides[0]) count.set(f, (count.get(f) || 0) + 1);
+    for (const f of FACES) equal(count.get(f.id), inSet(f), `seed ${seed}: ${f.name}`);
+    checkLine(UPRIGHT_TURTLE, day.sides[0], full(UPRIGHT_TURTLE), day.order, `seed ${seed}`);
+    const night = deal(UPRIGHT_TURTLE, [dealPairs(r, 72), dealPairs(r, 72)], r, { turnAt: 36 });
+    equal(checkTurnLine(UPRIGHT_TURTLE, night.sides, 36, night.order, `seed ${seed} through midnight`), 0, `seed ${seed}: lost souls`);
+  }
+});
+
 // ----------------------------------------------------------------- solver
 
 test('the solver wins 100 turtle deals by itself', () => {
@@ -189,6 +217,18 @@ test('the solver wins 100 turtle deals by itself', () => {
     const { result, line, steps } = solve(TURTLE, { faces: g.faces, present: g.present });
     equal(result, 'win', `seed ${seed}`);
     checkLine(TURTLE, g.faces, g.present, line, `seed ${seed}`);
+    most = Math.max(most, steps);
+  }
+  return `${most} steps at most`;
+});
+
+test('the solver wins 100 upright turtle deals by itself', () => {
+  let most = 0;
+  for (let seed = 1; seed <= 100; seed++) {
+    const g = new Game(UPRIGHT_TURTLE, { seed });
+    const { result, line, steps } = solve(UPRIGHT_TURTLE, { faces: g.faces, present: g.present });
+    equal(result, 'win', `seed ${seed}`);
+    checkLine(UPRIGHT_TURTLE, g.faces, g.present, line, `seed ${seed}`);
     most = Math.max(most, steps);
   }
   return `${most} steps at most`;

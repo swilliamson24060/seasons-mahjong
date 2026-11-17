@@ -4,6 +4,8 @@ import { COLOURS } from '../engine/confetti.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const LIFT = 0.11; // how far each layer sits up and to the right, in tile widths
+const MARGIN = 2; // the room left round the board, in px, so that on a phone its tiles are as big as they can be
+const BIGGEST = 88; // the widest a tile is drawn, in px
 const HOLD = 400; // how long a press must last to hold a tile, in ms
 const WINDOW = 42 / 110; // how far down the planchette its window sits
 
@@ -51,6 +53,24 @@ function flute(k) {
 
 // The treats New Year's Day's sweets carry, one to a sweet, in turn.
 const SWEETS = ['🍩', '🍪', '🧁', '🍫', '🍬', '🍰'];
+
+// A tile w pixels wide: how tall it is, and how far each layer lifts it.
+const sizes = (w) => ({ h: Math.round((w * 4) / 3), lift: Math.max(2, Math.round(w * LIFT)) });
+
+// How wide a layout's tiles are drawn in a space of width by height, in
+// whole pixels: the widest at which the board, with its layers lifted and
+// their sides showing, fits in it, but for a margin round it, up to a
+// limit, and never under 16. The board is drawn as wide as this says.
+export function tileFit(layout, width, height) {
+  const cols = layout.width / 2;
+  const rows = layout.height / 2;
+  const deep = layout.depth - 1;
+  for (let w = BIGGEST; w > 16; w--) {
+    const { h, lift } = sizes(w);
+    if (Math.ceil(cols * w + (deep + 1.6) * lift) <= width - 2 * MARGIN && Math.ceil(rows * h + (deep + 1.6) * lift) <= height - 2 * MARGIN) return w;
+  }
+  return 16;
+}
 
 // The board on the page: one button per tile, stacked so that each layer
 // sits up and to the right of the one under it, with the tiles' sides
@@ -282,12 +302,8 @@ export class Board {
     const cols = L.width / 2;
     const rows = L.height / 2;
     const deep = L.depth - 1;
-    const pad = 10;
-    const across = cols + (deep + 1.6) * LIFT;
-    const down = (rows * 4) / 3 + (deep + 1.6) * LIFT;
-    const w = Math.max(16, Math.floor(Math.min((box.width - 2 * pad) / across, (box.height - 2 * pad) / down, 84)));
-    const h = Math.round((w * 4) / 3);
-    const lift = Math.max(2, Math.round(w * LIFT));
+    const w = tileFit(L, box.width, box.height);
+    const { h, lift } = sizes(w);
     this.tileWidth = w;
     const s = this.el.style;
     s.setProperty('--tile-w', `${w}px`);
