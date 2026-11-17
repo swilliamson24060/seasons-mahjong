@@ -31,6 +31,7 @@ import './stars.test.js';
 import './glasses.test.js';
 import './midnight.test.js';
 import './sweets.test.js';
+import './groundhog.test.js';
 import './faces.test.js';
 import './site.test.js';
 import './score.test.js';

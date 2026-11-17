@@ -4,14 +4,14 @@ import { THEMES, theme, when, calendar, isOpen, opensOn, today } from '../js/the
 const day = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 const ids = (list) => list.map((e) => e.theme.id).join(' ');
 
-test("there are the eleven holidays and seasons, each once, with Halloween, Thanksgiving, Christmas and New Year's ready to play", () => {
+test("there are the eleven holidays and seasons, each once, with Halloween, Thanksgiving, Christmas, New Year's and Groundhog Day ready to play", () => {
   equal(THEMES.length, 11, 'themes');
   equal(new Set(THEMES.map((t) => t.id)).size, 11, 'different themes');
   const names = THEMES.map((t) => t.name);
   for (const name of ['Thanksgiving', 'Christmas', "New Year's", 'Groundhog Day', "Valentine's Day", 'Start of Spring', 'Summer Beach Season', 'Independence Day', 'Labor Day', 'Start of Fall', 'Halloween']) {
     check(names.includes(name), `${name} is missing`);
   }
-  equal(THEMES.filter((t) => t.ready).map((t) => t.id).join(), 'new-year,halloween,thanksgiving,christmas', 'the ones ready');
+  equal(THEMES.filter((t) => t.ready).map((t) => t.id).join(), 'new-year,groundhog,halloween,thanksgiving,christmas', 'the ones ready');
 });
 
 test('the holidays that move fall on their weekdays', () => {
@@ -87,9 +87,9 @@ test('Groundhog Day, and it alone, is open all year, every year, once its boards
   equal(THEMES.filter((t) => t.always).map((t) => t.id).join(), 'groundhog', 'always open');
   const groundhog = theme('groundhog');
   equal(day(groundhog.on(2027)), '2027-2-2', 'on the 2nd of February');
-  check(!isOpen(groundhog, new Date(2027, 1, 2, 9)), 'Groundhog Day is open before its boards are made');
-  const made = { ...groundhog, ready: true };
+  check(!isOpen({ ...groundhog, ready: false }, new Date(2027, 1, 2, 9)), 'Groundhog Day is open before its boards are made');
+  check(groundhog.ready, "Groundhog Day's boards not made");
   for (const date of [new Date(2026, 11, 31, 23, 59), new Date(2027, 0, 1, 0, 1), new Date(2027, 1, 2, 6), new Date(2027, 6, 4), new Date(2030, 9, 31)]) {
-    check(isOpen(made, date), `Groundhog Day is shut on ${date.toDateString()}`);
+    check(isOpen(groundhog, date), `Groundhog Day is shut on ${date.toDateString()}`);
   }
 });

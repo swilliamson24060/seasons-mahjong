@@ -7,7 +7,7 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 | Holiday | When | Opens | Its colours | Its boards |
 |---|---|---|---|---|
 | New Year's | January 1 | December 1 | gold, under a midnight blue | the countdown's ten boards and New Year's Day, in the menu |
-| Groundhog Day | February 2 | all year, every year | ice blue, on a winter sky | next |
+| Groundhog Day | February 2 | all year, every year | ice blue, on a winter sky | the board of the day, in the menu |
 | Valentine's Day | February 14 | February 1 | pink, on deep rose | next |
 | Start of Spring | March 20, the usual day of the equinox | March 1 | leaf green, on deep green | next |
 | Summer Beach Season | Memorial Day to Labor Day | May 1 | sun yellow, on sea blue | next |
@@ -404,6 +404,17 @@ The same faces as Halloween's, matching just as those do, drawn as New Year's: o
 - Choosing a sweet in January says it would break the resolution. Breaking it crunches, with a falling sigh, a 💔 rising; seeing January out plays a fanfare, with 💪 and the bonus rising. The top bar counts the days held (📅 12/31), then says kept (💪) or broken, and on which day (💔 day 9); a screen reader names each sweet and whether it's still a temptation. An undo takes back a broken resolution, or a kept one.
 - Measured over 150 deals: a player taking pairs at random holds out 4.4 days, never the whole month, for 22 points; one leaving the sweets alone whenever it can holds out the month 72% of the time, for 220, and is cornered late in January the rest, with only pairs with sweets left; a careful one, which also keeps a pair without sweets for the next match and never leaves a board that can't be won, keeps it 78% of the time, for 228 (40 deals). About 39 tiles are free at the start.
 
+## Groundhog Day: the board of the day
+
+The day that keeps coming round, open all year, every year: one board a day, the same deal for everyone, played again and again until it goes just right. `js/groundhog.js` holds it.
+
+- Its board is a groundhog peeking out of his burrow: his ears up and his eyes two holes, his snout raised between them and his nose on top of it, his paws on the edge of the mound of earth, piled up at its middle: 118 tiles on three layers, nine across. It has no twist but the day itself, and wears Halloween's tiles until Groundhog Day's own are drawn.
+- Each day's board is dealt from a seed made from the date alone (`daySeed`), by the clock where it's played, so everyone has the same board that day, and the next day brings a new one. Every day's board through a year can be won, as measured.
+- It is played as often as one likes, the same tiles in the same places each time: Play it again after clearing it, and giving it up starts the same board over. The board in play is kept, as the other holidays' are, but only through its day: the next day, the card offers that day's board.
+- In main.js it is a run of one board (RUNS' `groundhog`, `daily`), so that the board in play, its sky and its look come as the other runs' do; its own card (`dailyMenu`) shows the best today and how often it was cleared, the days in a row cleared, counted from yesterday until today's is (`streakOf`), and the week's days with their bests, today's to play.
+- Cleared under par, the groundhog sees no shadow: an early spring (🌷). Otherwise he sees it, and it's six more weeks of winter (❄️). The top bar names the day's board by its date (🦫 Groundhog Day Nov 17).
+- Each day's best and clears are kept by the date, a little over a year of them. A leaderboard for the board of the day, everyone's on the same deal, would need its boards in the Firebase rules, and is for later.
+
 ## Still Boneyard's
 
 - The icon, the cover and the screenshots: Halloween's jack-o'-lantern and tiles.
@@ -418,6 +429,8 @@ The same faces as Halloween's, matching just as those do, drawn as New Year's: o
 - Plain HTML, CSS and ES modules, with no build step and no libraries; offline play, and installing as an app; a zip, a cover and screenshots for itch.io; and a leaderboard in Firebase.
 
 ## Milestones
+
+**Tue 17 Nov:** Groundhog Day, the fifth holiday ready to play, and the one open all year, every year: the board of the day, a groundhog peeking out of his burrow, dealt from the date so everyone has the same board each day, played again and again until it goes just right, with the best today, the days in a row cleared and the week's days on its card, and the groundhog's forecast as it's cleared, an early spring under par or six more weeks of winter.
 
 **Sat 14 Nov:** New Year's ninth board, the 2, a toast for two: two glasses of champagne gliding toward each other along the 2's stroke, a place with every match unless a tile lies in their way, and clinking as they meet, a toast worth more the sooner. Its board was drawn again for it, a tile on every other place of the way between rails, and dealt so the way can be cleared from the start. And the tenth, the 1, midnight: the full set of 144 tiles on a bold 1, turning over halfway as the ball lands and the clock strikes twelve, a tile left without a partner a sleepyhead who missed it. All ten boards of the countdown are made. Then New Year's Day after them, the morning after: a calendar turned to January, with a resolution to keep, six sweets to leave alone through January's 31 matches. Then New Year's in the menu, the fourth holiday ready to play, opening on December 1st: its card lists the countdown's ten boards and New Year's Day, reached in turn, with the ball on its pole beside them, dropping a notch with each board cleared and landing at midnight on the 1, the year lit beneath it. Then New Year's own tiles: clocks at five to midnight, party horns and calendar pages; Father Time, Baby New Year, a night owl and a polar bear; a party hat, champagne and New Year's ball; lucky charms and the seasons of the year to come; and sleepyheads for midnight on the 1, which the turtle wears too while New Year's is the holiday chosen.
 

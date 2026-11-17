@@ -4,6 +4,7 @@ import { HOURS, gameOptions } from './night.js';
 import { DAYS, dayOf, dayOptions } from './thanksgiving.js';
 import { TWELVE_DAYS, dayOfChristmas } from './christmas.js';
 import { NEW_YEAR, newYearOf } from './newyear.js';
+import { GROUNDHOG_DAY, groundhogOf, dayKey, daySeed, streakOf, weekTo } from './groundhog.js';
 import { ballDrop } from './ui/ball.js';
 import { KINDS, MATCH } from './engine/tiles.js';
 import { sprite, symbolId, faceName, kindName, FACE_SETS } from './ui/faces.js';
@@ -12,7 +13,7 @@ import { Magnifier } from './ui/magnifier.js';
 import { Sound } from './ui/sound.js';
 import { POINTS, par, scoreOf, coinWorth, toastWorth } from './score.js';
 import { Leaderboard, BOARDS, NIGHT, boardOf, nameOf, nameProblem, tidy } from './leaderboard.js';
-import { THEMES, theme, when, calendar, isOpen, opensOn } from './themes.js';
+import { THEMES, theme, when, calendar, isOpen, opensOn, today } from './themes.js';
 
 const MIDNIGHT = HOURS.findIndex((h) => h.name === 'Midnight');
 
@@ -133,7 +134,8 @@ let game = null;
 let board = null;
 let hour = -1; // the hour of the Long Night being played, or -1
 let runDay = -1; // the day being played of a run of days, Thanksgiving week, Christmas's twelve or New Year's boards, or -1; with hour, both -1 for free play
-let runId = null; // the run that day is of: 'thanksgiving', 'christmas' or 'new-year' (RUNS)
+let runId = null; // the run that day is of: 'thanksgiving', 'christmas', 'new-year' or 'groundhog' (RUNS)
+let boardDate = null; // on Groundhog Day, the day the board in play is the board of, as its key
 let moves = []; // what has been done on this board, to play it back after a reload
 let elapsed = 0; // seconds played before the clock last started
 let started = 0; // when the clock last started, or 0 while it is held
@@ -146,7 +148,8 @@ let prompted = false;
 // whose card the menu opens; the latest hour of the Long Night reached, the
 // best time and the best score for each hour, with the time that score took;
 // the same for Thanksgiving week, for Christmas's twelve days and for New
-// Year's boards, by the day;
+// Year's boards, by the day, and for Groundhog Day's board by the date,
+// with how often each day's was cleared;
 // the boards in play, the night's, the week's, the twelve days' and the one
 // outside them all, each as its seed and its moves; and the player's name on
 // the leaderboard, with what has been posted there.
@@ -161,6 +164,7 @@ let saved = {
   week: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   twelve: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   newyear: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
+  groundhog: { reached: 0, best: {}, scores: {}, times: {}, playing: null, days: {} },
   free: null,
   name: '',
   declined: false,
@@ -567,13 +571,14 @@ function holidayOf(layout) {
   if (HOURS.some((h) => h.layout === layout)) return theme('halloween');
   if (dayOf(layout)) return theme('thanksgiving');
   if (dayOfChristmas(layout)) return theme('christmas');
+  if (groundhogOf(layout)) return theme('groundhog');
   return newYearOf(layout) ? theme('new-year') : null;
 }
 
 // The day a board is for, if it is one of Thanksgiving week's, one of
 // Christmas's twelve or one of New Year's, its countdown's or New Year's
 // Day's: played freely, it plays by that day's rules.
-const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(layout);
+const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(layout) || groundhogOf(layout);
 
 // ------------- Thanksgiving week, Christmas's twelve days, and New Year's boards
 
@@ -624,6 +629,20 @@ const RUNS = {
       return at === NEW_YEAR.length - 2 ? 'The ball has landed: happy New Year!' : '';
     },
   },
+  // Groundhog Day: one board, dealt afresh each day from the date, the
+  // same for everyone, and played again as often as one likes (daily).
+  groundhog: {
+    days: [GROUNDHOG_DAY],
+    progress: () => saved.groundhog,
+    daily: true,
+    title: 'Groundhog Day',
+    intro: "It's Groundhog Day, again: one board a day, the same deal for everyone. Play it as often as you like until you get it just right, and come back tomorrow for a new one.",
+    begin: "Play today's board",
+    back: "Back to today's board",
+    meanwhile: "Groundhog Day's board of the day",
+    score: '',
+    over: ['', ''],
+  },
 };
 
 // New Year's ball on its pole, for the countdown's card: a notch down for
@@ -670,23 +689,31 @@ function dayCard(d) {
 function beginDay(id, at, keep = null) {
   const r = RUNS[id];
   const d = r.days[at];
-  const seed = keep ? keep.seed : newSeed();
+  // Groundhog Day's board is the day's: today's, dealt from the date, or
+  // the one in play, kept from the day it was begun.
+  if (r.daily) boardDate = keep && keep.date ? keep.date : dayKey(today());
+  const seed = keep ? keep.seed : r.daily ? daySeed(boardDate) : newSeed();
   play({ layout: d.layout, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, onDay: at, ofRun: id, ...dayPlay(d) });
-  r.progress().playing = { day: at, seed, moves, elapsed };
+  r.progress().playing = r.daily ? { day: at, seed, moves, elapsed, date: boardDate } : { day: at, seed, moves, elapsed };
   saved.theme = id;
   store();
   history.replaceState(null, '', location.pathname + location.search);
   if (keep) {
     run();
-    toast(`Back to ${named(d)}.`);
-  } else dayCard(d);
+    toast(`Back to ${r.daily ? "today's board" : named(d)}.`);
+  } else if (r.daily) dailyCard();
+  else dayCard(d);
 }
 
 // A run's board in play: come to, or begun, and not yet cleared.
 function runInPlay(id) {
   const p = RUNS[id].progress().playing;
-  return p && RUNS[id].days[p.day] && (p.day > 0 || p.moves.length > 0) ? p : null;
+  return p && RUNS[id].days[p.day] && stillToday(id, p) && (p.day > 0 || p.moves.length > 0) ? p : null;
 }
+
+// Whether a run's board in play is still to be played: always, but on
+// Groundhog Day only while it is the day it was the board of.
+const stillToday = (id, p) => !RUNS[id].daily || p.date === dayKey(today());
 
 // A day from a run's card: the run's board in play, if it is that day's, or
 // else the day dealt afresh, once the player has agreed to give up a board
@@ -711,7 +738,7 @@ function toDay(id, i) {
 // Back to a run: its board in play, or the latest day reached.
 function toRun(id) {
   const p = RUNS[id].progress().playing;
-  if (p && RUNS[id].days[p.day]) beginDay(id, p.day, p);
+  if (p && RUNS[id].days[p.day] && stillToday(id, p)) beginDay(id, p.day, p);
   else beginDay(id, RUNS[id].progress().reached);
 }
 
@@ -728,6 +755,7 @@ function runScore(id) {
 // not yet begun.
 function runMenu(id, opening = false) {
   const r = RUNS[id];
+  if (r.daily) return dailyMenu(id, opening);
   const ours = runId === id && runDay >= 0; // one of the run's boards is on the table
   if (opening === true && !ours) beginDay(id, r.progress().reached); // a board of the run to look at behind its card
   hold();
@@ -764,6 +792,7 @@ function runMenu(id, opening = false) {
 function wonDay(total, time, lines, timing) {
   const id = runId;
   const r = RUNS[id];
+  if (r.daily) return dailyWon(total, time, lines, timing);
   const w = r.progress();
   const at = runDay;
   const best = w.scores[at];
@@ -789,6 +818,83 @@ function wonDay(total, time, lines, timing) {
       ['Play it again', () => beginDay(id, at)],
     ], [], lines);
   }
+}
+
+// ------------------------------------------------------------ Groundhog Day
+
+// Groundhog Day's card: today's board, the same for everyone, to play as
+// often as you like; the best today, the days in a row cleared, and the
+// week's days, each with its best, today's to play.
+function dailyMenu(id, opening = false) {
+  const r = RUNS[id];
+  const ours = runId === id && runDay >= 0; // the day's board is on the table
+  if (opening === true && !ours) beginDay(id, 0); // today's board to look at behind its card
+  hold();
+  wear(theme(id));
+  sky();
+  if (opening === true) cover(false);
+  const playing = game && !finished && opening !== true;
+  const inPlay = runInPlay(id);
+  const key = dayKey(today());
+  const days = r.progress().days;
+  const actions = [];
+  if (playing) actions.push(['Back to the board', () => (hideCard(), run())]);
+  if (playing && moves.length) actions.push(['Give up this board', giveUp]);
+  if (!ours) actions.push(inPlay ? [r.back, () => toRun(id)] : [r.begin, () => beginDay(id, 0)]);
+  else if (!playing) actions.push([days[key] && days[key].clears ? 'Play it again' : r.begin, () => beginDay(id, 0)]);
+  if (ours) actions.push(['Play the turtle', toTurtle]);
+  actions.push(['Your holidays', showHolidays]);
+  const week = weekTo(key).map((k) => ({
+    label: new Date(`${k}T12:00`).toLocaleDateString('en-US', { weekday: 'short' }),
+    sub: days[k] && days[k].score !== undefined ? `★ ${signed(days[k].score, '')}` : k === key ? 'today' : '–',
+    act: () => (ours && playing ? (hideCard(), run()) : toRun(id)),
+    disabled: k !== key,
+    on: k === key,
+  }));
+  showCard(`${theme(id).icon} ${r.title}`, `${r.intro}${dailyWords(key)}`, actions, week);
+  showOptions();
+}
+
+// How a day's board has gone: the best so far, how often cleared, and the
+// days in a row cleared, up to it.
+function dailyWords(key) {
+  const day = saved.groundhog.days[key];
+  const streak = streakOf(saved.groundhog.days, key);
+  const best = day && day.score !== undefined ? ` Your best today is ${signed(day.score, '')}${day.clears > 1 ? `, cleared ${day.clears} times` : ''}.` : '';
+  return `${best}${streak > 1 ? ` You've cleared the board of the day ${streak} days in a row.` : ''}`;
+}
+
+// The card before the day's board: what Groundhog Day is, and the best so far.
+function dailyCard() {
+  const d = GROUNDHOG_DAY;
+  showCard(`${d.name}: ${short(new Date(`${boardDate}T12:00`))}`, `${d.text}${dailyWords(boardDate)}`, [['Play', () => (hideCard(), run())]]);
+}
+
+// The day's board cleared: the best for its day kept, how often it has been
+// cleared, and the groundhog's forecast, an early spring for a board
+// cleared under par and otherwise six more weeks of winter. To play again,
+// the same deal, while the day lasts.
+function dailyWon(total, time, lines, timing) {
+  const id = runId;
+  const g = RUNS[id].progress();
+  const key = boardDate;
+  const day = g.days[key] || { clears: 0 };
+  const best = day.score;
+  const better = best === undefined || total > best;
+  if (better) Object.assign(day, { score: total, time: Math.floor(time) });
+  day.clears = (day.clears || 0) + 1;
+  g.days[key] = day;
+  for (const old of Object.keys(g.days).sort().slice(0, -400)) delete g.days[old]; // a year and more is plenty
+  g.playing = null;
+  store();
+  const early = time < par(game);
+  const note = best === undefined ? '' : better ? ' Your best today yet.' : ` Your best today is ${signed(best, '')}.`;
+  const streak = streakOf(g.days, key);
+  const forecast = early ? 'Under par, the groundhog sees no shadow. 🌷' : 'The groundhog sees his shadow. ❄️ Clear it under par for an early spring.';
+  showCard(early ? 'An early spring!' : 'Six more weeks of winter', `${timing} ${forecast}${note}${streak > 1 ? ` That's ${streak} days in a row.` : ''}`, [
+    ['Play it again', () => beginDay(id, 0)],
+    ['Play the turtle', toTurtle],
+  ], [], lines);
 }
 
 function turned({ souls }) {
@@ -964,7 +1070,7 @@ function giveUp() {
   const [id, at] = [runId, runDay];
   askToLose({
     which: 'this board',
-    then: hour >= 0 ? `${HOURS[hour].name} deals again` : at >= 0 ? `${named(RUNS[id].days[at])} deals again` : 'a new one is dealt',
+    then: hour >= 0 ? `${HOURS[hour].name} deals again` : at >= 0 ? (RUNS[id].daily ? "today's board starts over" : `${named(RUNS[id].days[at])} deals again`) : 'a new one is dealt',
     go: hour >= 0 ? () => beginHour(hour) : at >= 0 ? () => beginDay(id, at) : () => freePlay(freeKey, newSeed(), freeTurn),
     back: () => (hideCard(), run()),
   });
@@ -1063,7 +1169,7 @@ function chooseHolidays(first = false) {
     show();
   };
   const grid = entries.map((e) => ({ label: `${e.theme.icon} ${e.theme.name}`, sub: dated(e), act: () => toggle(e.theme.id) }));
-  const text = "Pick the holidays and seasons you'd like to play, as many as you like. Halloween's, Thanksgiving's, Christmas's and New Year's boards are ready, and the rest are on their way. Each opens weeks before its day, to build up to it, and stays open to the end of the year. Groundhog Day is open all year, every year. You can change them from the menu.";
+  const text = "Pick the holidays and seasons you'd like to play, as many as you like. Halloween's, Thanksgiving's, Christmas's and New Year's boards are ready, and Groundhog Day's, a new one every day, and the rest are on their way. Each opens weeks before its day, to build up to it, and stays open to the end of the year. Groundhog Day is open all year, every year. You can change them from the menu.";
   showCard('Choose your holidays', text, [[first === true ? 'Start' : 'Done', done], ['All of them', all]], grid);
   $('card-grid').classList.add('themes');
   show();
@@ -1079,6 +1185,7 @@ const MENUS = {
   thanksgiving: (opening) => runMenu('thanksgiving', opening),
   christmas: (opening) => runMenu('christmas', opening),
   'new-year': (opening) => runMenu('new-year', opening),
+  groundhog: (opening) => runMenu('groundhog', opening),
 };
 function openTheme(opening = false) {
   if (!saved.holidays) return chooseHolidays(opening);
@@ -1331,7 +1438,7 @@ function update() {
     hour >= 0
       ? `${theme('halloween').icon} <b>${HOURS[hour].name}</b> ${HOURS[hour].layout.name}`
       : runDay >= 0
-        ? `${theme(runId).icon} <b>${RUNS[runId].days[runDay].name}</b> ${RUNS[runId].days[runDay].title}`
+        ? `${theme(runId).icon} <b>${RUNS[runId].days[runDay].name}</b> ${RUNS[runId].daily ? short(new Date(`${boardDate}T12:00`)) : RUNS[runId].days[runDay].title}`
         : `<b>Free play</b> ${g.layout.name}`;
   applyTheme();
   $('new').hidden = hour >= 0 || runDay >= 0; // the night's and the runs' boards deal by their own cards
@@ -1828,7 +1935,7 @@ if (mode === 'play') {
 } else if (chosenRun) {
   const progress = RUNS[chosenRun].progress();
   const w = progress.playing;
-  if (w && RUNS[chosenRun].days[w.day] && (progress.reached > 0 || w.day > 0 || w.moves.length > 0)) beginDay(chosenRun, w.day, w);
+  if (w && RUNS[chosenRun].days[w.day] && stillToday(chosenRun, w) && (progress.reached > 0 || w.day > 0 || w.moves.length > 0)) beginDay(chosenRun, w.day, w);
   else {
     beginDay(chosenRun, progress.reached);
     runMenu(chosenRun, true);
