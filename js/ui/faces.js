@@ -29,8 +29,11 @@ const SETS = {
 // sets as --index-eyes and so on: brighter by night. Like a playing card's,
 // it is what names the tile, big and bold enough to read at a glance on the
 // smallest board, with no eyes or bones to count: the drawing gives it the
-// top left corner, shrinking toward the bottom right, and the index is
-// ringed in the tile's own colour, --face-1, where the two meet.
+// top right corner, shrinking toward the bottom left, and the index is
+// ringed in the tile's own colour, --face-1, where the two meet. The board
+// lifts each layer up and to the right, so a taller stack beside a tile
+// lies over its left side, or over its foot from below, and never over its
+// top right corner: there the index can always be read.
 const INDEXED = new Set(['eyes', 'bones', 'graves', 'monster', 'flower', 'moon']);
 const SHRINK = 0.8; // the drawing on a tile with an index
 
@@ -77,11 +80,11 @@ function egg() {
   );
 }
 
-// A face's drawing, shrunk toward the bottom right on a tile with an index.
+// A face's drawing, shrunk toward the bottom left on a tile with an index.
 function art(f, set) {
   const drawing = SETS[set].draw(f);
   if (!indexed(f)) return drawing;
-  return `<g transform="translate(${60 * (1 - SHRINK)} ${80 * (1 - SHRINK)}) scale(${SHRINK})">${drawing}</g>`;
+  return `<g transform="translate(0 ${80 * (1 - SHRINK)}) scale(${SHRINK})">${drawing}</g>`;
 }
 
 function draw(f) {
@@ -99,7 +102,10 @@ function draw(f) {
 function index(f, set) {
   if (!indexed(f)) return '';
   const ring = 'stroke:var(--face-1);stroke-width:4;stroke-linejoin:round;paint-order:stroke';
-  return `<text x="2.5" y="25.5" style="fill:var(--${SETS[set].index}-${f.group});${ring};font:900 29px system-ui,-apple-system,sans-serif">${f.index}</text>`;
+  // The W, the widest, squeezed to the width of the widest digit, so that it
+  // leaves the top left to a badge, as every other index does.
+  const squeeze = f.index === 'W' ? ' textLength="20" lengthAdjust="spacingAndGlyphs"' : '';
+  return `<text x="57.5" y="25.5" text-anchor="end"${squeeze} style="fill:var(--${SETS[set].index}-${f.group});${ring};font:900 29px system-ui,-apple-system,sans-serif">${f.index}</text>`;
 }
 
 // ------------------------------------------------------------------- eyes

@@ -397,6 +397,14 @@ body.covered #board {
   outline-offset: 1px;
 }
 
+/* The badges a twist puts on a tile, a crown, a coin, a price tag and the
+   rest, sit at its top left, 14% in from its edge: the top right is its
+   number's, the corner no stack beside it ever covers, and a layer lifts a
+   tile less than 14% of its width, 13% at the most, on tiles 23px wide, so
+   a stack one layer taller on its left leaves them showing. The counts,
+   the sparkler's, the milk's and the ice's, too wide to sit beside the
+   number, sit under it, at the right. */
+
 /* On the crown, a lord is gilded and wears a crown: free wherever he is. */
 .tile.lord {
   --face-1: #fff7da;
@@ -409,7 +417,7 @@ body.covered #board {
   content: '👑';
   position: absolute;
   top: -11%;
-  right: -10%;
+  left: 14%;
   font-size: calc(var(--tile-w) * 0.4);
   line-height: 1;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
@@ -429,7 +437,7 @@ body.covered #board {
   content: '🎶';
   position: absolute;
   top: -10%;
-  right: -10%;
+  left: 14%;
   font-size: calc(var(--tile-w) * 0.38);
   line-height: 1;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
@@ -446,7 +454,7 @@ body.covered #board {
   content: '🚀';
   position: absolute;
   top: -10%;
-  right: -10%;
+  left: 14%;
   font-size: calc(var(--tile-w) * 0.38);
   line-height: 1;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
@@ -539,10 +547,11 @@ body.covered #board {
 }
 
 /* On New Year's 2, the two glasses of champagne stand along the 2, each at
-   the top right of its place, as badges do, so that the tile under it
-   still shows, and glide on a place at a time; when they meet they clink,
-   tilting together, and stay so. The tiles still in their way are ringed
-   in champagne gold, not filled with it, so as not to look chosen. */
+   the top left of its place, as badges do, so that the tile under it and
+   its number still show, and glide on a place at a time; when they meet
+   they clink, tilting together, and stay so. The tiles still in their way
+   are ringed in champagne gold, not filled with it, so as not to look
+   chosen. */
 .glass {
   position: absolute;
   left: 0;
@@ -601,14 +610,14 @@ body.covered #board {
   pointer-events: none;
 }
 
-/* On New Year's Day, a sweet carries its treat, 🍩 or another, in the
-   corner where badges go; through January, while the resolution holds, it
+/* On New Year's Day, a sweet carries its treat, 🍩 or another, at the top
+   left, where badges go; through January, while the resolution holds, it
    is tinted a frosting pink, tempting, and after, a tile like any other. */
 .tile.sweet::after {
   content: attr(data-sweet);
   position: absolute;
   top: -12%;
-  right: -10%;
+  left: 14%;
   font-size: calc(var(--tile-w) * 0.42);
   line-height: 1;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
@@ -677,7 +686,7 @@ body.covered #board {
   content: '🪙';
   position: absolute;
   top: -12%;
-  right: -10%;
+  left: 14%;
   font-size: calc(var(--tile-w) * 0.42);
   line-height: 1;
   filter: drop-shadow(0 0 4px rgba(255, 213, 74, 0.9));
@@ -690,7 +699,7 @@ body.covered #board {
   content: '🎈';
   position: absolute;
   top: -14%;
-  right: -10%;
+  left: 14%;
   font-size: calc(var(--tile-w) * 0.42);
   line-height: 1;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
@@ -870,7 +879,7 @@ body.covered #board {
 .tile[data-confetti]::after {
   position: absolute;
   top: -8%;
-  right: -6%;
+  left: 14%;
   font: 900 calc(var(--tile-w) * 0.34) / 1 system-ui, -apple-system, sans-serif;
   text-shadow:
     0 0 2px #fff,
@@ -906,7 +915,7 @@ body.covered #board {
   content: '🎇';
   position: absolute;
   top: -12%;
-  right: -12%;
+  left: 14%;
   font-size: calc(var(--tile-w) * 0.38);
   line-height: 1;
   filter: grayscale(1) opacity(0.6);
@@ -915,7 +924,8 @@ body.covered #board {
 
 .tile.sparkler.burning::before {
   content: '🎇' attr(data-burn);
-  top: 3%;
+  top: 36%;
+  left: auto;
   right: 4%;
   padding: 0.1em 0.22em 0.1em 0.08em;
   border-radius: 9px;
@@ -949,7 +959,7 @@ body.covered #board {
 .tile.pail::before {
   content: '🥛' attr(data-fresh);
   position: absolute;
-  top: 3%;
+  top: 36%;
   right: 4%;
   padding: 0.1em 0.22em 0.1em 0.08em;
   border-radius: 9px;
@@ -974,7 +984,7 @@ body.covered #board {
   content: '🐣';
   position: absolute;
   top: -10%;
-  right: -14%;
+  left: 14%;
   font-size: calc(var(--tile-w) * 0.42);
   line-height: 1;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
@@ -1060,7 +1070,7 @@ body.covered #board {
 .tile.unlocked::after {
   content: '🗝️';
   position: absolute;
-  right: -4px;
+  left: 14%;
   top: -6px;
   font-size: calc(var(--tile-w) * 0.3);
 }
@@ -1137,7 +1147,7 @@ body.covered #board {
   content: '';
   position: absolute;
   top: 4%;
-  right: 5%;
+  left: 14%;
   width: 30%;
   height: 15%;
   border-radius: 2px 7px 7px 2px;
@@ -1153,7 +1163,7 @@ body.covered #board {
   content: '';
   position: absolute;
   top: 5%;
-  right: 6%;
+  left: 14%;
   width: 28%;
   height: 20%;
   clip-path: polygon(0 0, 100% 50%, 0 100%);
@@ -1173,7 +1183,7 @@ body.covered #board {
   content: '%';
   position: absolute;
   top: 3%;
-  right: 4%;
+  left: 14%;
   min-width: 36%;
   padding: 0.1em 0.12em 0.1em 0.2em;
   border-radius: 3px 9px 9px 3px;
@@ -1186,7 +1196,7 @@ body.covered #board {
 }
 
 /* The Frozen twist: ice over a tile that can't be taken until it thaws.
-   Its face shows through, with the matches still to make in its corner;
+   Its face shows through, with the matches still to make under its number;
    the ice fades away as the tile thaws, and comes back with an undo. */
 .tile .ice {
   position: absolute;
@@ -1209,7 +1219,7 @@ body.covered #board {
 
 .tile .ice b {
   position: absolute;
-  top: 3%;
+  top: 36%;
   right: 4%;
   min-width: 1.35em;
   padding: 0.12em 0.2em;

@@ -72,6 +72,17 @@ export function tileFit(layout, width, height) {
   return 16;
 }
 
+// Where each of a layout's tiles goes on the board, tiles w pixels wide: its
+// left and top, in whole pixels. Each layer is lifted up and to the right of
+// the one below it, its sides showing on the left and below, so a taller
+// stack beside a tile lies over its left side, or over its foot from below,
+// and never over its top right corner, where its number is.
+export function tileSpots(layout, w) {
+  const { h, lift } = sizes(w);
+  const deep = layout.depth - 1;
+  return Array.from(layout.x, (x, i) => [Math.round(1.4 * lift + (x / 2) * w + layout.z[i] * lift), Math.round((deep - layout.z[i]) * lift + (layout.y[i] / 2) * h)]);
+}
+
 // The board on the page: one button per tile, stacked so that each layer
 // sits up and to the right of the one under it, with the tiles' sides
 // showing below and to the left. It draws what the game says, and turns
@@ -312,10 +323,11 @@ export class Board {
     s.setProperty('--gap', `${Math.max(1, Math.round(w * 0.04))}px`);
     s.width = `${Math.ceil(cols * w + (deep + 1.6) * lift)}px`;
     s.height = `${Math.ceil(rows * h + (deep + 1.6) * lift)}px`;
+    const spots = tileSpots(L, w);
     for (let i = 0; i < this.tableCount; i++) {
       const t = this.tiles[i].el.style;
-      t.left = `${Math.round(1.4 * lift + (L.x[i] / 2) * w + L.z[i] * lift)}px`;
-      t.top = `${Math.round((deep - L.z[i]) * lift + (L.y[i] / 2) * h)}px`;
+      t.left = `${spots[i][0]}px`;
+      t.top = `${spots[i][1]}px`;
     }
     this.rowTop = (row) => Math.round(deep * lift + row * h); // where a row of the bottom layer starts
     this.rowHeight = h;
@@ -369,10 +381,11 @@ export class Board {
     if (this.starBand) this.restart(this.starBand, 'streak');
   }
 
-  // On New Year's 2, where each glass stands now, at the top right of its
-  // place, as a tile's badges sit, so that the tile there still shows: on
-  // the bottom tile there, or the table once that is taken. Once they have
-  // met, the two stand together between their places, tilted to each other.
+  // On New Year's 2, where each glass stands now, at the top left of its
+  // place, as a tile's badges sit, so that the tile there, and its number,
+  // still show: on the bottom tile there, or the table once that is taken.
+  // Once they have met, the two stand together between their places, tilted
+  // to each other.
   placeGlasses() {
     if (!this.glassEls || !this.spotOf) return;
     const g = this.game;
@@ -381,7 +394,7 @@ export class Board {
       const [x, y] = g.path[k];
       const base = this.baseAt[k];
       const [left, top] = this.spotOf(x, y, base >= 0 && g.present[base] ? 1 : 0);
-      return [left + w * 0.8, top + w * 0.36];
+      return [left + w * 0.3, top + w * 0.36];
     });
     const met = Boolean(g.toastAt);
     if (met) {
