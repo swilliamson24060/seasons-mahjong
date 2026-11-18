@@ -1,10 +1,11 @@
 // The holidays and seasons of the year, each a theme of the game: its name,
 // its icon, when it falls, and the colour it brings (the night sky behind
-// its boards, and an accent), and when its boards open. A player picks the
-// ones they want. Five are ready to play: Halloween's Long Night,
-// Thanksgiving week, Christmas's twelve days, New Year's countdown, with
-// New Year's Day after it, and Groundhog Day's board of the day; the others
-// are here so that they can be picked, and their boards come next.
+// its boards, and an accent), and when its boards open. The menu lists them
+// all, to choose one to play, those not open greyed out. Five are ready to
+// play: Halloween's Long Night, Thanksgiving week, Christmas's twelve days,
+// New Year's countdown, with New Year's Day after it, and Groundhog Day's
+// board of the day; the others are listed, to say when they come, and their
+// boards come next.
 
 // When each falls, worked out for any year, as some move: a fixed day, or
 // the nth weekday of a month, counting -1 for the last.
@@ -83,16 +84,24 @@ export function calendar(date = today()) {
   return THEMES.map((t) => ({ theme: t, ...when(t, date) })).sort((a, b) => (a.now ? date : a.start) - (b.now ? date : b.start));
 }
 
-// The holidays a player plays, from their choice as it's kept between
-// visits: the ones they chose, and whether they chose all of them. One who
-// chose all of them plays every holiday there is, those added since
-// included. Whether a choice is all of them has been kept since April
-// Showers came, the twelfth; a choice kept before that is all of them if it
-// holds the eleven there were then. With no choice kept, or none that can
-// be read, there's none yet, as on a first visit.
-const ELEVEN = ['new-year', 'groundhog', 'valentines', 'spring', 'summer', 'independence', 'labor', 'fall', 'halloween', 'thanksgiving', 'christmas'];
-export function choice({ holidays, allHolidays }) {
-  if (!Array.isArray(holidays)) return { holidays: null, allHolidays: null };
-  const all = Boolean(allHolidays ?? ELEVEN.every((id) => holidays.includes(id)));
-  return { holidays: all ? THEMES.map((t) => t.id) : holidays, allHolidays: all };
+// A day as the cards give it: Nov 26.
+export const short = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+// A holiday's day as the cards give it: Nov 26, or a season's first and
+// last, or today, or now while a season is on.
+export function dated({ theme: t, start, end, now }) {
+  if (now) return t.until ? `now, to ${short(end)}` : 'today';
+  return t.until ? `${short(start)} – ${short(end)}` : short(start);
+}
+
+// The holidays as the menu lists them on `date`, to choose one: those open
+// first, then the rest, each in the order they come round, and with each,
+// whether it is open and what it says under its name: its day, or for one
+// not open, the day it opens, or soon for one whose boards are still to come.
+export function menuList(date = today()) {
+  const all = calendar(date).map((e) => ({ ...e, open: isOpen(e.theme, date) }));
+  return [...all.filter((e) => e.open), ...all.filter((e) => !e.open)].map((e) => ({
+    ...e,
+    note: e.open ? dated(e) : e.theme.ready ? `opens ${short(opensOn(e.theme, date))}` : `${dated(e)} · soon`,
+  }));
 }

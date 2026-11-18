@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { THEMES, theme, when, calendar, isOpen, opensOn, today, choice } from '../js/themes.js';
+import { THEMES, theme, when, calendar, isOpen, opensOn, today, menuList } from '../js/themes.js';
 
 const day = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 const ids = (list) => list.map((e) => e.theme.id).join(' ');
@@ -48,28 +48,19 @@ test('April Showers is a season, April and May, between the Start of Spring and 
   equal(ids(calendar(new Date(2027, 2, 21))).split(' ').slice(0, 3).join(' '), 'showers summer independence', 'just after the Start of Spring, the showers come next');
 });
 
-test('a player who chose all of the holidays plays every one, those added since included', () => {
-  const every = THEMES.map((t) => t.id);
-  const before = every.filter((id) => id !== 'valentines'); // as though Valentine's Day had come since
-  const all = choice({ holidays: before, allHolidays: true });
-  equal(all.holidays.join(), every.join(), 'all of them');
-  check(all.allHolidays, 'no longer all of them');
-  const without = choice({ holidays: before, allHolidays: false });
-  equal(without.holidays.join(), before.join(), 'all but the one left out');
-  check(!without.allHolidays, 'one who left one out taken for one who chose all of them');
-  equal(choice({ holidays: null, allHolidays: null }).holidays, null, 'on a first visit, none chosen yet');
-  equal(choice({ holidays: 'halloween', allHolidays: true }).holidays, null, "a choice that can't be read, none yet");
-});
-
-test('a choice kept from before April Showers came is all of them if it holds the eleven there were then', () => {
-  const eleven = THEMES.filter((t) => t.id !== 'showers').map((t) => t.id);
-  const kept = choice({ holidays: eleven, allHolidays: null });
-  check(kept.holidays.includes('showers'), "April Showers didn't join the eleven");
-  equal(kept.holidays.length, THEMES.length, 'the holidays');
-  check(kept.allHolidays, 'the eleven not taken for all of them');
-  const ten = choice({ holidays: eleven.filter((id) => id !== 'labor'), allHolidays: null });
-  equal(ten.holidays.length, 10, 'ten of the eleven');
-  check(!ten.holidays.includes('showers') && ten.allHolidays === false, 'ten of the eleven taken for all of them');
+test('the menu lists every holiday, those open first, then the rest, each saying when it opens, or soon', () => {
+  const ids = (list) => list.map((e) => e.theme.id).join(' ');
+  const november = menuList(new Date(2026, 10, 18, 12));
+  equal(november.length, THEMES.length, 'the holidays listed');
+  equal(ids(november.filter((e) => e.open)), 'thanksgiving groundhog halloween', 'open on the 18th of November, in the order they come round');
+  equal(ids(november.slice(0, 3)), 'thanksgiving groundhog halloween', 'listed first');
+  const note = (id) => november.find((e) => e.theme.id === id).note;
+  equal(note('thanksgiving'), 'Nov 26', "an open holiday's day");
+  equal(note('christmas'), 'opens Dec 1', 'a holiday whose boards are made, not yet open');
+  equal(note('valentines'), 'Feb 14 · soon', 'one whose boards are still to come');
+  equal(note('showers'), 'Apr 1 – May 31 · soon', 'a season');
+  equal(ids(menuList(new Date(2026, 11, 10, 12)).filter((e) => e.open)), 'christmas new-year groundhog halloween thanksgiving', 'open on the 10th of December');
+  equal(ids(menuList(new Date(2027, 0, 10, 12)).filter((e) => e.open)), 'groundhog', 'with the new year, Groundhog Day alone');
 });
 
 test('each holiday but Groundhog Day opens on the first of a month, weeks before its day', () => {
