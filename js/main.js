@@ -1261,7 +1261,8 @@ function comingSoon(t, opening = false) {
   else if (opening === true) actions.push(['Play the turtle', () => (hideCard(), run())]); // the one dealt behind the card, with no holiday open
   actions.push(['Your holidays', showHolidays]);
   const games = meanwhile.map(([, words]) => words);
-  const others = games.length ? `there are ${games.join(' and ')}${games.length > 1 ? ',' : ''} and the classic turtle` : "there's the classic turtle";
+  // The turtle, not the classic one: on a phone held upright it's the upright one.
+  const others = games.length ? `there are ${games.join(' and ')}${games.length > 1 ? ',' : ''} and the turtle` : "there's the turtle";
   const text = t.ready
     ? `${t.name} ${comes}, and its boards open on ${short(opensOn(t))}, to build up to it. Until then, ${others}.`
     : `${t.name} ${comes}. Its boards are on their way${t.always ? ", and they'll be open all year, every year" : ''}; until they come, ${others}.`;

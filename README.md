@@ -20,6 +20,7 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 | Groundhog Day | February 2 | all year, every year |
 | Valentine's Day | February 14 | February 1 |
 | Start of Spring | March 20 | March 1 |
+| April Showers | April 1 to May 31, April's showers and then May's flowers | March 1 |
 | Summer Beach Season | Memorial Day, the last Monday in May, to Labor Day | May 1 |
 | Independence Day | July 4 | June 1 |
 | Labor Day | the first Monday in September | August 1 |
@@ -28,12 +29,12 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 | Thanksgiving | the fourth Thursday in November | November 1 |
 | Christmas | December 25 | December 1 |
 
-- On a first visit the game asks which to play, as many as you like, from a card that lists all eleven in the order they come round from today, each with its date. Start waits until one is chosen, and All of them chooses every one.
+- On a first visit the game asks which to play, as many as you like, from a card that lists all twelve in the order they come round from today, each with its date. Start waits until one is chosen, and All of them chooses every one.
 - The menu (☾) opens the holiday chosen last. Your holidays, on its card, lists the ones you chose, to go to any of them, and Change your holidays brings back the first card.
 - Each holiday has its own look: its colour, its sky, and its lettering, with Halloween keeping Boneyard's. While the Long Night is on the table the page wears Halloween's, and the turtle wears the holiday chosen last, tiles and all. The cards for choosing wear Seasons' own gold.
 - Halloween's, Thanksgiving's, Christmas's, New Year's and Groundhog Day's boards are made: the Long Night, Thanksgiving week, the Twelve Days of Christmas, New Year's countdown and New Year's Day, and Groundhog Day's board of the day. The other holidays' cards say when they fall and that their boards are on their way, with the holidays open and the turtle to play until then.
 - Each holiday opens weeks before its day, to build up to it, and stays open to the end of the year; Groundhog Day alone is open all year, every year. With the new year every holiday closes again, until its opening day comes round. Until a holiday opens, Your holidays and its card say when it will, and its boards can't be played, from the menu or by their address. The turtle is always there. Progress and best scores are kept through the new year.
-- `js/themes.js` holds the eleven: their icons and colours, when each falls, worked out for any year, as Thanksgiving, Labor Day and the beach season move, and when each opens.
+- `js/themes.js` holds the twelve: their icons and colours, when each falls, worked out for any year, as Thanksgiving, Labor Day and the beach season move, and when each opens.
 
 ## Playing
 
@@ -135,7 +136,7 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 ## Where things live
 
 - `index.html`, `css/game.css` and `js/main.js`: the page, the buttons and keys, the cards, choosing the holidays and wearing their looks, the clock, the sky, and keeping the night between visits.
-- `js/themes.js`: the eleven holidays and seasons, when each falls in any year and when it opens, and their colours.
+- `js/themes.js`: the twelve holidays and seasons, when each falls in any year and when it opens, and their colours.
 - `sw.js`, `manifest.webmanifest` and `icons/`: offline play, and installing the game as an app.
 - `tools/itch.py`: the zip for itch.io, and `tools/shots.py`, with `tools/cover.html` and `tools/stage.html`, its cover and screenshots.
 - `js/night.js`: the Long Night's thirteen hours: each one's board, rules, sky and the words before it.

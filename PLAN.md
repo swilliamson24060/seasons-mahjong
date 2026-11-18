@@ -8,8 +8,9 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 |---|---|---|---|---|
 | New Year's | January 1 | December 1 | gold, under a midnight blue | the countdown's ten boards and New Year's Day, in the menu |
 | Groundhog Day | February 2 | all year, every year | ice blue, on a winter sky | the board of the day, in the menu |
-| Valentine's Day | February 14 | February 1 | pink, on deep rose | next |
+| Valentine's Day | February 14 | February 1 | pink, on deep rose | a love story: eight boards, planned |
 | Start of Spring | March 20, the usual day of the equinox | March 1 | leaf green, on deep green | next |
+| April Showers | April 1 to May 31: April's showers, then May's flowers | March 1 | lilac, on rain grey | from showers to flowers: eight boards, planned |
 | Summer Beach Season | Memorial Day to Labor Day | May 1 | sun yellow, on sea blue | next |
 | Independence Day | July 4 | June 1 | red, on navy | next |
 | Labor Day | the first Monday in September | August 1 | amber, on slate | next |
@@ -20,7 +21,7 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 
 ## Choosing them
 
-- On a first visit a card asks which to play: all eleven, in the order they come round from today, each with its date, as many as the player likes. Start waits until one is chosen, and All of them chooses every one.
+- On a first visit a card asks which to play: all twelve, in the order they come round from today, each with its date, as many as the player likes. Start waits until one is chosen, and All of them chooses every one.
 - Then the game opens the soonest of those chosen that is open, or of those whose boards are made, or if none are, the soonest of all.
 - From then on the menu opens the holiday chosen last. Your holidays lists the player's own, in the order they come round, with those still to come marked soon. Any of them opens from there, and Change your holidays brings back the first card.
 - A holiday whose boards aren't made yet has a card of its own, in its own colours, saying when it falls, with the holidays open and the turtle to play until its boards come.
@@ -434,6 +435,80 @@ The same faces as Halloween's, matching just as those do, drawn as Groundhog Day
 - Each group's corner number has a colour of its own, by day and by night: the burrows' earth brown, the candles' flame orange, the scrolls' ink blue, the weather prophets' woodland green, the crocus's purple and the cardinal's red.
 - The shadow glows the pale blue of snow at dusk, on the board and held up close, where Halloween's lost souls glow blue, Christmas's coal like an ember and New Year's sleepyheads lilac.
 
+## Valentine's Day: a love story
+
+Eight boards, a love story told from first sight to "be mine", each board a moment of it. `js/valentines.js` is to hold them.
+
+- They are to be reached in turn, as Christmas's twelve days are, and open with Valentine's Day, on February 1st.
+- Each board is shaped by its moment, and the boards grow through the story, from about 84 tiles to the full set of 144, all nine across, for phones held upright.
+- The first board is the gentle start, with no twist, as the first day's and the 10 are. The last, Be mine, is planned from the first: halfway through, the question is popped and every tile turns over, as at the Long Night's midnight and on Twelfth Night, and a tile left without a partner is a broken heart, matching only another broken heart. The twists between are to be chosen a board at a time, as Christmas's were; the ideas in the table are where to start.
+- Valentine's boards are to wear Valentine's own tiles (below), wherever they are played, as the twelve days' wear Christmas's. With Valentine's chosen, the turtle wears them too.
+- While its boards are being made, each plays by its address, as the twelve days' did. With all eight made, Valentine's Day is ready, and its card in the menu is a run of days, kept in main.js's RUNS as `valentines`: the boards in order, each with its title, or its best score once played, and the Valentine's score, the bests added up. The eighth cleared, the question has its answer.
+- Its sky is pink on deep rose; each board's own, from a pink afternoon to the starry night the question is popped, is chosen as the board is made.
+
+| Chapter | Title | Board | Twist |
+|---|---|---|---|
+| 1 | Love at first sight | a heart pierced by Cupid's arrow, the arrow raised across it from its feathers at the lower left to its head at the upper right: about 84 tiles | none: the gentle start |
+| 2 | A secret admirer | a valentine in its envelope, its flap closed in a V and sealed with a heart where the V meets: about 92 tiles | an idea, Sweethearts: candy hearts on some pairs, each with half of a sweet nothing, BE and MINE, TRUE and LOVE, HUG and ME; take the two halves one straight after the other to say it |
+| 3 | The first date | dinner by candlelight: two tall candles in their holders, lit, on a table laid for two: about 100 tiles | an idea, Candlelight: a pair taken in the candles' glow a romantic one, the glow shrinking as they burn down, match by match |
+| 4 | A box of chocolates | the box with its lid off, its chocolates in rows of paper cups, raised: about 108 tiles | an idea, Assorted chocolates: chocolates on some tiles, each bitten into as its tile comes free, a few with a treat inside, a free hint, a key or a free shuffle, and the rest just chocolate |
+| 5 | A dozen roses | a bouquet of twelve roses, their heads in a cluster, their stems gathered in a ribbon and fanning out below: about 116 tiles | an idea, In bloom: twelve rosebuds, opening one by one as the matches go by; a rose taken in bloom, with its partner, joins the bouquet, and a bud taken too soon is wasted |
+| 6 | Hugs and kisses | an X and an O side by side, bold, their strokes two tiles thick, as New Year's numbers are: about 124 tiles | an idea, XOXO: every pair a hug or a kiss, and hugs and kisses taken in turn a run, four in a row an XOXO |
+| 7 | Cupid's bow | Cupid's bow drawn, an arrow on its string, ready to fly: about 132 tiles | an idea, Cupid's arrows: every few matches an arrow strikes two free tiles of a kind, smitten, to be taken together before the next one flies |
+| 8 | Be mine | a ring, its band round an open middle, a diamond raised high on top: the full set of 144 tiles | Be mine: the question popped halfway, and the tiles turn over; broken hearts |
+
+### Valentine's tiles, to come
+
+The same faces as Halloween's, matching just as those do, to be drawn as Valentine's, once its boards are made:
+
+| Halloween's | Valentine's |
+|---|---|
+| Eyes, one to nine | Hearts, the one a great heart with a ribbon round it |
+| Bones | Cupid's arrows, the one his bow with an arrow on the string |
+| Graves | Valentines, each a card in its envelope, its number on the heart that seals it |
+| The monsters (E, S, W, N) | Four valentines' puns: a bee (bee mine), an owl (owl always love you), a bear holding a heart (I love you beary much) and a cat (you're purr-fect) |
+| Jack-o'-lantern, witch's brew, ghost | A heart-shaped box of chocolates, a love potion and a paper lace valentine, red, green and white, as the dragons they stand for are: the potion bubbles where Halloween's brew did |
+| The poison garden | Love's flowers: a red rose, a violet, a pink carnation and a daisy, any two of which match |
+| The moons | Sweethearts, candy hearts saying BE MINE, XOXO, LOVE YOU and HUG ME, any two of which match |
+| The lost soul | A broken heart, for Be mine |
+
+## April Showers: from showers to flowers
+
+A season for the gap between the Start of Spring and the beach season, when no holiday fell: April's showers, then May's flowers, as the saying goes, April showers bring May flowers. Eight boards, from the first shower to May Day, the sky clearing as they go. `js/showers.js` is to hold them.
+
+- It is the twelfth holiday, a season as the beach season is: April Showers in the menu, with ☔ for its icon, from April 1 to May 31, and opening on March 1, a month ahead, as the beach season opens a month before Memorial Day. It is in `js/themes.js`, so it's on the first card and in Your holidays, its own card saying its boards are on their way, as the other holidays' do until theirs are made.
+- Its colours are lilac, for the lilacs that come out in May, on a rain grey sky; each board's own sky, grey and drizzling at the first, clearing to May's blue by the last, is chosen as the board is made.
+- The Start of Spring keeps March's things for its own boards, when they're planned: the thaw, the first shoots, kites in the March wind and lambs. April Showers has the rain and the bloom.
+- The boards are to be reached in turn, as Valentine's are, and grow from about 84 tiles to the full set of 144, all nine across. The first four are April's, in the rain, and the last four May's, coming into flower.
+- The first board is the gentle start, with no twist. The last, May Day, is planned from the first: halfway through, April turns to May, and every tile turns over, as at the Long Night's midnight; a tile left without a partner is a flower that wilted, matching only another. The twists between are to be chosen a board at a time; the ideas in the table are where to start.
+- Its boards are to wear April Showers' own tiles (below), wherever they are played; with April Showers chosen, the turtle wears them too. While they are being made, each plays by its address; with all eight made, its card in the menu is a run of days, kept in main.js's RUNS as `showers`, with the season's score, the bests added up.
+
+| Chapter | Title | Board | Twist |
+|---|---|---|---|
+| 1 | The first shower | a rain cloud, billowing, its raindrops falling in lines beneath it: about 84 tiles | none: the gentle start |
+| 2 | Umbrella weather | an open umbrella, its canopy peaked at the top and scalloped at the rim, its handle down the middle, hooked at the foot: about 92 tiles | to be chosen |
+| 3 | Puddle jumping | a pair of rain boots side by side, splashing in a puddle: about 100 tiles | an idea, Puddle jumping: a pair whose tiles stand in the same row with a puddle between them, an empty place where tiles were taken, jumps it, the wider the puddle the more points |
+| 4 | The rainbow | a rainbow arching between two clouds, its bands raised one over another: about 108 tiles | an idea, Pot of gold: a pair taken from each of the rainbow's bands in turn, outside in, paints it, with a pot of gold at its end |
+| 5 | Seedlings | a seed tray, a sprout in each of its cells, their first leaves raised: about 116 tiles | an idea, Watering: seedlings on some tiles, each watered by a pair taken beside it; watered three times it blooms, and a bloom taken scores |
+| 6 | The watering can | a watering can, its spout raised and sprinkling: about 124 tiles | to be chosen |
+| 7 | The flower bed | rows of tulips in a bed, their heads raised over their leaves: about 132 tiles | an idea, Busy bees: a bee going from flower to flower, and a pair taken where she is makes honey |
+| 8 | May Day | a May basket brimming with flowers, hung on a door: the full set of 144 tiles | May flowers: April turns to May halfway, and the tiles turn over; wilted flowers |
+
+### April Showers' tiles, to come
+
+The same faces as Halloween's, matching just as those do, to be drawn as April Showers', once its boards are made:
+
+| Halloween's | April Showers' |
+|---|---|
+| Eyes, one to nine | Raindrops, the one a great drop landing with a splash |
+| Bones | Umbrellas, furled, the one opened |
+| Graves | Seed packets, each with its number on the packet |
+| The monsters (E, S, W, N) | Four who love the rain: a duck, a frog, a snail and a worm |
+| Jack-o'-lantern, witch's brew, ghost | Rain boots, a watering can and a paper boat, red, green and white, as the dragons they stand for are |
+| The poison garden | May's flowers: lily of the valley, lilac, an iris and a peony, any two of which match |
+| The moons | Butterflies, out after the rain, any two of which match |
+| The lost soul | A wilted flower, for May Day |
+
 ## On a phone
 
 - The board fills the space it has, with 2px round it (`MARGIN` in `js/ui/board.js`), at the widest tiles it fits (`tileFit`), up to 88px. On a Galaxy S25+ held upright, in its browser, the board has 384 by 585 between the bars, and a board nine tiles across fills its width with tiles 40px wide, where with 10px round it they were 38. The tallest boards, twelve down, fill its height instead, at 35, from 34.
@@ -456,7 +531,7 @@ The same faces as Halloween's, matching just as those do, drawn as Groundhog Day
 
 ## Milestones
 
-**Tue 17 Nov:** Groundhog Day, the fifth holiday ready to play, and the one open all year, every year: the board of the day, a groundhog peeking out of his burrow, dealt from the date so everyone has the same board each day, played again and again until it goes just right, with the best today, the days in a row cleared and the week's days on its card, and the groundhog's forecast as it's cleared, an early spring under par or six more weeks of winter. Then Groundhog Day's own tiles: burrows, candles for Candlemas and scrolls; four weather prophets, the groundhog in his top hat, a hedgehog, a badger and a bear; the sun, a weather vane and a cloud; spring flowers and songbirds; and his shadow, which the turtle wears too while Groundhog Day is the holiday chosen. Then bigger tiles on a phone: the board fills the space it has but for 2px round it, a twentieth bigger on a phone held upright, and the turtle swims up the screen there, the full set of 144 nine across on six layers, its tiles 39px wide on a Galaxy S25+ against the classic's 23, which a wider screen still deals.
+**Tue 17 Nov:** Groundhog Day, the fifth holiday ready to play, and the one open all year, every year: the board of the day, a groundhog peeking out of his burrow, dealt from the date so everyone has the same board each day, played again and again until it goes just right, with the best today, the days in a row cleared and the week's days on its card, and the groundhog's forecast as it's cleared, an early spring under par or six more weeks of winter. Then Groundhog Day's own tiles: burrows, candles for Candlemas and scrolls; four weather prophets, the groundhog in his top hat, a hedgehog, a badger and a bear; the sun, a weather vane and a cloud; spring flowers and songbirds; and his shadow, which the turtle wears too while Groundhog Day is the holiday chosen. Then bigger tiles on a phone: the board fills the space it has but for 2px round it, a twentieth bigger on a phone held upright, and the turtle swims up the screen there, the full set of 144 nine across on six layers, its tiles 39px wide on a Galaxy S25+ against the classic's 23, which a wider screen still deals. Then Valentine's Day planned as a love story: eight boards from love at first sight to be mine, a heart pierced by Cupid's arrow, a valentine in its envelope, dinner by candlelight, a box of chocolates, a dozen roses, hugs and kisses, Cupid's bow and a diamond ring, the last turning over halfway as the question is popped, with broken hearts for lost souls. Then a twelfth holiday, for April into May, when none fell: April Showers, a season from April 1 to May 31, opening on March 1, on the first card with its boards to come, and planned from the first shower to May Day, eight boards from a rain cloud, an umbrella, rain boots in a puddle and a rainbow to seedlings, a watering can, a flower bed and a May basket, the last turning over from April to May halfway, with wilted flowers for lost souls.
 
 **Sat 14 Nov:** New Year's ninth board, the 2, a toast for two: two glasses of champagne gliding toward each other along the 2's stroke, a place with every match unless a tile lies in their way, and clinking as they meet, a toast worth more the sooner. Its board was drawn again for it, a tile on every other place of the way between rails, and dealt so the way can be cleared from the start. And the tenth, the 1, midnight: the full set of 144 tiles on a bold 1, turning over halfway as the ball lands and the clock strikes twelve, a tile left without a partner a sleepyhead who missed it. All ten boards of the countdown are made. Then New Year's Day after them, the morning after: a calendar turned to January, with a resolution to keep, six sweets to leave alone through January's 31 matches. Then New Year's in the menu, the fourth holiday ready to play, opening on December 1st: its card lists the countdown's ten boards and New Year's Day, reached in turn, with the ball on its pole beside them, dropping a notch with each board cleared and landing at midnight on the 1, the year lit beneath it. Then New Year's own tiles: clocks at five to midnight, party horns and calendar pages; Father Time, Baby New Year, a night owl and a polar bear; a party hat, champagne and New Year's ball; lucky charms and the seasons of the year to come; and sleepyheads for midnight on the 1, which the turtle wears too while New Year's is the holiday chosen.
 

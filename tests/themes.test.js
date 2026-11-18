@@ -4,11 +4,11 @@ import { THEMES, theme, when, calendar, isOpen, opensOn, today } from '../js/the
 const day = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 const ids = (list) => list.map((e) => e.theme.id).join(' ');
 
-test("there are the eleven holidays and seasons, each once, with Halloween, Thanksgiving, Christmas, New Year's and Groundhog Day ready to play", () => {
-  equal(THEMES.length, 11, 'themes');
-  equal(new Set(THEMES.map((t) => t.id)).size, 11, 'different themes');
+test("there are the twelve holidays and seasons, each once, with Halloween, Thanksgiving, Christmas, New Year's and Groundhog Day ready to play", () => {
+  equal(THEMES.length, 12, 'themes');
+  equal(new Set(THEMES.map((t) => t.id)).size, 12, 'different themes');
   const names = THEMES.map((t) => t.name);
-  for (const name of ['Thanksgiving', 'Christmas', "New Year's", 'Groundhog Day', "Valentine's Day", 'Start of Spring', 'Summer Beach Season', 'Independence Day', 'Labor Day', 'Start of Fall', 'Halloween']) {
+  for (const name of ['Thanksgiving', 'Christmas', "New Year's", 'Groundhog Day', "Valentine's Day", 'Start of Spring', 'April Showers', 'Summer Beach Season', 'Independence Day', 'Labor Day', 'Start of Fall', 'Halloween']) {
     check(names.includes(name), `${name} is missing`);
   }
   equal(THEMES.filter((t) => t.ready).map((t) => t.id).join(), 'new-year,groundhog,halloween,thanksgiving,christmas', 'the ones ready');
@@ -25,7 +25,7 @@ test('the holidays that move fall on their weekdays', () => {
 
 test('the calendar runs from today, with a season on now first', () => {
   const november = calendar(new Date(2026, 10, 11, 15));
-  equal(ids(november), 'thanksgiving christmas new-year groundhog valentines spring summer independence labor fall halloween', 'from the 11th of November');
+  equal(ids(november), 'thanksgiving christmas new-year groundhog valentines spring showers summer independence labor fall halloween', 'from the 11th of November');
   equal(day(november[2].start), '2027-1-1', "next New Year's");
   const july = calendar(new Date(2026, 6, 10));
   equal(july[0].theme.id, 'summer', 'the beach in July');
@@ -35,8 +35,21 @@ test('the calendar runs from today, with a season on now first', () => {
   check(christmas.now && day(christmas.start) === '2026-12-25', 'Christmas, on the day itself');
 });
 
+test('April Showers is a season, April and May, between the Start of Spring and the beach season', () => {
+  const showers = theme('showers');
+  equal(day(showers.on(2027)), '2027-4-1', 'from the 1st of April');
+  equal(day(showers.until(2027)), '2027-5-31', 'to the 31st of May');
+  const april = calendar(new Date(2027, 3, 15));
+  equal(april[0].theme.id, 'showers', 'in April it comes first');
+  check(april[0].now, 'on now');
+  check(when(showers, new Date(2027, 4, 31, 20)).now, 'still on on the 31st of May');
+  const june = when(showers, new Date(2027, 5, 1));
+  check(!june.now && day(june.start) === '2028-4-1', 'and in June, next April');
+  equal(ids(calendar(new Date(2027, 2, 21))).split(' ').slice(0, 3).join(' '), 'showers summer independence', 'just after the Start of Spring, the showers come next');
+});
+
 test('each holiday but Groundhog Day opens on the first of a month, weeks before its day', () => {
-  const opens = { 'new-year': 'Dec 1', valentines: 'Feb 1', spring: 'Mar 1', summer: 'May 1', independence: 'Jun 1', labor: 'Aug 1', fall: 'Aug 1', halloween: 'Oct 1', thanksgiving: 'Nov 1', christmas: 'Dec 1' };
+  const opens = { 'new-year': 'Dec 1', valentines: 'Feb 1', spring: 'Mar 1', showers: 'Mar 1', summer: 'May 1', independence: 'Jun 1', labor: 'Aug 1', fall: 'Aug 1', halloween: 'Oct 1', thanksgiving: 'Nov 1', christmas: 'Dec 1' };
   for (const t of THEMES.filter((t) => !t.always)) {
     const o = t.opens(2026);
     equal(o.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), opens[t.id], `${t.name} opens`);

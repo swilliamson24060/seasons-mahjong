@@ -22,7 +22,8 @@ const THURSDAY = 4;
 
 // A theme's `on` is its day, or a season's first day, with `until` its last.
 // The starts of spring and fall are the days the equinoxes fall on most
-// years, the 20th of March and the 22nd of September. Its `opens` is the day
+// years, the 20th of March and the 22nd of September, and April Showers is
+// April and May, its showers and then its flowers. Its `opens` is the day
 // its boards open, weeks before, to build up to it: they stay open to the
 // end of the year, and with the new year every holiday closes again, until
 // its opening day comes round. New Year's opens in December, for the year
@@ -33,6 +34,7 @@ export const THEMES = [
   { id: 'groundhog', name: 'Groundhog Day', icon: '🦫', on: fixed(2, 2), always: true, accent: '#8ccff5', sky: ['#34546b', '#0d1820'], ready: true },
   { id: 'valentines', name: "Valentine's Day", icon: '💘', on: fixed(2, 14), opens: fixed(2, 1), accent: '#ff6b9a', sky: ['#5c2042', '#1c0913'] },
   { id: 'spring', name: 'Start of Spring', icon: '🌷', on: fixed(3, 20), opens: fixed(3, 1), accent: '#8ad66d', sky: ['#2f6650', '#0e221b'] },
+  { id: 'showers', name: 'April Showers', icon: '☔', on: fixed(4, 1), until: fixed(5, 31), opens: fixed(3, 1), accent: '#b79cff', sky: ['#4b5866', '#12171c'] },
   { id: 'summer', name: 'Summer Beach Season', icon: '🏖️', on: nth(-1, MONDAY, 5), until: nth(1, MONDAY, 9), opens: fixed(5, 1), accent: '#ffc857', sky: ['#1c6a9e', '#082338'] },
   { id: 'independence', name: 'Independence Day', icon: '🎆', on: fixed(7, 4), opens: fixed(6, 1), accent: '#ff5a5f', sky: ['#1d2f6e', '#060a21'] },
   { id: 'labor', name: 'Labor Day', icon: '🛠️', on: nth(1, MONDAY, 9), opens: fixed(8, 1), accent: '#f2a03d', sky: ['#3f4a6e', '#11141f'] },
