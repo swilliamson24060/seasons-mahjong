@@ -13,7 +13,7 @@ import { Magnifier } from './ui/magnifier.js';
 import { Sound } from './ui/sound.js';
 import { POINTS, par, scoreOf, coinWorth, toastWorth } from './score.js';
 import { Leaderboard, BOARDS, NIGHT, boardOf, nameOf, nameProblem, tidy } from './leaderboard.js';
-import { THEMES, theme, when, calendar, isOpen, opensOn, today } from './themes.js';
+import { THEMES, theme, when, calendar, isOpen, opensOn, today, choice } from './themes.js';
 
 const MIDNIGHT = HOURS.findIndex((h) => h.name === 'Midnight');
 
@@ -144,9 +144,10 @@ let finished = false;
 let woke = 0;
 let prompted = false;
 
-// What is kept between visits: the holidays the player chose, and the one
-// whose card the menu opens; the latest hour of the Long Night reached, the
-// best time and the best score for each hour, with the time that score took;
+// What is kept between visits: the holidays the player chose, whether they
+// chose all of them, and the one whose card the menu opens; the latest hour
+// of the Long Night reached, the best time and the best score for each
+// hour, with the time that score took;
 // the same for Thanksgiving week, for Christmas's twelve days and for New
 // Year's boards, by the day, and for Groundhog Day's board by the date,
 // with how often each day's was cleared;
@@ -155,6 +156,7 @@ let prompted = false;
 // the leaderboard, with what has been posted there.
 let saved = {
   holidays: null,
+  allHolidays: null, // not known, for a choice kept before it was
   theme: 'halloween',
   reached: 0,
   best: {},
@@ -173,6 +175,7 @@ let saved = {
 try {
   saved = { ...saved, ...JSON.parse(localStorage.getItem('seasons.night')) };
 } catch {}
+Object.assign(saved, choice(saved)); // for one who chose all of the holidays, every one, those added since included
 
 function store() {
   const onTable = hour >= 0 ? saved.playing : runDay >= 0 ? RUNS[runId].progress().playing : saved.free; // while it is not yet cleared
@@ -1162,6 +1165,7 @@ function chooseHolidays(first = false) {
   // those made, or the soonest of all.
   const done = () => {
     saved.holidays = THEMES.filter((t) => chosen.has(t.id)).map((t) => t.id);
+    saved.allHolidays = saved.holidays.length === THEMES.length; // so that a holiday added later joins them
     if (first === true || !chosen.has(saved.theme)) saved.theme = (mine().find((e) => isOpen(e.theme)) || mine().find((e) => e.theme.ready) || mine()[0]).theme.id;
     store();
     openTheme(first);

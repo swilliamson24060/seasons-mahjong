@@ -29,7 +29,7 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 | Thanksgiving | the fourth Thursday in November | November 1 |
 | Christmas | December 25 | December 1 |
 
-- On a first visit the game asks which to play, as many as you like, from a card that lists all twelve in the order they come round from today, each with its date. Start waits until one is chosen, and All of them chooses every one.
+- On a first visit the game asks which to play, as many as you like, from a card that lists all twelve in the order they come round from today, each with its date. Start waits until one is chosen, and All of them chooses every one. Choosing every one keeps every one: a holiday added later joins them, as April Showers did for those who had chosen all eleven before it. Choosing some keeps just those, and Change your holidays adds a new one.
 - The menu (☾) opens the holiday chosen last. Your holidays, on its card, lists the ones you chose, to go to any of them, and Change your holidays brings back the first card.
 - Each holiday has its own look: its colour, its sky, and its lettering, with Halloween keeping Boneyard's. While the Long Night is on the table the page wears Halloween's, and the turtle wears the holiday chosen last, tiles and all. The cards for choosing wear Seasons' own gold.
 - Halloween's, Thanksgiving's, Christmas's, New Year's and Groundhog Day's boards are made: the Long Night, Thanksgiving week, the Twelve Days of Christmas, New Year's countdown and New Year's Day, and Groundhog Day's board of the day. The other holidays' cards say when they fall and that their boards are on their way, with the holidays open and the turtle to play until then.

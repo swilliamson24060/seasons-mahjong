@@ -82,3 +82,17 @@ export function when(t, date = today()) {
 export function calendar(date = today()) {
   return THEMES.map((t) => ({ theme: t, ...when(t, date) })).sort((a, b) => (a.now ? date : a.start) - (b.now ? date : b.start));
 }
+
+// The holidays a player plays, from their choice as it's kept between
+// visits: the ones they chose, and whether they chose all of them. One who
+// chose all of them plays every holiday there is, those added since
+// included. Whether a choice is all of them has been kept since April
+// Showers came, the twelfth; a choice kept before that is all of them if it
+// holds the eleven there were then. With no choice kept, or none that can
+// be read, there's none yet, as on a first visit.
+const ELEVEN = ['new-year', 'groundhog', 'valentines', 'spring', 'summer', 'independence', 'labor', 'fall', 'halloween', 'thanksgiving', 'christmas'];
+export function choice({ holidays, allHolidays }) {
+  if (!Array.isArray(holidays)) return { holidays: null, allHolidays: null };
+  const all = Boolean(allHolidays ?? ELEVEN.every((id) => holidays.includes(id)));
+  return { holidays: all ? THEMES.map((t) => t.id) : holidays, allHolidays: all };
+}
