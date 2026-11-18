@@ -1,13 +1,69 @@
 // The sounds, made as they play with Web Audio, so there are no files to
-// fetch: a wooden tock for a tile, a pipe organ that plays the opening of
-// Bach's Toccata and Fugue in D minor a note for each match, the clock
+// fetch: a wooden tock for a tile, a tune a note for each match, the clock
 // striking twelve at midnight, chimes at sunrise and for treats, and a
 // rustle for a shuffle. Browsers let sound start only after a tap or a key,
 // so nothing is made until then.
+//
+// Each holiday has its own music, as it has its own tiles (use): Halloween's
+// is a pipe organ in a stone church playing the opening of Bach's Toccata
+// and Fugue in D minor; Thanksgiving's a banjo in a farmhouse parlour
+// playing "Over the River and Through the Wood", with a reed organ for "We
+// Gather Together" when the week is seen through, and its own sounds for a
+// shuffle (leaves), a hint (a handbell), a treat (the dinner triangle) and
+// no pairs left (a turkey's gobble). The other holidays play Halloween's
+// until theirs come.
 
 // The opening, a note for each match: the mordent on A and its run down to
 // D, three times, an octave lower each time.
 const TOCCATA = [81, 79, 81, 79, 77, 76, 74, 73, 74, 69, 67, 69, 64, 65, 61, 62, 57, 55, 57, 55, 53, 52, 50, 49, 50];
+
+// Thanksgiving's song, "Over the River and Through the Wood", Lydia Maria
+// Child's Thanksgiving poem of 1844 to its traditional tune, in C, in 6/8:
+// [note, eighths]. A note for each match, and its last line, from the
+// second "Over the river", for a cleared board, over an oom-pah, a chord to
+// each beat of it.
+export const RIVER = [
+  [67, 1], [67, 1], [67, 1], [67, 1], [64, 1], [65, 1], [67, 2], [67, 1], [67, 2], [67, 1],
+  [72, 1], [72, 1], [72, 1], [71, 2], [69, 1], [67, 5], [67, 1],
+  [65, 1], [65, 1], [65, 1], [65, 2], [65, 1], [64, 1], [64, 1], [64, 1], [64, 2], [64, 0.5], [64, 0.5],
+  [62, 2], [62, 1], [62, 2], [64, 1], [62, 3], [67, 3],
+  [67, 1], [67, 1], [67, 1], [67, 1], [64, 1], [65, 1], [67, 2], [67, 1], [67, 2], [67, 1],
+  [72, 2], [72, 1], [71, 2], [69, 1], [67, 2], [64, 1], [60, 2], [62, 1],
+  [64, 1], [64, 1], [65, 1], [64, 2], [62, 1], [60, 6],
+];
+export const LAST_LINE = 34; // where the second "Over the river" begins
+const RIVER_CHORDS = ['C', 'C', 'C', 'C', 'F', 'G7', 'C', 'G7', 'C', 'G7'];
+const CHORDS = { C: [48, [60, 64, 67]], F: [41, [60, 65, 69]], G7: [43, [59, 62, 65]] };
+
+// "We Gather Together", the Thanksgiving hymn, its tune a Dutch song of
+// 1597 as Eduard Kremser set it in 1877, in D, in 3/4: its four voices,
+// soprano, alto, tenor and bass, each as [note, beats], from the upbeat.
+export const GATHER = [
+  [[69, 1], [69, 1.5], [71, 0.5], [69, 1], [66, 1], [67, 1], [69, 1], [67, 1.5], [66, 0.5], [64, 1], [66, 1], [62, 1],
+    [69, 1], [69, 1.5], [71, 0.5], [73, 1], [74, 1.5], [76, 0.5], [73, 1], [71, 1.5], [69, 0.5], [71, 1], [69, 2],
+    [69, 1], [69, 1.5], [71, 0.5], [73, 1], [74, 1], [69, 1], [69, 1], [69, 1.5], [71, 0.5], [67, 0.5], [69, 0.5], [66, 1], [62, 1],
+    [62, 1], [67, 1.5], [69, 0.5], [71, 0.5], [67, 0.5], [69, 1.5], [67, 0.5], [66, 1], [67, 1], [64, 1.5], [62, 0.5], [62, 2]],
+  [[62, 1], [62, 1.5], [62, 0.5], [62, 1], [62, 1], [62, 1], [62, 1], [62, 1.5], [62, 0.5], [61, 1], [62, 1], [62, 1],
+    [66, 1], [64, 1.5], [64, 0.5], [64, 1], [66, 1], [64, 1], [64, 1], [66, 1.5], [66, 0.5], [68, 1], [64, 2],
+    [64, 1], [64, 1.5], [64, 0.5], [64, 1], [62, 1], [62, 1], [62, 1], [62, 2], [61, 0.5], [61, 0.5], [62, 1], [62, 1],
+    [62, 1], [62, 1.5], [62, 0.5], [62, 0.5], [62, 0.5], [64, 2], [62, 1], [59, 1], [61, 1.5], [62, 0.5], [62, 2]],
+  [[54, 1], [54, 1.5], [55, 0.5], [54, 1], [57, 1], [57, 1], [57, 1], [59, 1.5], [59, 0.5], [57, 1], [57, 1], [54, 1],
+    [57, 1], [57, 1.5], [57, 0.5], [57, 1], [57, 1], [56, 1], [57, 1], [62, 1.5], [62, 0.5], [62, 1], [61, 2],
+    [61, 1], [61, 1.5], [59, 0.5], [57, 1], [57, 1], [57, 1], [57, 1], [59, 2], [57, 0.5], [57, 0.5], [57, 1], [54, 1],
+    [54, 1], [55, 1.5], [54, 0.5], [55, 0.5], [55, 0.5], [52, 1], [57, 1], [57, 1], [55, 1], [55, 1.5], [54, 0.5], [54, 2]],
+  [[50, 1], [50, 1.5], [50, 0.5], [50, 1], [50, 1], [52, 1], [54, 1], [52, 1.5], [52, 0.5], [57, 1], [50, 1], [50, 1],
+    [50, 1], [49, 1.5], [49, 0.5], [49, 1], [47, 1], [52, 1], [57, 1], [47, 1.5], [47, 0.5], [52, 1], [57, 2],
+    [57, 1], [55, 1.5], [55, 0.5], [55, 1], [54, 1], [54, 1], [54, 1], [52, 2], [57, 0.5], [57, 0.5], [50, 1], [50, 1],
+    [50, 1], [47, 1.5], [45, 0.5], [43, 0.5], [47, 0.5], [49, 2], [50, 1], [52, 1], [45, 1.5], [50, 0.5], [50, 2]],
+];
+
+// Each holiday's music, as far as it has its own: the room it rings in.
+// Holidays not here play Halloween's.
+const MUSIC = { halloween: { room: 'stone' }, thanksgiving: { room: 'farmhouse' } };
+
+// The rooms: a stone church's long echo for the organ and the bells, and a
+// farmhouse parlour's, short and warm, for the banjo.
+const ROOMS = { stone: { seconds: 2.8, fall: 3.2, wet: 0.35 }, farmhouse: { seconds: 0.8, fall: 3.6, wet: 0.22 } };
 
 // The opening as it is played, for a cleared board: [note, beats], 0 a rest.
 const OPENING = [
@@ -24,7 +80,10 @@ const hz = (midi) => 440 * 2 ** ((midi - 69) / 12);
 export class Sound {
   constructor() {
     this.ctx = null;
-    this.next = 0; // the next note of the Toccata
+    this.next = 0; // the next note of the holiday's tune
+    this.set = 'halloween'; // the holiday whose music plays
+    this.plucks = new Map(); // the plucked strings worked out so far
+    this.song = null; // the music playing for a cleared board, to fade when the next comes
     try {
       this.muted = localStorage.getItem('seasons.sound') === 'off';
     } catch {
@@ -35,24 +94,59 @@ export class Sound {
     addEventListener('keydown', wake, { once: true, capture: true });
   }
 
-  start() {
+  // Sound begins: on the page, after the first tap or key; in a test, on an
+  // offline context, to be listened to as numbers.
+  start(ctx = null) {
     if (this.ctx) return;
-    const ctx = (this.ctx = new (window.AudioContext || window.webkitAudioContext)());
+    ctx = this.ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
     this.master = ctx.createGain();
     this.master.gain.value = this.muted ? 0 : 0.8;
     this.master.connect(ctx.destination);
-    // A stone room for the organ and the bells to ring in.
-    this.room = ctx.createConvolver();
-    this.room.buffer = this.echo(2.8, 3.2);
-    const wet = ctx.createGain();
-    wet.gain.value = 0.35;
-    this.room.connect(wet).connect(this.master);
     this.bus = ctx.createGain();
     this.bus.connect(this.master);
-    this.bus.connect(this.room);
+    // The rooms for the instruments to ring in, the bus sent to the one the
+    // holiday's music plays in.
+    this.rooms = {};
+    for (const [name, { seconds, fall, wet }] of Object.entries(ROOMS)) {
+      const room = ctx.createConvolver();
+      room.buffer = this.echo(seconds, fall);
+      const send = ctx.createGain();
+      send.gain.value = name === MUSIC[this.set].room ? 1 : 0;
+      const out = ctx.createGain();
+      out.gain.value = wet;
+      this.bus.connect(send).connect(room).connect(out).connect(this.master);
+      this.rooms[name] = send;
+    }
     this.noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const d = this.noise.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+
+  // The holiday whose music plays, as its tiles are worn: Thanksgiving's on
+  // its week, and on the turtle wearing its tiles; Halloween's for the rest,
+  // until theirs come. A new tune begins at its first note, in its own room,
+  // the last one's echo dying away.
+  use(set) {
+    const next = MUSIC[set] ? set : 'halloween';
+    if (next === this.set) return;
+    this.set = next;
+    this.next = 0;
+    if (!this.ctx) return;
+    for (const [name, send] of Object.entries(this.rooms)) send.gain.setTargetAtTime(name === MUSIC[next].room ? 1 : 0, this.ctx.currentTime, 0.1);
+  }
+
+  // A new board: the music still playing for the last one fades away.
+  hush() {
+    if (this.song) this.song.gain.setTargetAtTime(0, this.ctx.currentTime, 0.15);
+    this.song = null;
+  }
+
+  // A piece of music, played through a gain of its own, so that it can fade.
+  newSong() {
+    this.hush();
+    this.song = this.ctx.createGain();
+    this.song.connect(this.bus);
+    return this.song;
   }
 
   setMuted(muted) {
@@ -100,13 +194,13 @@ export class Sound {
   }
 
   // A note on a pipe organ: a few pipes sounding together, held, then let go.
-  organ(midi, at, length, gain = 0.16) {
+  organ(midi, at, length, gain = 0.16, into = this.bus) {
     const out = this.ctx.createGain();
     out.gain.setValueAtTime(0, at);
     out.gain.linearRampToValueAtTime(gain, at + 0.03);
     out.gain.setValueAtTime(gain, at + length);
     out.gain.exponentialRampToValueAtTime(0.0001, at + length + 0.4);
-    out.connect(this.bus);
+    out.connect(into);
     for (const [k, a] of [[1, 1], [2, 0.55], [3, 0.3], [4, 0.22], [6, 0.1], [8, 0.07]]) {
       const o = this.ctx.createOscillator();
       o.frequency.value = hz(midi) * k;
@@ -115,6 +209,129 @@ export class Sound {
       o.connect(g).connect(out);
       o.start(at);
       o.stop(at + length + 0.45);
+    }
+  }
+
+  // A plucked string, worked out ahead as a buffer, in Karplus and Strong's
+  // way: a burst of noise, plucked a fraction `pick` of the way along, runs
+  // round a loop as long as the string's period, each time round averaged
+  // with its neighbour, which softens it, and a little lost (`keep`), which
+  // dies it away. `bright` keeps more of the burst's high notes. The loop
+  // is whole samples long, so the string is tuned exactly when it is played.
+  // Kept, one buffer a string.
+  pluck(midi, { bright, keep, pick, seconds }) {
+    const key = [midi, bright, keep, pick, seconds].join();
+    let string = this.plucks.get(key);
+    if (string) return string;
+    const rate = this.ctx.sampleRate;
+    const period = rate / hz(midi);
+    const n = Math.max(2, Math.floor(period + 0.5)); // averaging two neighbours, the loop rings n - 0.5 samples round
+    const burst = new Float32Array(n);
+    let soft = 0;
+    for (let i = 0; i < n; i++) burst[i] = soft = bright * (Math.random() * 2 - 1) + (1 - bright) * soft;
+    const at = Math.max(1, Math.round(n * pick));
+    const loop = burst.map((v, i) => v - burst[(i - at + n) % n]); // plucked near the bridge: some partials cancel
+    const mean = loop.reduce((a, b) => a + b, 0) / n;
+    for (let i = 0; i < n; i++) loop[i] -= mean; // no thump of a constant offset
+    const buffer = this.ctx.createBuffer(1, Math.floor(rate * seconds), rate);
+    const d = buffer.getChannelData(0);
+    let peak = 0;
+    for (let i = 0, k = 0; i < d.length; i++, k = (k + 1) % n) {
+      d[i] = loop[k];
+      peak = Math.max(peak, Math.abs(d[i]));
+      loop[k] = keep * 0.5 * (loop[k] + loop[(k + 1) % n]);
+    }
+    for (let i = 0; i < d.length; i++) d[i] /= peak || 1;
+    string = { buffer, tune: (n - 0.5) / period };
+    this.plucks.set(key, string);
+    return string;
+  }
+
+  // A string played: its buffer, tuned, through `through` if given.
+  string(midi, at, gain, shape, into, through = null) {
+    const { buffer, tune } = this.pluck(midi, shape);
+    const src = this.ctx.createBufferSource();
+    src.buffer = buffer;
+    src.playbackRate.value = tune;
+    const g = this.ctx.createGain();
+    g.gain.value = gain;
+    if (through) src.connect(through).connect(g);
+    else src.connect(g);
+    g.connect(into);
+    src.start(at);
+  }
+
+  // A banjo: plucked near the bridge, bright and short-lived, its twang
+  // brought out where a banjo's drum head rings.
+  banjo(midi, at, gain = 0.25, into = this.bus) {
+    const head = this.ctx.createBiquadFilter();
+    head.type = 'peaking';
+    head.frequency.value = 2200;
+    head.Q.value = 1.1;
+    head.gain.value = 6;
+    this.string(midi, at, gain, { bright: 0.9, keep: 0.995, pick: 0.1, seconds: 1.4 }, into, head);
+  }
+
+  // A guitar: warmer, plucked further along, ringing longer, for the
+  // oom-pah under the banjo.
+  guitar(midi, at, gain = 0.12, into = this.bus) {
+    this.string(midi, at, gain, { bright: 0.45, keep: 0.998, pick: 0.2, seconds: 2 }, into);
+  }
+
+  // A parlour reed organ, as a farmhouse had: two reeds a note, a hair
+  // apart, buzzing through a soft filter, swelling in as the bellows push.
+  reed(midi, at, length, gain = 0.045, into = this.bus) {
+    const f = hz(midi);
+    const tone = this.ctx.createBiquadFilter();
+    tone.type = 'lowpass';
+    tone.frequency.value = Math.min(5000, f * 7);
+    tone.Q.value = 0.5;
+    const out = this.ctx.createGain();
+    out.gain.setValueAtTime(0, at);
+    out.gain.linearRampToValueAtTime(gain, at + 0.06);
+    out.gain.setValueAtTime(gain, at + Math.max(0.07, length - 0.04));
+    out.gain.exponentialRampToValueAtTime(0.0001, at + Math.max(0.1, length) + 0.18);
+    tone.connect(out).connect(into);
+    for (const [type, detune, level] of [['sawtooth', 0, 0.65], ['square', 4, 0.35]]) {
+      const o = this.ctx.createOscillator();
+      o.type = type;
+      o.frequency.value = f;
+      o.detune.value = detune;
+      const g = this.ctx.createGain();
+      g.gain.value = level;
+      o.connect(g).connect(tone);
+      o.start(at);
+      o.stop(at + Math.max(0.1, length) + 0.25);
+    }
+  }
+
+  // A brass horn: a buzzing tone whose filter opens as the lips start it,
+  // with a little vibrato.
+  brass(midi, at, length, gain = 0.07, into = this.bus) {
+    const f = hz(midi);
+    const o = this.ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.value = f;
+    const wobble = this.ctx.createOscillator();
+    wobble.frequency.value = 5.5;
+    const depth = this.ctx.createGain();
+    depth.gain.value = f * 0.005;
+    wobble.connect(depth).connect(o.frequency);
+    const lips = this.ctx.createBiquadFilter();
+    lips.type = 'lowpass';
+    lips.Q.value = 1.2;
+    lips.frequency.setValueAtTime(f * 1.5, at);
+    lips.frequency.linearRampToValueAtTime(f * 8, at + 0.05);
+    lips.frequency.exponentialRampToValueAtTime(f * 4, at + length);
+    const out = this.ctx.createGain();
+    out.gain.setValueAtTime(0, at);
+    out.gain.linearRampToValueAtTime(gain, at + 0.03);
+    out.gain.setValueAtTime(gain, at + length);
+    out.gain.exponentialRampToValueAtTime(0.0001, at + length + 0.12);
+    o.connect(lips).connect(out).connect(into);
+    for (const osc of [o, wobble]) {
+      osc.start(at);
+      osc.stop(at + length + 0.15);
     }
   }
 
@@ -153,9 +370,11 @@ export class Sound {
     if (this.on) this.ping(150, this.now, { type: 'sine', gain: 0.18, fall: 0.12, into: this.master });
   }
 
+  // A match: the next note of the holiday's tune.
   match() {
     if (!this.on) return;
-    this.organ(TOCCATA[this.next % TOCCATA.length], this.now, 0.38);
+    if (this.set === 'thanksgiving') this.banjo(RIVER[this.next % RIVER.length][0], this.now);
+    else this.organ(TOCCATA[this.next % TOCCATA.length], this.now, 0.38);
     this.next++;
   }
 
@@ -163,20 +382,49 @@ export class Sound {
     if (this.on) this.rustle(this.now, 0.22, 2400, 700, 0.08);
   }
 
+  // A shuffle: a rustle, or on Thanksgiving, autumn leaves raked over.
   shuffle() {
     if (!this.on) return;
+    if (this.set === 'thanksgiving') return this.leaves();
     for (let k = 0; k < 3; k++) this.rustle(this.now + k * 0.09, 0.3, 600, 3200, 0.1);
   }
 
+  // Autumn leaves, raked up and turned over: the rake's sweep, and dry
+  // leaves crackling.
+  leaves() {
+    for (let k = 0; k < 2; k++) this.rustle(this.now + k * 0.16, 0.38, 700, 2400, 0.07);
+    for (let k = 0; k < 18; k++) {
+      const at = this.now + 0.03 + Math.random() * 0.55;
+      this.rustle(at, 0.015 + Math.random() * 0.02, 2500 + Math.random() * 3500, 1500 + Math.random() * 1500, 0.05 + Math.random() * 0.05);
+    }
+  }
+
+  // A hint: two high notes, or on Thanksgiving, a small handbell.
   hint() {
     if (!this.on) return;
+    if (this.set === 'thanksgiving') return this.bell(1568, this.now, 0.06, 1.4);
     this.ping(1318.5, this.now, { gain: 0.06, fall: 0.5 });
     this.ping(1975.5, this.now + 0.09, { gain: 0.05, fall: 0.6 });
   }
 
+  // A treat: chimes running up, or on Thanksgiving, the dinner triangle.
   treat() {
     if (!this.on) return;
+    if (this.set === 'thanksgiving') return this.triangle();
     [1318.5, 1661.2, 1975.5, 2637].forEach((f, k) => this.ping(f, this.now + k * 0.07, { gain: 0.08, fall: 0.5 }));
+  }
+
+  // The dinner triangle, rung round and round inside: come and get it! A
+  // struck bar's partials, far out of tune with each other, struck a dozen
+  // times on its three sides.
+  triangle() {
+    for (let k = 0; k < 12; k++) {
+      const at = this.now + k * 0.055;
+      const f = [1580, 1610, 1595][k % 3];
+      for (const [m, a] of [[1, 1], [2.756, 0.55], [5.404, 0.3], [8.933, 0.15]]) {
+        this.ping(f * m, at, { gain: 0.022 * a * (1 - k / 18), attack: 0.001, fall: 1.5 / Math.sqrt(m) });
+      }
+    }
   }
 
   // Sundown on the second Sunday: the alarm clock rings for Monday.
@@ -185,11 +433,11 @@ export class Sound {
     for (let k = 0; k < 14; k++) this.bell(k % 2 ? 1568 : 1760, this.now + k * 0.07, 0.05, 0.5);
   }
 
-  // A touchdown: the crowd roars, and the band plays.
+  // A touchdown: the crowd roars, and the band's brass sounds the charge.
   touchdown() {
     if (!this.on) return;
-    this.rustle(this.now, 1.1, 1200, 3600, 0.1);
-    [60, 64, 67, 72].forEach((note, k) => this.organ(note, this.now + 0.1 + k * 0.12, 0.5, 0.09));
+    this.rustle(this.now, 1.4, 1200, 3600, 0.1);
+    [[67, 0, 0.12], [72, 0.15, 0.12], [76, 0.3, 0.12], [79, 0.45, 0.28], [76, 0.8, 0.12], [79, 0.95, 0.6]].forEach(([note, t, length]) => this.brass(note, this.now + 0.1 + t, length));
   }
 
   // A pair of lovebirds: a turtle dove's coo, twice.
@@ -429,15 +677,16 @@ export class Sound {
     this.rustle(this.now, 0.12, 900, 300, 0.05);
   }
 
-  // Everyone dozes off after the feast, and wakes again.
+  // Everyone dozes off after the feast, and wakes again: the banjo, slowly
+  // down, and quickly up.
   nap() {
     if (!this.on) return;
-    [392, 329.6, 261.6].forEach((f, k) => this.ping(f, this.now + k * 0.35, { gain: 0.07, fall: 0.9 }));
+    [67, 64, 60].forEach((note, k) => this.banjo(note, this.now + k * 0.4, 0.2));
   }
 
   wake() {
     if (!this.on) return;
-    [523.3, 659.3, 784, 1046.5].forEach((f, k) => this.ping(f, this.now + k * 0.09, { gain: 0.06, fall: 0.4 }));
+    [72, 76, 79, 84].forEach((note, k) => this.banjo(note, this.now + k * 0.09, 0.2));
   }
 
   // A thing crossed off the shopping list: the till's bell.
@@ -476,22 +725,93 @@ export class Sound {
     [587.3, 740, 880, 1174.7].forEach((f, k) => this.bell(f, this.now + k * 0.16, 0.08, 2));
   }
 
+  // No pairs left: a low chord on the organ, or on Thanksgiving, the
+  // turkey has the last laugh.
   stuck() {
     if (!this.on) return;
+    if (this.set === 'thanksgiving') return this.gobble();
     this.organ(38, this.now, 1.2, 0.1);
     this.organ(45, this.now, 1.2, 0.08);
   }
 
-  // A cleared board: the whole opening, then a chord to end on.
-  win() {
-    if (!this.on) return;
-    const beat = 0.32;
-    let at = this.now + 0.1;
-    for (const [note, beats] of OPENING) {
-      if (note) this.organ(note, at, beats * beat * 0.92, 0.14);
-      at += beats * beat;
+  // A turkey's gobble: a quick string of throaty warbles, each falling, and
+  // falling as they go.
+  gobble() {
+    const throat = this.ctx.createBiquadFilter();
+    throat.type = 'bandpass';
+    throat.frequency.value = 1150;
+    throat.Q.value = 1.1;
+    throat.connect(this.master);
+    for (let k = 0; k < 8; k++) {
+      const at = this.now + k * 0.068;
+      const top = 720 - k * 28;
+      const o = this.ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(top, at);
+      o.frequency.exponentialRampToValueAtTime(top * 0.72, at + 0.06);
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0, at);
+      g.gain.linearRampToValueAtTime(0.09 * (1 - k * 0.06), at + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + 0.062);
+      o.connect(g).connect(throat);
+      o.start(at);
+      o.stop(at + 0.07);
     }
-    for (const note of [38, 50, 53, 57, 62]) this.organ(note, at, 2.2, 0.09);
+  }
+
+  // A cleared board, its music played as a song of its own, to fade when
+  // the next board comes: Halloween's, the Toccata's whole opening and a
+  // chord to end on; Thanksgiving's, the last line of its song, and on the
+  // last day of the week (`last`), We Gather Together.
+  win(last = false) {
+    if (!this.on) return;
+    const into = this.newSong();
+    if (this.set === 'thanksgiving' && last) this.gather(into);
+    else if (this.set === 'thanksgiving') this.river(into);
+    else {
+      const beat = 0.32;
+      let at = this.now + 0.1;
+      for (const [note, beats] of OPENING) {
+        if (note) this.organ(note, at, beats * beat * 0.92, 0.14, into);
+        at += beats * beat;
+      }
+      for (const note of [38, 50, 53, 57, 62]) this.organ(note, at, 2.2, 0.09, into);
+    }
     this.next = 0;
+  }
+
+  // The last line of Thanksgiving's song on the banjo, over a guitar's
+  // oom-pah, the bass on each bar's first beat and a chord on its second,
+  // ending on a chord strummed.
+  river(into) {
+    const eighth = 0.2;
+    const start = this.now + 0.1;
+    let at = start;
+    for (const [note, eighths] of RIVER.slice(LAST_LINE)) {
+      this.banjo(note, at, 0.24, into);
+      at += eighths * eighth;
+    }
+    RIVER_CHORDS.forEach((name, beat) => {
+      const [root, tones] = CHORDS[name];
+      const t = start + beat * 3 * eighth;
+      if (beat % 2 === 0) this.guitar(root, t, 0.14, into);
+      else tones.forEach((note, k) => this.guitar(note, t + k * 0.012, 0.05, into));
+    });
+    const end = start + RIVER_CHORDS.length * 3 * eighth;
+    [48, 55, 60, 64, 67, 72].forEach((note, k) => this.guitar(note, end + k * 0.025, 0.07, into));
+    this.banjo(72, end + 0.15, 0.16, into);
+  }
+
+  // We Gather Together on the reed organ, its four voices, for the week seen
+  // through, the tune a little louder than the voices under it.
+  gather(into) {
+    const beat = 60 / 112;
+    GATHER.forEach((voice, v) => {
+      let at = this.now + 0.1;
+      for (const [note, beats] of voice) {
+        this.reed(note, at, beats * beat * 0.94, v ? 0.032 : 0.05, into);
+        at += beats * beat;
+      }
+    });
   }
 }

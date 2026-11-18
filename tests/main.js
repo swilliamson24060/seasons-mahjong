@@ -39,6 +39,7 @@ import './magnifier.test.js';
 import './board.test.js';
 import './leaderboard.test.js';
 import './themes.test.js';
+import './sound.test.js';
 import { drawBoard } from './preview.js';
 import { Game } from '../js/engine/game.js';
 import { TURTLE } from '../js/engine/layouts.js';

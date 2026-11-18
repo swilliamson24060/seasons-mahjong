@@ -220,6 +220,8 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
   runId = onDay >= 0 ? ofRun : null;
   nap = napAt;
   faceSet = faces;
+  sound.use(faces); // the holiday's music with its tiles
+  sound.hush(); // the last board's music fading
   turnWords = TURNS[turnSet] || TURNS.midnight;
   $('moon').title = turnWords.moon;
   game = new Game(layout, { seed, ...options });
@@ -487,7 +489,7 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
   });
   game.on('turn', turned);
   game.on('win', () => {
-    sound.win();
+    sound.win(runDay >= 0 && runDay === RUNS[runId].days.length - 1); // the last of a run's days: its own music, on Thanksgiving
     won();
   });
   game.on('stuck', () => {
@@ -1083,7 +1085,10 @@ function applyTheme() {
   // The day is found by the key free play dealt: a board with a fridge
   // plays on a layout of its own, with the containers added.
   const faces = hour < 0 && runDay < 0 && !dayFor(FREE[freeKey]) ? holidayFaces() : faceSet;
-  if (faces !== faceSet) board.setFaces((faceSet = faces));
+  if (faces !== faceSet) {
+    board.setFaces((faceSet = faces));
+    sound.use(faceSet); // and its music
+  }
 }
 
 // The faces of the holiday chosen last, for a board outside the night and the

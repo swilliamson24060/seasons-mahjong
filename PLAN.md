@@ -91,6 +91,28 @@ The same faces as Halloween's, matching just as those do, drawn as the harvest a
 - Each group's corner number has a colour of its own, by day and by night: cranberry red, husk green, leaf orange, harvest brown, aster purple, and the blue of the pie dish.
 - Wherever a board names its tiles, it names them in its own set's words: a tile to a screen reader, the shopping list, the doorbusters, and the dishes on Friendsgiving's card.
 
+### Thanksgiving's music
+
+As Halloween's is a pipe organ in a stone church playing Bach's Toccata, a note a match, Thanksgiving's is a banjo in a farmhouse parlour (`js/ui/sound.js`), made in code as the organ is, its strings plucked in Karplus and Strong's way. It plays with Thanksgiving's tiles: on the week's boards, and on the turtle while Thanksgiving is the holiday chosen last.
+
+| Moment | Halloween's | Thanksgiving's |
+|---|---|---|
+| A match | the Toccata's next note, on the organ | the next note of "Over the River and Through the Wood", Lydia Maria Child's Thanksgiving poem of 1844 to its traditional tune, on the banjo |
+| A cleared board | the Toccata's opening, and a chord | the song's last line on the banjo, from the second "Over the river", over a guitar's oom-pah, and a chord strummed |
+| The week seen through | | "We Gather Together", the Thanksgiving hymn, a Dutch tune of 1597 in Eduard Kremser's setting of 1877, its four voices on a parlour reed organ |
+| The room | a stone church's long echo | a farmhouse parlour's, short and warm |
+| A shuffle | a rustle | autumn leaves raked over, crackling |
+| A hint | two high notes | a small handbell |
+| A treat, the potluck's gifts and the whole list found | chimes running up | the dinner triangle: come and get it! |
+| No pairs left | a low organ chord | a turkey's gobble |
+| Thursday's nap | three notes falling, and waking, four rising | the same, on the banjo |
+| Saturday's touchdown | the crowd's roar, and the band on the organ | the crowd's roar, and the band's brass sounding the charge |
+
+- The tile's tock, a blocked tile, undo, Monday's thawing drips, Tuesday's till, Thursday's fridge door, Friday's snatch and the second Sunday's alarm clock are as they were.
+- A cleared board's music fades as the next board comes, for Halloween's too.
+- The songs are long out of copyright: the song's tune was taken down from a music-education book's melody, and the hymn's four voices from a hymnal's file of it, then checked by the tests, which also play each sound offline: the banjo in tune, and every sound heard but none too loud.
+- The other holidays play Halloween's until theirs come, each with its own tune, instrument and room.
+
 ### The first Sunday
 
 - The gentle start, as the Long Night's 6 pm is: the week's fewest tiles, 32 of them free from the start, and no twist. Its card tells the free-tile rule as traffic: a tile can pull out only when nothing is on it and its lane is clear at one end.
@@ -534,7 +556,7 @@ The same faces as Halloween's, matching just as those do, to be drawn as April S
 
 ## Milestones
 
-**Wed 18 Nov:** The holidays made simpler. The menu is the holidays, all twelve, to choose one, those not open greyed out with the day they open, or soon, and the turtle; choosing one goes back to its board in progress, or lists its boards, those reached so far, to choose one, and giving a board up lists them again. The card to choose which holidays to play, Your holidays and the cards of holidays not yet open are gone, and the game opens on the board left on the table.
+**Wed 18 Nov:** The holidays made simpler. The menu is the holidays, all twelve, to choose one, those not open greyed out with the day they open, or soon, and the turtle; choosing one goes back to its board in progress, or lists its boards, those reached so far, to choose one, and giving a board up lists them again. The card to choose which holidays to play, Your holidays and the cards of holidays not yet open are gone, and the game opens on the board left on the table. Then Thanksgiving's own music, as Halloween has Bach's Toccata on a pipe organ: a banjo in a farmhouse parlour playing "Over the River and Through the Wood" a note a match, and its last line over a guitar's oom-pah for a cleared board; "We Gather Together" on a parlour reed organ when the week is seen through; and autumn leaves for a shuffle, a handbell for a hint, the dinner triangle for a treat, and a turkey's gobble when no pairs are left.
 
 **Tue 17 Nov:** Groundhog Day, the fifth holiday ready to play, and the one open all year, every year: the board of the day, a groundhog peeking out of his burrow, dealt from the date so everyone has the same board each day, played again and again until it goes just right, with the best today, the days in a row cleared and the week's days on its card, and the groundhog's forecast as it's cleared, an early spring under par or six more weeks of winter. Then Groundhog Day's own tiles: burrows, candles for Candlemas and scrolls; four weather prophets, the groundhog in his top hat, a hedgehog, a badger and a bear; the sun, a weather vane and a cloud; spring flowers and songbirds; and his shadow, which the turtle wears too while Groundhog Day is the holiday chosen. Then bigger tiles on a phone: the board fills the space it has but for 2px round it, a twentieth bigger on a phone held upright, and the turtle swims up the screen there, the full set of 144 nine across on six layers, its tiles 39px wide on a Galaxy S25+ against the classic's 23, which a wider screen still deals. Then Valentine's Day planned as a love story: eight boards from love at first sight to be mine, a heart pierced by Cupid's arrow, a valentine in its envelope, dinner by candlelight, a box of chocolates, a dozen roses, hugs and kisses, Cupid's bow and a diamond ring, the last turning over halfway as the question is popped, with broken hearts for lost souls. Then a twelfth holiday, for April into May, when none fell: April Showers, a season from April 1 to May 31, opening on March 1, on the first card with its boards to come, and planned from the first shower to May Day, eight boards from a rain cloud, an umbrella, rain boots in a puddle and a rainbow to seedlings, a watering can, a flower bed and a May basket, the last turning over from April to May halfway, with wilted flowers for lost souls. Then the holidays of a player who chose all of them grow with the game: April Showers joined theirs if they had chosen all eleven, and the holidays to come will join them too. Then each tile's number moved to its top right corner, the one a taller stack beside it never covers, where in the top left one tile in six on a phone had its number partly hidden, and the twists' badges moved to the top left, clear of it.
 
