@@ -489,7 +489,9 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
   });
   game.on('turn', turned);
   game.on('win', () => {
-    sound.win({ day: runDay, last: runDay >= 0 && runDay === RUNS[runId].days.length - 1 }); // its day's music, and the last day's its own, where a holiday has them
+    // its day's music, and the last day's its own, where a holiday has them;
+    // on Groundhog Day, as the groundhog forecasts, an early spring under par
+    sound.win({ day: runDay, last: runDay >= 0 && runDay === RUNS[runId].days.length - 1, spring: played() < par(game) });
     won();
   });
   game.on('stuck', () => {

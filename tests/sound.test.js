@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST } from '../js/ui/sound.js';
+import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER } from '../js/ui/sound.js';
 
 // A Sound playing into an offline context, `seconds` long, for Thanksgiving
 // or another holiday: what it plays is rendered, to be measured as numbers.
@@ -51,16 +51,55 @@ test("We Gather Together's four voices keep time together, sixteen bars of 3/4 f
   equal(GATHER[3].at(-1)[0] % 12, 2, 'the bass ending on D');
 });
 
-test("each holiday's music goes with its tiles: Thanksgiving's, Christmas's and New Year's on their own, Halloween's on the others until theirs come", () => {
+test("each holiday's music goes with its tiles, every one made having its own, and Halloween's the rest until theirs come", () => {
   const s = new Sound();
-  for (const set of ['thanksgiving', 'christmas', 'new-year']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'halloween']) {
     s.use(set);
     equal(s.set, set, set);
   }
-  for (const set of ['groundhog', 'halloween']) {
-    s.use(set);
-    equal(s.set, 'halloween', set);
+  s.use('valentines');
+  equal(s.set, 'halloween', 'a holiday whose boards are still to come');
+});
+
+test("Vivaldi's Spring and Winter keep time, their voices together, Spring ending on E major and Winter on F minor", () => {
+  const beats = (voice) => voice.reduce((n, [, b]) => n + b, 0);
+  for (const [k, voice] of SPRING.entries()) equal(beats(voice), 25.5, `Spring's voice ${k + 1}'s beats`);
+  for (const [k, voice] of WINTER.entries()) equal(beats(voice), 24, `Winter's voice ${k + 1}'s beats`);
+  equal(SPRING[0].filter(([note]) => note).length, 50, "Spring's tune, a note for each match");
+  equal(`${SPRING[0].at(-1)[0]} ${SPRING[2].at(-1)[0]}`, '76 40', 'Spring ending on E, over a low E');
+  check(WINTER.every((voice) => [5, 8, 0].includes(voice.at(-1)[0] % 12)), "Winter's last notes not F minor's");
+});
+
+test('the harpsichord plays in tune', async () => {
+  let worst = 0;
+  for (const midi of [52, 64, 76, 83]) {
+    const data = await render('groundhog', 0.5, (s) => s.harpsichord(midi, 0));
+    const expected = 440 * 2 ** ((midi - 69) / 12);
+    const cents = 1200 * Math.log2(pitchOf(data, 48000, expected) / expected);
+    worst = Math.max(worst, Math.abs(cents));
+    check(Math.abs(cents) < 8, `note ${midi} out by ${cents.toFixed(1)} cents`);
   }
+  return `within ${worst.toFixed(1)} cents`;
+});
+
+test("Groundhog Day's sounds are all heard, and none too loud", async () => {
+  const sounds = {
+    'a match': [1.6, (s) => s.match()],
+    'an early spring': [16, (s) => s.win({ day: 0, last: true, spring: true })],
+    'six more weeks of winter': [15, (s) => s.win({ day: 0, last: true })],
+    'a shuffle': [1, (s) => s.shuffle()],
+    'a hint': [0.8, (s) => s.hint()],
+    'a treat': [2, (s) => s.treat()],
+    'no pairs left': [1.2, (s) => s.stuck()],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('groundhog', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
 test('Auld Lang Syne keeps time: an upbeat and sixteen bars of 4/4, verse and chorus, its last line and its chorus from where they begin', () => {

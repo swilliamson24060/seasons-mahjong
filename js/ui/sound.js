@@ -16,8 +16,12 @@
 // lump of coal for no pairs left; New Year's a piano in a ballroom playing
 // "Auld Lang Syne", with a party horn for a shuffle, a champagne glass's
 // ting for a hint, a cork popping for a treat and a party horn running out
-// of breath for no pairs left. The others play Halloween's until theirs
-// come.
+// of breath for no pairs left; Groundhog Day's a harpsichord playing
+// Vivaldi's Four Seasons, Spring for an early spring and Winter for six
+// more weeks of it, with the groundhog digging for a shuffle, a cardinal's
+// whistle for a hint, a candle lit for Candlemas for a treat, and the
+// groundhog seeing his shadow for no pairs left. The others play
+// Halloween's until theirs come.
 
 // The opening, a note for each match: the mordent on A and its run down to
 // D, three times, an octave lower each time.
@@ -125,18 +129,68 @@ export const LAST_TOAST = 42; // "we'll tak' a cup o' kindness yet"
 const AULD_CHORDS = [null, 'F', 'C7', 'F', 'Bb', 'F', 'C7', ['Bb', 'C7'], 'F', 'F', 'C7', 'F', 'Bb', 'F', 'C7', ['Bb', 'C7'], 'F'];
 const PIANO_CHORDS = { F: [41, 48, [53, 57, 60]], C7: [48, 43, [52, 55, 58]], Bb: [46, 41, [50, 53, 58]] };
 
+// Groundhog Day's music, from Vivaldi's Four Seasons, 1725, the notes as the
+// Mutopia Project's edition gives them: each piece its voices, the tune
+// first, each voice [note, beats], 0 a rest. Spring's opening, in E: its
+// first theme and its second, the tune of the first violins over the
+// second violins and the cello. Its tune is played a note for each match,
+// and the whole for a board cleared under par, an early spring.
+export const SPRING = [
+  [
+    [76, 0.5], [80, 0.5], [80, 0.5], [80, 0.5], [78, 0.25], [76, 0.25], [83, 1.5], [83, 0.25], [81, 0.25],
+    [80, 0.5], [80, 0.5], [80, 0.5], [78, 0.25], [76, 0.25], [83, 1.5], [83, 0.25], [81, 0.25],
+    [80, 0.5], [81, 0.25], [83, 0.25], [81, 0.5], [80, 0.5], [78, 0.5], [75, 0.5], [71, 0.5],
+    [76, 0.5], [83, 0.5], [81, 0.25], [80, 0.25], [81, 0.5], [83, 0.5], [85, 0.5], [83, 1],
+    [76, 0.5], [83, 0.5], [81, 0.25], [80, 0.25], [81, 0.5], [83, 0.5], [85, 0.5], [83, 1],
+    [76, 0.5], [85, 0.5], [83, 1], [81, 0.5], [80, 0.5], [78, 0.25], [76, 0.25], [78, 1], [76, 1],
+  ],
+  [
+    [71, 0.5], [76, 0.5], [76, 0.5], [76, 0.5], [76, 0.5], [80, 1.5], [80, 0.25], [78, 0.25],
+    [76, 0.5], [76, 0.5], [76, 0.5], [76, 0.5], [80, 1.5], [80, 0.25], [78, 0.25],
+    [76, 0.5], [78, 0.25], [80, 0.25], [78, 0.5], [76, 0.5], [75, 1], [0, 0.5],
+    [80, 0.5], [80, 0.5], [78, 0.25], [76, 0.25], [78, 0.5], [80, 0.5], [81, 0.5], [80, 1],
+    [80, 0.5], [80, 0.5], [78, 0.25], [76, 0.25], [78, 0.5], [80, 0.5], [81, 0.5], [80, 1],
+    [80, 0.5], [81, 0.5], [80, 1], [78, 0.5], [76, 1], [75, 1], [76, 1],
+  ],
+  [
+    [52, 0.5], [52, 1], [52, 1], [52, 1], [52, 1], [52, 1], [52, 1], [52, 1], [52, 1], [52, 0.5], [52, 0.5], [45, 0.5], [46, 0.5], [47, 1], [0, 0.5],
+    [52, 0.5], [52, 1], [52, 1], [52, 1], [52, 1], [52, 1], [52, 1], [52, 1], [52, 1], [52, 1], [52, 0.5], [47, 0.5], [52, 0.5], [40, 0.5], [59, 0.5], [47, 0.5], [40, 1],
+  ],
+];
+
+// Winter's opening, in F minor, for six more weeks of it: the strings'
+// shivering eighths, the cello alone, then the violas, the second violins
+// and the first, each a bar after the last, to a clash that resolves into
+// F minor, and the harpsichord's chord of it to end on.
+const shiver = (...runs) => runs.flatMap(([note, beats]) => Array(beats * 2).fill([note, 0.5]));
+export const WINTER = [
+  [[0, 12], ...shiver([82, 8], [80, 4])],
+  [[0, 8], ...shiver([73, 12], [72, 4])],
+  [[0, 4], ...shiver([67, 16], [68, 2], [65, 2])],
+  shiver([53, 16], [52, 4], [53, 4]),
+];
+const WINTER_END = [41, 53, 60, 65, 68, 80];
+
 // Each holiday's music, as far as it has its own: the room it rings in.
 // Holidays not here play Halloween's.
-const MUSIC = { halloween: { room: 'stone' }, thanksgiving: { room: 'farmhouse' }, christmas: { room: 'fireside' }, 'new-year': { room: 'ballroom' } };
+const MUSIC = {
+  halloween: { room: 'stone' },
+  thanksgiving: { room: 'farmhouse' },
+  christmas: { room: 'fireside' },
+  'new-year': { room: 'ballroom' },
+  groundhog: { room: 'salon' },
+};
 
 // The rooms: a stone church's long echo for the organ and the bells, a
 // farmhouse parlour's, short and warm, for the banjo, a fireside's, a
-// little longer, for the music box, and a ballroom's, wide, for the piano.
+// little longer, for the music box, a ballroom's, wide, for the piano, and
+// a music room's for the harpsichord.
 const ROOMS = {
   stone: { seconds: 2.8, fall: 3.2, wet: 0.35 },
   farmhouse: { seconds: 0.8, fall: 3.6, wet: 0.22 },
   fireside: { seconds: 1.3, fall: 3.4, wet: 0.26 },
   ballroom: { seconds: 2, fall: 3, wet: 0.3 },
+  salon: { seconds: 1.4, fall: 3.2, wet: 0.24 },
 };
 
 // The opening as it is played, for a cleared board: [note, beats], 0 a rest.
@@ -321,8 +375,9 @@ export class Sound {
     return string;
   }
 
-  // A string played: its buffer, tuned, through `through` if given.
-  string(midi, at, gain, shape, into, through = null) {
+  // A string played: its buffer, tuned, through `through` if given, and
+  // with `length`, damped when that is up, as a harpsichord's key let go is.
+  string(midi, at, gain, shape, into, through = null, length = 0) {
     const { buffer, tune } = this.pluck(midi, shape);
     const src = this.ctx.createBufferSource();
     src.buffer = buffer;
@@ -333,6 +388,35 @@ export class Sound {
     else src.connect(g);
     g.connect(into);
     src.start(at);
+    if (length) {
+      g.gain.setValueAtTime(gain, at + length);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + length + 0.06);
+      src.stop(at + length + 0.08);
+    }
+  }
+
+  // A harpsichord: each key plucks two strings with quills, one at pitch
+  // and one an octave above, bright and jangling; with `length`, the key
+  // let go and the strings damped.
+  harpsichord(midi, at, gain = 0.15, into = this.bus, length = 0) {
+    this.string(midi, at, gain, { bright: 0.95, keep: 0.996, pick: 0.08, seconds: 1.5 }, into, null, length);
+    if (midi < 84) this.string(midi + 12, at, gain * 0.4, { bright: 0.95, keep: 0.994, pick: 0.12, seconds: 1.1 }, into, null, length);
+  }
+
+  // A whistle: a pure note sliding from one pitch to another, a bird's, or
+  // a groundhog's.
+  whistle(at, from, to, length, gain = 0.05, into = this.master) {
+    const o = this.ctx.createOscillator();
+    o.frequency.setValueAtTime(from, at);
+    o.frequency.exponentialRampToValueAtTime(to, at + length);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(gain, at + 0.015);
+    g.gain.setValueAtTime(gain, at + length * 0.7);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + length);
+    o.connect(g).connect(into);
+    o.start(at);
+    o.stop(at + length + 0.02);
   }
 
   // A banjo: plucked near the bridge, bright and short-lived, its twang
@@ -508,6 +592,7 @@ export class Sound {
     if (this.set === 'thanksgiving') this.banjo(RIVER[this.next % RIVER.length][0], this.now);
     else if (this.set === 'christmas') this.musicBox(TWELVE_DAYS[this.next % TWELVE_DAYS.length][0] + 12, this.now);
     else if (this.set === 'new-year') this.piano(AULD[this.next % AULD.length][0], this.now, 0.17);
+    else if (this.set === 'groundhog') this.harpsichord(SPRING[0][this.next % SPRING[0].length][0], this.now);
     else this.organ(TOCCATA[this.next % TOCCATA.length], this.now, 0.38);
     this.next++;
   }
@@ -523,6 +608,11 @@ export class Sound {
     if (this.set === 'thanksgiving') return this.leaves();
     if (this.set === 'christmas') return [0, 0.11, 0.2, 0.33].forEach((t, k) => this.jingle(this.now + t, 0.05 - k * 0.006));
     if (this.set === 'new-year') return this.horn(this.now);
+    if (this.set === 'groundhog') {
+      // the groundhog digging: his claws scraping, and a clod of earth landing
+      for (let k = 0; k < 6; k++) this.rustle(this.now + k * 0.1 + Math.random() * 0.03, 0.08, 1500, 450, 0.1);
+      return this.ping(95, this.now + 0.62, { gain: 0.1, attack: 0.002, fall: 0.09, into: this.master });
+    }
     for (let k = 0; k < 3; k++) this.rustle(this.now + k * 0.09, 0.3, 600, 3200, 0.1);
   }
 
@@ -544,6 +634,7 @@ export class Sound {
     if (this.set === 'thanksgiving') return this.bell(1568, this.now, 0.06, 1.4);
     if (this.set === 'christmas') return this.bell(2093, this.now, 0.045, 1.2);
     if (this.set === 'new-year') return this.bell(2794, this.now, 0.045, 0.9);
+    if (this.set === 'groundhog') return [0, 0.3].forEach((t) => this.whistle(this.now + t, 3900, 2400, 0.22)); // a cardinal: cheer, cheer
     this.ping(1318.5, this.now, { gain: 0.06, fall: 0.5 });
     this.ping(1975.5, this.now + 0.09, { gain: 0.05, fall: 0.6 });
   }
@@ -562,6 +653,13 @@ export class Sound {
       this.rustle(this.now, 0.03, 2600, 900, 0.22);
       this.ping(520, this.now, { gain: 0.12, attack: 0.002, fall: 0.07, into: this.master });
       return this.rustle(this.now + 0.08, 1.3, 6000, 9000, 0.03);
+    }
+    if (this.set === 'groundhog') {
+      // a candle lit for Candlemas: the match struck, the flame catching,
+      // and the harpsichord's chord
+      this.rustle(this.now, 0.12, 2200, 5200, 0.09);
+      this.rustle(this.now + 0.1, 0.6, 500, 800, 0.04);
+      return [76, 80, 83].forEach((note, k) => this.harpsichord(note, this.now + 0.3 + k * 0.04, 0.09));
     }
     [1318.5, 1661.2, 1975.5, 2637].forEach((f, k) => this.ping(f, this.now + k * 0.07, { gain: 0.08, fall: 0.5 }));
   }
@@ -889,6 +987,13 @@ export class Sound {
       return this.rustle(this.now + 0.02, 0.28, 900, 250, 0.08);
     }
     if (this.set === 'new-year') return this.horn(this.now, 480, 170, 0.9, 0.14); // a party horn running out of breath
+    if (this.set === 'groundhog') {
+      // the groundhog sees his shadow: his whistle of alarm, and he
+      // scurries back down his burrow
+      this.whistle(this.now, 2500, 2750, 0.35, 0.06);
+      for (let k = 0; k < 7; k++) this.rustle(this.now + 0.4 + k * 0.06, 0.05, 1600 - k * 120, 500, 0.08 * (1 - k / 9));
+      return this.ping(80, this.now + 0.85, { gain: 0.12, attack: 0.002, fall: 0.1, into: this.master });
+    }
     this.organ(38, this.now, 1.2, 0.1);
     this.organ(45, this.now, 1.2, 0.08);
   }
@@ -926,14 +1031,17 @@ export class Sound {
   // the twelfth verse whole, and the church bells. The turtle, with no day,
   // plays the fifth verse, whose notes its matches have played. New Year's,
   // the last line of Auld Lang Syne, and with the countdown seen through,
-  // its whole chorus, the party horns and the cheers.
-  win({ day = -1, last = false } = {}) {
+  // its whole chorus, the party horns and the cheers. Groundhog Day's, as
+  // the groundhog forecasts: an early spring (`spring`), Spring's opening,
+  // and six more weeks of winter, Winter's.
+  win({ day = -1, last = false, spring = false } = {}) {
     if (!this.on) return;
     const into = this.newSong();
     if (this.set === 'thanksgiving' && last) this.gather(into);
     else if (this.set === 'thanksgiving') this.river(into);
     else if (this.set === 'christmas') this.carol(day >= 0 ? day + 1 : 5, last, into);
     else if (this.set === 'new-year') this.auld(last ? CHORUS : LAST_TOAST, last, into);
+    else if (this.set === 'groundhog') this.season(spring, into);
     else {
       const beat = 0.32;
       let at = this.now + 0.1;
@@ -1021,6 +1129,24 @@ export class Sound {
     const end = start + t * beat;
     [[430, 520], [470, 560], [400, 470]].forEach(([a, b], k) => this.horn(end + 0.3 + k * 0.18, a, b, 0.6, 0.12, into));
     this.rustle(end + 0.25, 1.8, 900, 2800, 0.09, into);
+  }
+
+  // The opening of Vivaldi's Spring, or of his Winter, on the harpsichord,
+  // each voice's notes damped as their keys are let go, the tune a little
+  // louder than the voices under it; Winter's ends on its chord of F minor.
+  season(spring, into) {
+    const beat = spring ? 0.536 : 0.517;
+    const start = this.now + 0.1;
+    let end = start;
+    (spring ? SPRING : WINTER).forEach((voice, v) => {
+      let at = start;
+      for (const [note, beats] of voice) {
+        if (note) this.harpsichord(note, at, v ? 0.1 : 0.14, into, beats * beat * 0.9);
+        at += beats * beat;
+      }
+      end = Math.max(end, at);
+    });
+    if (!spring) WINTER_END.forEach((note, k) => this.harpsichord(note, end + k * 0.03, 0.1, into));
   }
 
   // We Gather Together on the reed organ, its four voices, for the week seen
