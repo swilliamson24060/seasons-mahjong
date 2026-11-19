@@ -143,6 +143,7 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 - `js/themes.js`: the twelve holidays and seasons, when each falls in any year and when it opens, and their colours.
 - `sw.js`, `manifest.webmanifest` and `icons/`: offline play, and installing the game as an app.
 - `tools/itch.py`: the zip for itch.io, and `tools/shots.py`, with `tools/cover.html` and `tools/stage.html`, its cover and screenshots.
+- `tools/valentine-drafts.js`: Valentine's Day's eight boards as planned, drawn before each is made, and `tools/valentine.html`, which deals each in a phone's space, with how many of its deals can be won.
 - `js/night.js`: the Long Night's thirteen hours: each one's board, rules, sky and the words before it.
 - `js/thanksgiving.js`: Thanksgiving week's eight days: each one's board, rules, sky and the words before it.
 - `js/christmas.js`: Christmas's Twelve Days, as they are made: each one's gift, board, rules, sky and the words before it.

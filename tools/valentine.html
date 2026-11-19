@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valentine's boards, planned</title>
+<link rel="stylesheet" href="../css/game.css">
+<style>
+  body { overflow: auto; display: block; padding: 12px; --sky-top: #5c2042; --sky-low: #1c0913; --accent: #ff6b9a; }
+  .sheet { display: flex; flex-wrap: wrap; gap: 14px; }
+  figure { margin: 0; }
+  figcaption { color: #ffd6e4; font: 600 15px/1.3 system-ui, sans-serif; text-align: center; margin-top: 6px; width: 384px; }
+  figcaption small { display: block; font-weight: 400; color: #e9a9c0; }
+  .frame { width: 384px; height: 585px; display: grid; place-items: center; outline: 1px dashed #ff6b9a55; }
+  .frame > div { position: relative; }
+</style>
+</head>
+<body data-theme="valentines">
+<div class="sheet" id="sheet"></div>
+<script type="module">
+// Valentine's boards as planned (tools/valentine-drafts.js), each dealt in a
+// phone's board space, a Galaxy S25+'s held upright, 384 by 585, with
+// Christmas's tiles until Valentine's own are drawn (?faces= another set),
+// and how many of its first 50 deals can be won in their own order.
+import { DRAFTS, draftLayout } from './valentine-drafts.js';
+import { Game } from '../js/engine/game.js';
+import { sprite } from '../js/ui/faces.js';
+import { Board } from '../js/ui/board.js';
+
+const p = new URLSearchParams(location.search);
+document.body.prepend(sprite());
+DRAFTS.forEach((d, k) => {
+  const L = draftLayout(d);
+  const layers = Array.from({ length: L.depth }, (_, z) => L.z.filter((v) => v === z).length);
+  let won = 0;
+  for (let seed = 1; seed <= 50; seed++) {
+    const g = new Game(L, { seed, treats: false, ghostsFloat: false });
+    if (g.plan.every(([a, b]) => g.match(a, b)) && g.won) won++;
+  }
+  const g = new Game(L, { seed: 7 + k, treats: false, ghostsFloat: false });
+  const figure = document.createElement('figure');
+  figure.innerHTML = `<div class="frame"><div></div></div><figcaption>${k + 1}. ${d.title}<small>${d.name}: ${L.count} tiles on ${L.depth} layers (${layers.join(', ')}), ${g.freeTiles().length} free at the start; ${won} of 50 deals won in their own order</small></figcaption>`;
+  document.getElementById('sheet').append(figure);
+  new Board(figure.querySelector('.frame > div'), g, { faceSet: p.get('faces') || 'christmas' });
+});
+</script>
+</body>
+</html>
