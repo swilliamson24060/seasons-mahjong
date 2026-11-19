@@ -489,7 +489,7 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
   });
   game.on('turn', turned);
   game.on('win', () => {
-    sound.win(runDay >= 0 && runDay === RUNS[runId].days.length - 1); // the last of a run's days: its own music, on Thanksgiving
+    sound.win({ day: runDay, last: runDay >= 0 && runDay === RUNS[runId].days.length - 1 }); // its day's music, and the last day's its own, where a holiday has them
     won();
   });
   game.on('stuck', () => {

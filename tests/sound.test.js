@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { Sound, RIVER, LAST_LINE, GATHER } from '../js/ui/sound.js';
+import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse } from '../js/ui/sound.js';
 
 // A Sound playing into an offline context, `seconds` long, for Thanksgiving
 // or another holiday: what it plays is rendered, to be measured as numbers.
@@ -51,14 +51,50 @@ test("We Gather Together's four voices keep time together, sixteen bars of 3/4 f
   equal(GATHER[3].at(-1)[0] % 12, 2, 'the bass ending on D');
 });
 
-test("each holiday's music goes with its tiles: Thanksgiving's on its own, Halloween's on the others until theirs come", () => {
+test("each holiday's music goes with its tiles: Thanksgiving's and Christmas's on their own, Halloween's on the others until theirs come", () => {
   const s = new Sound();
-  s.use('thanksgiving');
-  equal(s.set, 'thanksgiving', 'Thanksgiving');
-  for (const set of ['christmas', 'new-year', 'groundhog', 'halloween']) {
+  for (const set of ['thanksgiving', 'christmas']) {
+    s.use(set);
+    equal(s.set, set, set);
+  }
+  for (const set of ['new-year', 'groundhog', 'halloween']) {
     s.use(set);
     equal(s.set, 'halloween', set);
   }
+});
+
+test("The Twelve Days of Christmas keeps time, each verse counting its gifts down to the partridge in a pear tree", () => {
+  const beats = (phrases) => phrases.reduce((n, [notes]) => n + notes.reduce((m, [, b]) => m + b, 0), 0);
+  // An upbeat, then whole bars of 4/4 and 3/4: the first verse's sixteen
+  // beats, and three more for each gift a later one adds, four for the
+  // turtle doves and eight for the five gold rings.
+  const expected = { 1: 16, 2: 20, 3: 23, 4: 26, 5: 34, 6: 37, 12: 55 };
+  for (const [day, n] of Object.entries(expected)) equal(beats(verse(Number(day))), n, `the ${day} verse's beats`);
+  equal(beats(verse(9, true)), 37, "a cleared board's ninth verse, the ninth gift and then from the rings down");
+  equal(TWELVE_DAYS.length, 39, "the fifth verse's notes, for the matches");
+  for (let day = 1; day <= 12; day++) equal(verse(day).at(-1)[0].at(-1).join(), '65,3', `the ${day} verse ending on F, its keynote, held`);
+});
+
+test("Christmas's sounds are all heard, and none too loud", async () => {
+  const sounds = {
+    'a match': [2, (s) => s.match()],
+    'the first day cleared': [8, (s) => s.win({ day: 0 })],
+    'the sixth day cleared': [16, (s) => s.win({ day: 5 })],
+    'Twelfth Night, the twelve days seen through': [28, (s) => s.win({ day: 11, last: true })],
+    'a turtle cleared': [15, (s) => s.win()],
+    'a shuffle': [1, (s) => s.shuffle()],
+    'a hint': [1.5, (s) => s.hint()],
+    'a treat': [2.5, (s) => s.treat()],
+    'no pairs left': [0.6, (s) => s.stuck()],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('christmas', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
 test("Thanksgiving's banjo plays in tune", async () => {
@@ -77,7 +113,7 @@ test("Thanksgiving's sounds are all heard, and none too loud", async () => {
   const sounds = {
     'a match': [0.6, (s) => s.match()],
     'a cleared board': [9, (s) => s.win()],
-    'the week seen through': [27, (s) => s.win(true)],
+    'the week seen through': [27, (s) => s.win({ day: 7, last: true })],
     'a shuffle': [1, (s) => s.shuffle()],
     'a hint': [1.5, (s) => s.hint()],
     'a treat': [2.2, (s) => s.treat()],

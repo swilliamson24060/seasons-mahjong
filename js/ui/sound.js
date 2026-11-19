@@ -10,8 +10,11 @@
 // playing "Over the River and Through the Wood", with a reed organ for "We
 // Gather Together" when the week is seen through, and its own sounds for a
 // shuffle (leaves), a hint (a handbell), a treat (the dinner triangle) and
-// no pairs left (a turkey's gobble). The other holidays play Halloween's
-// until theirs come.
+// no pairs left (a turkey's gobble); Christmas's a music box by the
+// fireside playing "The Twelve Days of Christmas", with sleigh bells for a
+// shuffle, a silver bell for a hint, a present unwrapped for a treat and a
+// lump of coal for no pairs left. The other holidays play Halloween's until
+// theirs come.
 
 // The opening, a note for each match: the mordent on A and its run down to
 // D, three times, an octave lower each time.
@@ -57,13 +60,57 @@ export const GATHER = [
     [50, 1], [47, 1.5], [45, 0.5], [43, 0.5], [47, 0.5], [49, 2], [50, 1], [52, 1], [45, 1.5], [50, 0.5], [50, 2]],
 ];
 
+// Christmas's carol, "The Twelve Days of Christmas", in F, as Frederic
+// Austin set it in 1909, a phrase at a time, the phrases a verse is made
+// of: each [notes, bass], a note [note, beats] and a bass note [note, the
+// beat of the phrase it falls on]. Played an octave up, on a music box.
+const CAROL = {
+  on: [[[60, 0.5], [60, 0.5]], []], // On the
+  day: [[[60, 1], [65, 0.5], [65, 0.5], [65, 1], [64, 0.5], [65, 0.5]], [[53, 0]]], // first day of Christmas my
+  sentA: [[[67, 0.5], [69, 0.5], [70, 0.5], [67, 0.5], [69, 1.5], [70, 0.5]], [[48, 0], [53, 2]]], // true love sent to me a
+  sent: [[[67, 0.5], [69, 0.5], [70, 0.5], [67, 0.5], [69, 2]], [[48, 0], [53, 2]]], // true love sent to me
+  doves: [[[72, 1], [67, 0.5], [69, 0.5], [70, 1], [69, 0.5], [70, 0.5]], [[48, 0]]], // Two turtle doves and a, in the second verse to the fourth
+  hens: [[[72, 1], [67, 0.5], [69, 0.5], [70, 1]], [[48, 0]]], // Three French hens, Four calling birds, in the third and fourth
+  geese: [[[72, 1], [67, 0.5], [69, 0.5], [70, 0.5], [67, 0.5]], [[48, 0]]], // Six geese a-laying, and on to Twelve drummers drumming
+  rings: [[[72, 2], [74, 0.5], [71, 1.5], [72, 4]], [[48, 0], [43, 2], [48, 4]]], // Five gold rings
+  birds: [[[72, 0.5], [70, 0.5], [69, 0.5], [67, 0.5], [65, 1]], [[53, 0]]], // Four calling birds, from the fifth verse
+  french: [[[70, 1], [62, 1], [65, 1]], [[46, 0]]], // Three French hens, from the fifth
+  turtle: [[[67, 0.5], [65, 0.5], [64, 0.5], [62, 0.5], [60, 1], [69, 0.5], [70, 0.5]], [[48, 0], [53, 2]]], // Two turtle doves and a, from the fifth
+  partridge: [[[72, 1], [74, 0.5], [70, 0.5], [69, 0.5], [65, 0.5], [67, 1], [65, 3]], [[46, 0], [48, 2], [53, 4]]], // partridge in a pear tree
+};
+
+// A verse of the carol, for its day, 1 to 12: the gifts counting down from
+// the day's own to the partridge. `short`, as a cleared board plays it, the
+// day's own gift and then straight on from five gold rings down.
+export function verse(day, short = false) {
+  const c = CAROL;
+  const gifts =
+    day === 1
+      ? []
+      : day === 2
+        ? [c.doves]
+        : day <= 4
+          ? [...Array(day - 2).fill(c.hens), c.doves]
+          : [...Array(short ? Math.min(1, day - 5) : day - 5).fill(c.geese), c.rings, c.birds, c.french, c.turtle];
+  return [c.on, c.day, day === 1 ? c.sentA : c.sent, ...gifts, c.partridge];
+}
+
+// The fifth verse's notes, the one with five gold rings: a note for each
+// match.
+export const TWELVE_DAYS = verse(5).flatMap(([notes]) => notes);
+
 // Each holiday's music, as far as it has its own: the room it rings in.
 // Holidays not here play Halloween's.
-const MUSIC = { halloween: { room: 'stone' }, thanksgiving: { room: 'farmhouse' } };
+const MUSIC = { halloween: { room: 'stone' }, thanksgiving: { room: 'farmhouse' }, christmas: { room: 'fireside' } };
 
-// The rooms: a stone church's long echo for the organ and the bells, and a
-// farmhouse parlour's, short and warm, for the banjo.
-const ROOMS = { stone: { seconds: 2.8, fall: 3.2, wet: 0.35 }, farmhouse: { seconds: 0.8, fall: 3.6, wet: 0.22 } };
+// The rooms: a stone church's long echo for the organ and the bells, a
+// farmhouse parlour's, short and warm, for the banjo, and a fireside's, a
+// little longer, for the music box.
+const ROOMS = {
+  stone: { seconds: 2.8, fall: 3.2, wet: 0.35 },
+  farmhouse: { seconds: 0.8, fall: 3.6, wet: 0.22 },
+  fireside: { seconds: 1.3, fall: 3.4, wet: 0.26 },
+};
 
 // The opening as it is played, for a cleared board: [note, beats], 0 a rest.
 const OPENING = [
@@ -336,14 +383,36 @@ export class Sound {
   }
 
   // A bell: partials that are not quite in tune with each other, ringing long.
-  bell(f, at, gain = 0.2, ring = 3) {
+  bell(f, at, gain = 0.2, ring = 3, into = this.bus) {
     for (const [k, a] of [[0.5, 0.5], [1, 1], [1.19, 0.45], [1.56, 0.35], [2, 0.3], [2.51, 0.2], [2.66, 0.18], [3.01, 0.12]]) {
-      this.ping(f * k, at, { gain: gain * a, attack: 0.002, fall: ring / Math.sqrt(k) });
+      this.ping(f * k, at, { gain: gain * a, attack: 0.002, fall: ring / Math.sqrt(k), into });
     }
   }
 
+  // A music box: a steel tine plucked by a pin, a pure note ringing on, and
+  // a bright ping over it that dies at once, the tine's next partial, far
+  // above it and out of tune with it.
+  musicBox(midi, at, gain = 0.18, into = this.bus) {
+    const f = hz(midi);
+    this.ping(f, at, { gain, attack: 0.002, fall: 1.7, into });
+    this.ping(f * 2, at, { gain: gain * 0.1, attack: 0.002, fall: 0.4, into });
+    if (f * 6.27 < 15000) this.ping(f * 6.27, at, { gain: gain * 0.3, attack: 0.001, fall: 0.1, into });
+  }
+
+  // Sleigh bells shaken once: a cluster of little bells, each ringing high
+  // and briefly, and the rattle of the pellets inside them.
+  jingle(at, gain = 0.05, into = this.master) {
+    for (let k = 0; k < 7; k++) {
+      const t = at + Math.random() * 0.03;
+      const f = 3800 + Math.random() * 2600;
+      this.ping(f, t, { gain: gain * (0.6 + Math.random() * 0.4), attack: 0.001, fall: 0.18, into });
+      this.ping(f * 1.48, t, { gain: gain * 0.4, attack: 0.001, fall: 0.1, into });
+    }
+    this.rustle(at, 0.12, 9000, 6000, gain * 0.8, into);
+  }
+
   // Noise through a moving filter: a rustle or a swish.
-  rustle(at, length = 0.35, from = 800, to = 3000, gain = 0.12) {
+  rustle(at, length = 0.35, from = 800, to = 3000, gain = 0.12, into = this.master) {
     const src = this.ctx.createBufferSource();
     src.buffer = this.noise;
     const f = this.ctx.createBiquadFilter();
@@ -355,7 +424,7 @@ export class Sound {
     g.gain.setValueAtTime(0, at);
     g.gain.linearRampToValueAtTime(gain, at + length * 0.3);
     g.gain.exponentialRampToValueAtTime(0.0001, at + length);
-    src.connect(f).connect(g).connect(this.master);
+    src.connect(f).connect(g).connect(into);
     src.start(at);
     src.stop(at + length + 0.05);
   }
@@ -374,6 +443,7 @@ export class Sound {
   match() {
     if (!this.on) return;
     if (this.set === 'thanksgiving') this.banjo(RIVER[this.next % RIVER.length][0], this.now);
+    else if (this.set === 'christmas') this.musicBox(TWELVE_DAYS[this.next % TWELVE_DAYS.length][0] + 12, this.now);
     else this.organ(TOCCATA[this.next % TOCCATA.length], this.now, 0.38);
     this.next++;
   }
@@ -382,10 +452,12 @@ export class Sound {
     if (this.on) this.rustle(this.now, 0.22, 2400, 700, 0.08);
   }
 
-  // A shuffle: a rustle, or on Thanksgiving, autumn leaves raked over.
+  // A shuffle: a rustle, or on Thanksgiving, autumn leaves raked over, and
+  // at Christmas, sleigh bells shaken.
   shuffle() {
     if (!this.on) return;
     if (this.set === 'thanksgiving') return this.leaves();
+    if (this.set === 'christmas') return [0, 0.11, 0.2, 0.33].forEach((t, k) => this.jingle(this.now + t, 0.05 - k * 0.006));
     for (let k = 0; k < 3; k++) this.rustle(this.now + k * 0.09, 0.3, 600, 3200, 0.1);
   }
 
@@ -399,18 +471,25 @@ export class Sound {
     }
   }
 
-  // A hint: two high notes, or on Thanksgiving, a small handbell.
+  // A hint: two high notes, or on Thanksgiving, a small handbell, and at
+  // Christmas, a little silver bell.
   hint() {
     if (!this.on) return;
     if (this.set === 'thanksgiving') return this.bell(1568, this.now, 0.06, 1.4);
+    if (this.set === 'christmas') return this.bell(2093, this.now, 0.045, 1.2);
     this.ping(1318.5, this.now, { gain: 0.06, fall: 0.5 });
     this.ping(1975.5, this.now + 0.09, { gain: 0.05, fall: 0.6 });
   }
 
-  // A treat: chimes running up, or on Thanksgiving, the dinner triangle.
+  // A treat: chimes running up, or on Thanksgiving, the dinner triangle,
+  // and at Christmas, a present unwrapped: the paper torn, and ta-da.
   treat() {
     if (!this.on) return;
     if (this.set === 'thanksgiving') return this.triangle();
+    if (this.set === 'christmas') {
+      [0, 0.12].forEach((t) => this.rustle(this.now + t, 0.14, 2500, 6500, 0.08));
+      return [72, 76, 79, 84].forEach((note, k) => this.musicBox(note + 12, this.now + 0.3 + k * 0.08, 0.13));
+    }
     [1318.5, 1661.2, 1975.5, 2637].forEach((f, k) => this.ping(f, this.now + k * 0.07, { gain: 0.08, fall: 0.5 }));
   }
 
@@ -726,10 +805,16 @@ export class Sound {
   }
 
   // No pairs left: a low chord on the organ, or on Thanksgiving, the
-  // turkey has the last laugh.
+  // turkey has the last laugh, and at Christmas, a lump of coal drops into
+  // the stocking: a dull thud, and its dust.
   stuck() {
     if (!this.on) return;
     if (this.set === 'thanksgiving') return this.gobble();
+    if (this.set === 'christmas') {
+      this.ping(65, this.now, { gain: 0.3, attack: 0.003, fall: 0.22, into: this.master });
+      this.ping(110, this.now, { gain: 0.12, attack: 0.003, fall: 0.12, into: this.master });
+      return this.rustle(this.now + 0.02, 0.28, 900, 250, 0.08);
+    }
     this.organ(38, this.now, 1.2, 0.1);
     this.organ(45, this.now, 1.2, 0.08);
   }
@@ -762,12 +847,16 @@ export class Sound {
   // A cleared board, its music played as a song of its own, to fade when
   // the next board comes: Halloween's, the Toccata's whole opening and a
   // chord to end on; Thanksgiving's, the last line of its song, and on the
-  // last day of the week (`last`), We Gather Together.
-  win(last = false) {
+  // last day of the week (`last`), We Gather Together; Christmas's, the
+  // verse of its day (`day`, from 0 for the first), and on Twelfth Night,
+  // the twelfth verse whole, and the church bells. The turtle, with no day,
+  // plays the fifth verse, whose notes its matches have played.
+  win({ day = -1, last = false } = {}) {
     if (!this.on) return;
     const into = this.newSong();
     if (this.set === 'thanksgiving' && last) this.gather(into);
     else if (this.set === 'thanksgiving') this.river(into);
+    else if (this.set === 'christmas') this.carol(day >= 0 ? day + 1 : 5, last, into);
     else {
       const beat = 0.32;
       let at = this.now + 0.1;
@@ -800,6 +889,26 @@ export class Sound {
     const end = start + RIVER_CHORDS.length * 3 * eighth;
     [48, 55, 60, 64, 67, 72].forEach((note, k) => this.guitar(note, end + k * 0.025, 0.07, into));
     this.banjo(72, end + 0.15, 0.16, into);
+  }
+
+  // A verse of The Twelve Days of Christmas on the music box, an octave up,
+  // a low tine on each phrase's bass notes and sleigh bells shaken with
+  // them; `whole`, every gift counting down, then the church bells ringing
+  // Christmas out, down the scale and down again.
+  carol(day, whole, into) {
+    const beat = 0.375;
+    let at = this.now + 0.1;
+    for (const [notes, bass] of verse(day, !whole)) {
+      for (const [note, b] of bass) {
+        this.musicBox(note + 12, at + b * beat, 0.11, into);
+        this.jingle(at + b * beat, 0.022, into);
+      }
+      for (const [note, beats] of notes) {
+        this.musicBox(note + 12, at, 0.17, into);
+        at += beats * beat;
+      }
+    }
+    if (whole) [77, 76, 74, 72, 70, 69, 77, 76, 74, 72, 70, 65].forEach((note, k) => this.bell(hz(note), at + 0.2 + k * 0.3, 0.035, 2.4, into));
   }
 
   // We Gather Together on the reed organ, its four voices, for the week seen
