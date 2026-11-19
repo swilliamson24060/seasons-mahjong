@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse } from '../js/ui/sound.js';
+import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST } from '../js/ui/sound.js';
 
 // A Sound playing into an offline context, `seconds` long, for Thanksgiving
 // or another holiday: what it plays is rendered, to be measured as numbers.
@@ -51,16 +51,48 @@ test("We Gather Together's four voices keep time together, sixteen bars of 3/4 f
   equal(GATHER[3].at(-1)[0] % 12, 2, 'the bass ending on D');
 });
 
-test("each holiday's music goes with its tiles: Thanksgiving's and Christmas's on their own, Halloween's on the others until theirs come", () => {
+test("each holiday's music goes with its tiles: Thanksgiving's, Christmas's and New Year's on their own, Halloween's on the others until theirs come", () => {
   const s = new Sound();
-  for (const set of ['thanksgiving', 'christmas']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year']) {
     s.use(set);
     equal(s.set, set, set);
   }
-  for (const set of ['new-year', 'groundhog', 'halloween']) {
+  for (const set of ['groundhog', 'halloween']) {
     s.use(set);
     equal(s.set, 'halloween', set);
   }
+});
+
+test('Auld Lang Syne keeps time: an upbeat and sixteen bars of 4/4, verse and chorus, its last line and its chorus from where they begin', () => {
+  const beats = (notes) => notes.reduce((n, [, b]) => n + b, 0);
+  equal(AULD.length, 56, 'notes');
+  equal(beats(AULD), 1 + 15 * 4 + 3, 'beats: an upbeat, and the last bar a beat short for it');
+  equal(beats(AULD.slice(0, CHORUS + 1)) % 4, 1, 'the chorus coming in on the last beat of a bar');
+  equal(beats(AULD.slice(0, LAST_TOAST + 1)) % 4, 1, 'its last line too');
+  equal(beats(AULD.slice(LAST_TOAST)), 16, "the last line's beats");
+  equal(AULD.slice(CHORUS + 1, CHORUS + 5).join(' '), AULD.slice(LAST_TOAST + 1, LAST_TOAST + 5).join(' '), "the chorus and its last line opening alike, as the song's lines do");
+  equal(AULD.at(-1).join(), '65,3', 'ending on F, its keynote, held');
+});
+
+test("New Year's sounds are all heard, and none too loud", async () => {
+  const sounds = {
+    'a match': [2.5, (s) => s.match()],
+    'a cleared board': [13, (s) => s.win({ day: 3 })],
+    "New Year's Day cleared, the countdown seen through": [25, (s) => s.win({ day: 10, last: true })],
+    'midnight': [6.5, (s) => s.newYear()],
+    'a shuffle': [1, (s) => s.shuffle()],
+    'a hint': [1.2, (s) => s.hint()],
+    'a treat': [1.6, (s) => s.treat()],
+    'no pairs left': [1.2, (s) => s.stuck()],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('new-year', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
 test("The Twelve Days of Christmas keeps time, each verse counting its gifts down to the partridge in a pear tree", () => {
