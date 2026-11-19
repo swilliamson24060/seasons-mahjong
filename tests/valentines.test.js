@@ -5,6 +5,8 @@ import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
 import { LOVE_STORY, chapterOf } from '../js/valentines.js';
 import { theme } from '../js/themes.js';
+import { FACE_SETS, faceName } from '../js/ui/faces.js';
+import { FACE } from '../js/engine/tiles.js';
 
 const FIRST = LOVE_STORY[0];
 
@@ -45,6 +47,11 @@ test("Cupid's bow reads as a bow and arrow: the head above the bow, the bow open
   // The arrow runs down the middle, its shaft raised three high.
   const shaft = [...BOW.x.keys()].filter((i) => BOW.x[i] === 8 && BOW.y[i] >= 6 && BOW.y[i] <= 18);
   equal(shaft.length, 7 * 3, 'tiles of the shaft, from below the head down to the string, on three layers');
+});
+
+test("Valentine's tiles are named as the holiday is, so that the turtle wears them too with Valentine's chosen, and a tile left without a partner is a broken heart", () => {
+  check(FACE_SETS.includes(theme('valentines').id), "no set of faces called as Valentine's Day is");
+  equal(faceName(FACE['lost-soul'], 'valentines'), 'Broken heart', 'the lost soul, for Be mine');
 });
 
 test("Cupid's bow's deals can be won in the order they were dealt, with the bow's string free from the start", () => {

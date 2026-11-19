@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER } from '../js/ui/sound.js';
+import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER, LIEBESTRAUM, SECOND_TIME, DREAM_LINE, DREAM_HARMONY } from '../js/ui/sound.js';
 
 // A Sound playing into an offline context, `seconds` long, for Thanksgiving
 // or another holiday: what it plays is rendered, to be measured as numbers.
@@ -53,12 +53,59 @@ test("We Gather Together's four voices keep time together, sixteen bars of 3/4 f
 
 test("each holiday's music goes with its tiles, every one made having its own, and Halloween's the rest until theirs come", () => {
   const s = new Sound();
-  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'halloween']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'halloween']) {
     s.use(set);
     equal(s.set, set, set);
   }
-  s.use('valentines');
+  s.use('showers');
   equal(s.set, 'halloween', 'a holiday whose boards are still to come');
+});
+
+test("Liszt's Liebestraum keeps time: an upbeat and twelve bars of 6/4, its harmony a chord to each half bar, ending on A flat", () => {
+  const beats = (notes) => notes.reduce((n, [, b]) => n + b, 0);
+  equal(beats(LIEBESTRAUM), 1 + 12 * 6, 'beats: an upbeat and twelve bars');
+  equal(DREAM_HARMONY.length, 12 * 2, 'chords, one to each half bar');
+  check(DREAM_HARMONY.every(([, ripple]) => ripple.length === 5), "a chord not rippling through its half bar, an eighth a note after the bass's");
+  equal(beats(LIEBESTRAUM.slice(0, SECOND_TIME)), 6 * 6, "the second time's upbeat on the sixth bar's last beat");
+  equal(beats(LIEBESTRAUM.slice(0, DREAM_LINE)), 1 + 8 * 6, 'the last line from the ninth bar');
+  equal(LIEBESTRAUM.slice(1, 9).join(' '), LIEBESTRAUM.slice(SECOND_TIME + 1, SECOND_TIME + 9).join(' '), 'the second time opening as the first does');
+  equal(Math.max(...LIEBESTRAUM.map(([note]) => note)), 77, 'the high F the second time rises to');
+  equal(LIEBESTRAUM.at(-1).join(), '68,6', 'ending on A flat, held');
+  const [bass, ripple] = DREAM_HARMONY.at(-1);
+  check([bass, ...ripple].every((note) => [8, 0, 3].includes(note % 12)), 'the last chord not A flat major');
+  equal(bass % 12, 8, 'the bass ending on A flat');
+});
+
+test('the harp plays in tune', async () => {
+  let worst = 0;
+  for (const midi of [44, 56, 68, 72, 77]) {
+    const data = await render('valentines', 0.5, (s) => s.harp(midi, 0));
+    const expected = 440 * 2 ** ((midi - 69) / 12);
+    const cents = 1200 * Math.log2(pitchOf(data, 48000, expected) / expected);
+    worst = Math.max(worst, Math.abs(cents));
+    check(Math.abs(cents) < 8, `note ${midi} out by ${cents.toFixed(1)} cents`);
+  }
+  return `within ${worst.toFixed(1)} cents`;
+});
+
+test("Valentine's sounds are all heard, and none too loud", async () => {
+  const sounds = {
+    'a match': [2, (s) => s.match()],
+    'a chapter cleared': [17, (s) => s.win({ day: 0 })],
+    'the question popped and answered': [26, (s) => s.win({ day: 7, last: true })],
+    'a shuffle': [1, (s) => s.shuffle()],
+    'a hint': [1.6, (s) => s.hint()],
+    'a treat': [2, (s) => s.treat()],
+    'no pairs left': [2.2, (s) => s.stuck()],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('valentines', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
 test("Vivaldi's Spring and Winter keep time, their voices together, Spring ending on E major and Winter on F minor", () => {

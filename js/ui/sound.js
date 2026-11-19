@@ -20,8 +20,11 @@
 // Vivaldi's Four Seasons, Spring for an early spring and Winter for six
 // more weeks of it, with the groundhog digging for a shuffle, a cardinal's
 // whistle for a hint, a candle lit for Candlemas for a treat, and the
-// groundhog seeing his shadow for no pairs left. The others play
-// Halloween's until theirs come.
+// groundhog seeing his shadow for no pairs left; Valentine's Day's a harp
+// in a drawing room playing Liszt's Liebestraum, his dream of love, with
+// love letters shuffled for a shuffle, a kiss blown for a hint, a box of
+// chocolates opened for a treat and a heart breaking for no pairs left.
+// The others play Halloween's until theirs come.
 
 // The opening, a note for each match: the mordent on A and its run down to
 // D, three times, an octave lower each time.
@@ -171,6 +174,61 @@ export const WINTER = [
 ];
 const WINTER_END = [41, 53, 60, 65, 68, 80];
 
+// Valentine's Day's music, Liszt's Liebestraum No. 3, his dream of love,
+// of 1850, in A flat, in 6/4: the theme the nocturne is known by, from its
+// upbeat, sung twice, the second time rising to its high F. The tune, as
+// [note, beats], 0 a rest, an octave above Liszt's, where it sings over
+// its harmony on the harp; a note of it for each match. For a chapter of
+// the love story cleared, its last line, from the ninth bar; and when the
+// question is popped and answered, its whole second time, from the upbeat.
+export const LIEBESTRAUM = [
+  [63, 1],
+  [72, 3], [72, 3],
+  [72, 5], [72, 1],
+  [72, 2], [72, 1], [73, 2], [72, 1],
+  [72, 3], [65, 1], [0, 1], [65, 1],
+  [65, 1], [67, 1], [68, 1], [72, 2], [70, 1],
+  [68, 5], [63, 1],
+  [72, 3], [72, 3],
+  [72, 5], [72, 1],
+  [72, 2], [72, 1], [73, 2], [72, 1],
+  [77, 5], [65, 1],
+  [65, 1], [67, 1], [68, 1], [72, 2], [70, 1],
+  [68, 6],
+];
+export const SECOND_TIME = 19; // the upbeat into the theme's second time
+export const DREAM_LINE = 24; // the ninth bar, the second time's last line
+
+// Its harmony, from the first whole bar, a chord to each half bar: the
+// bass, and then the chord rippling up and back down over it, an eighth a
+// note after the bass's own, as Liszt wrote it.
+export const DREAM_HARMONY = [
+  [56, [63, 68, 72, 68, 63]], [44, [63, 68, 72, 68, 63]],
+  [55, [64, 70, 72, 70, 64]], [43, [64, 70, 72, 70, 64]],
+  [53, [63, 69, 72, 69, 63]], [41, [63, 69, 72, 69, 63]],
+  [46, [62, 68, 72, 68, 62]], [34, [62, 68, 72, 68, 62]],
+  [39, [61, 63, 72, 63, 61]], [51, [61, 63, 67, 63, 61]],
+  [44, [60, 63, 68, 63, 60]], [32, [56, 60, 68, 51, 56]],
+  [56, [63, 68, 72, 68, 63]], [44, [63, 68, 72, 68, 63]],
+  [43, [64, 70, 72, 70, 64]], [42, [64, 70, 72, 70, 64]],
+  [41, [63, 69, 72, 69, 63]], [53, [63, 65, 72, 69, 63]],
+  [46, [62, 68, 77, 72, 68]], [34, [56, 58, 65, 62, 58]],
+  [39, [58, 61, 67, 63, 61]], [51, [61, 63, 67, 63, 61]],
+  [44, [60, 63, 68, 63, 60]], [32, [60, 68, 63, 60, 56]],
+];
+
+// The tune's notes, each with the bass it sings over, for the matches: the
+// upbeat over the first bar's.
+const DREAM_NOTES = [];
+for (let k = 0, beat = 0; k < LIEBESTRAUM.length; beat += LIEBESTRAUM[k++][1]) {
+  const [note] = LIEBESTRAUM[k];
+  if (note) DREAM_NOTES.push([note, DREAM_HARMONY[Math.max(0, Math.floor((beat - 1) / 3))][0]]);
+}
+
+// The harp swept up, two octaves of A flat's scale, for the question
+// answered.
+const GLISSANDO = [68, 70, 72, 73, 75, 77, 79, 80, 82, 84, 85, 87, 89, 91, 92];
+
 // Each holiday's music, as far as it has its own: the room it rings in.
 // Holidays not here play Halloween's.
 const MUSIC = {
@@ -179,18 +237,21 @@ const MUSIC = {
   christmas: { room: 'fireside' },
   'new-year': { room: 'ballroom' },
   groundhog: { room: 'salon' },
+  valentines: { room: 'drawing' },
 };
 
 // The rooms: a stone church's long echo for the organ and the bells, a
 // farmhouse parlour's, short and warm, for the banjo, a fireside's, a
-// little longer, for the music box, a ballroom's, wide, for the piano, and
-// a music room's for the harpsichord.
+// little longer, for the music box, a ballroom's, wide, for the piano, a
+// music room's for the harpsichord, and a drawing room's, soft, for the
+// harp.
 const ROOMS = {
   stone: { seconds: 2.8, fall: 3.2, wet: 0.35 },
   farmhouse: { seconds: 0.8, fall: 3.6, wet: 0.22 },
   fireside: { seconds: 1.3, fall: 3.4, wet: 0.26 },
   ballroom: { seconds: 2, fall: 3, wet: 0.3 },
   salon: { seconds: 1.4, fall: 3.2, wet: 0.24 },
+  drawing: { seconds: 1.8, fall: 3, wet: 0.28 },
 };
 
 // The opening as it is played, for a cleared board: [note, beats], 0 a rest.
@@ -259,6 +320,7 @@ export class Sound {
     if (next === this.set) return;
     this.set = next;
     this.next = 0;
+    this.plucks.clear(); // the last holiday's strings, not wanted again
     if (!this.ctx) return;
     for (const [name, send] of Object.entries(this.rooms)) send.gain.setTargetAtTime(name === MUSIC[next].room ? 1 : 0, this.ctx.currentTime, 0.1);
   }
@@ -401,6 +463,15 @@ export class Sound {
   harpsichord(midi, at, gain = 0.15, into = this.bus, length = 0) {
     this.string(midi, at, gain, { bright: 0.95, keep: 0.996, pick: 0.08, seconds: 1.5 }, into, null, length);
     if (midi < 84) this.string(midi + 12, at, gain * 0.4, { bright: 0.95, keep: 0.994, pick: 0.12, seconds: 1.1 }, into, null, length);
+  }
+
+  // A harp: a gut string plucked by a fingertip, halfway between round and
+  // bright, ringing on, the low strings longest, and rung down to a whisper
+  // by the time its buffer ends.
+  harp(midi, at, gain = 0.16, into = this.bus) {
+    const seconds = midi < 50 ? 2.6 : midi < 72 ? 2 : 1.4;
+    const keep = +(0.03 ** (1 / (hz(midi) * seconds))).toFixed(6);
+    this.string(midi, at, gain, { bright: 0.4, keep, pick: 0.3, seconds }, into);
   }
 
   // A whistle: a pure note sliding from one pitch to another, a bird's, or
@@ -593,7 +664,12 @@ export class Sound {
     else if (this.set === 'christmas') this.musicBox(TWELVE_DAYS[this.next % TWELVE_DAYS.length][0] + 12, this.now);
     else if (this.set === 'new-year') this.piano(AULD[this.next % AULD.length][0], this.now, 0.17);
     else if (this.set === 'groundhog') this.harpsichord(SPRING[0][this.next % SPRING[0].length][0], this.now);
-    else this.organ(TOCCATA[this.next % TOCCATA.length], this.now, 0.38);
+    else if (this.set === 'valentines') {
+      // the tune's next note over its bass, the lowest strings an octave up
+      const [note, bass] = DREAM_NOTES[this.next % DREAM_NOTES.length];
+      this.harp(note, this.now, 0.2);
+      this.harp(bass < 44 ? bass + 12 : bass, this.now, 0.09);
+    } else this.organ(TOCCATA[this.next % TOCCATA.length], this.now, 0.38);
     this.next++;
   }
 
@@ -612,6 +688,11 @@ export class Sound {
       // the groundhog digging: his claws scraping, and a clod of earth landing
       for (let k = 0; k < 6; k++) this.rustle(this.now + k * 0.1 + Math.random() * 0.03, 0.08, 1500, 450, 0.1);
       return this.ping(95, this.now + 0.62, { gain: 0.1, attack: 0.002, fall: 0.09, into: this.master });
+    }
+    if (this.set === 'valentines') {
+      // love letters shuffled: a riffle of envelopes, and the pile squared up
+      for (let k = 0; k < 16; k++) this.rustle(this.now + k * 0.028 + Math.random() * 0.008, 0.035, 3200 + Math.random() * 1500, 2000, 0.24);
+      return this.rustle(this.now + 0.52, 0.08, 900, 500, 0.26);
     }
     for (let k = 0; k < 3; k++) this.rustle(this.now + k * 0.09, 0.3, 600, 3200, 0.1);
   }
@@ -635,6 +716,14 @@ export class Sound {
     if (this.set === 'christmas') return this.bell(2093, this.now, 0.045, 1.2);
     if (this.set === 'new-year') return this.bell(2794, this.now, 0.045, 0.9);
     if (this.set === 'groundhog') return [0, 0.3].forEach((t) => this.whistle(this.now + t, 3900, 2400, 0.22)); // a cardinal: cheer, cheer
+    if (this.set === 'valentines') {
+      // a kiss blown: the lips' smack, a breath after it, and a twinkle on
+      // the harp's top string
+      this.rustle(this.now, 0.025, 1900, 1100, 0.45);
+      this.ping(1300, this.now + 0.004, { gain: 0.12, attack: 0.001, fall: 0.03, into: this.master });
+      this.rustle(this.now + 0.05, 0.28, 1500, 600, 0.09);
+      return this.harp(92, this.now + 0.14, 0.12, this.master);
+    }
     this.ping(1318.5, this.now, { gain: 0.06, fall: 0.5 });
     this.ping(1975.5, this.now + 0.09, { gain: 0.05, fall: 0.6 });
   }
@@ -660,6 +749,12 @@ export class Sound {
       this.rustle(this.now, 0.12, 2200, 5200, 0.09);
       this.rustle(this.now + 0.1, 0.6, 500, 800, 0.04);
       return [76, 80, 83].forEach((note, k) => this.harpsichord(note, this.now + 0.3 + k * 0.04, 0.09));
+    }
+    if (this.set === 'valentines') {
+      // a box of chocolates opened: its lid lifted off, and the harp swept
+      // up A flat's chord
+      this.rustle(this.now, 0.22, 700, 1600, 0.07);
+      return [68, 72, 75, 80, 84, 87, 92].forEach((note, k) => this.harp(note, this.now + 0.24 + k * 0.045, 0.1));
     }
     [1318.5, 1661.2, 1975.5, 2637].forEach((f, k) => this.ping(f, this.now + k * 0.07, { gain: 0.08, fall: 0.5 }));
   }
@@ -994,6 +1089,14 @@ export class Sound {
       for (let k = 0; k < 7; k++) this.rustle(this.now + 0.4 + k * 0.06, 0.05, 1600 - k * 120, 500, 0.08 * (1 - k / 9));
       return this.ping(80, this.now + 0.85, { gain: 0.12, attack: 0.002, fall: 0.1, into: this.master });
     }
+    if (this.set === 'valentines') {
+      // a heart breaking: a brittle crack, and two notes falling on the
+      // harp, a sigh
+      this.rustle(this.now, 0.04, 5000, 2500, 0.2);
+      for (const f of [2300, 3700, 5100]) this.ping(f, this.now, { gain: 0.04, attack: 0.001, fall: 0.06, into: this.master });
+      this.harp(64, this.now + 0.3, 0.2);
+      return this.harp(63, this.now + 0.8, 0.2);
+    }
     this.organ(38, this.now, 1.2, 0.1);
     this.organ(45, this.now, 1.2, 0.08);
   }
@@ -1033,7 +1136,9 @@ export class Sound {
   // the last line of Auld Lang Syne, and with the countdown seen through,
   // its whole chorus, the party horns and the cheers. Groundhog Day's, as
   // the groundhog forecasts: an early spring (`spring`), Spring's opening,
-  // and six more weeks of winter, Winter's.
+  // and six more weeks of winter, Winter's. Valentine's, the last line of
+  // Liszt's dream of love, and with the question popped on the last board
+  // and answered, its whole second time and the harp swept up.
   win({ day = -1, last = false, spring = false } = {}) {
     if (!this.on) return;
     const into = this.newSong();
@@ -1042,6 +1147,7 @@ export class Sound {
     else if (this.set === 'christmas') this.carol(day >= 0 ? day + 1 : 5, last, into);
     else if (this.set === 'new-year') this.auld(last ? CHORUS : LAST_TOAST, last, into);
     else if (this.set === 'groundhog') this.season(spring, into);
+    else if (this.set === 'valentines') this.dream(last ? SECOND_TIME : DREAM_LINE, last, into);
     else {
       const beat = 0.32;
       let at = this.now + 0.1;
@@ -1147,6 +1253,34 @@ export class Sound {
       end = Math.max(end, at);
     });
     if (!spring) WINTER_END.forEach((note, k) => this.harpsichord(note, end + k * 0.03, 0.1, into));
+  }
+
+  // Liebestraum on the harp, from the tune's note `from` to its end: the
+  // tune over its harmony, each half bar's bass and then its chord rippling
+  // up and back down, the tune the loudest; and at its end the chord of A
+  // flat spread up the harp, or, the question answered, the harp swept up
+  // two octaves first.
+  dream(from, answered, into) {
+    const beat = 0.55;
+    const start = this.now + 0.1;
+    const first = LIEBESTRAUM.slice(0, from).reduce((n, [, b]) => n + b, 0); // the tune's beat it begins on
+    let t = 0;
+    for (const [note, beats] of LIEBESTRAUM.slice(from)) {
+      if (note) this.harp(note, start + t * beat, 0.17, into);
+      t += beats;
+    }
+    DREAM_HARMONY.forEach(([bass, ripple], half) => {
+      const at = 1 + half * 3 - first; // the half bar's first beat, from the start
+      if (at < 0) return;
+      this.harp(bass, start + at * beat, 0.11, into);
+      ripple.forEach((note, k) => this.harp(note, start + (at + 0.5 + k * 0.5) * beat, 0.055, into));
+    });
+    let end = start + t * beat;
+    if (answered) {
+      GLISSANDO.forEach((note, k) => this.harp(note, end + k * 0.04, 0.08 - k * 0.002, into));
+      end += 0.9;
+    }
+    [44, 51, 56, 60, 63, 68, 72].forEach((note, k) => this.harp(note, end + k * 0.06, k ? 0.08 : 0.11, into));
   }
 
   // We Gather Together on the reed organ, its four voices, for the week seen

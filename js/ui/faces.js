@@ -4,6 +4,7 @@ import { THANKSGIVING } from './thanksgiving-faces.js';
 import { CHRISTMAS } from './christmas-faces.js';
 import { NEW_YEAR_FACES } from './newyear-faces.js';
 import { GROUNDHOG_FACES } from './groundhog-faces.js';
+import { VALENTINE_FACES } from './valentine-faces.js';
 
 // The faces, drawn in code as SVG symbols on a 60 by 80 tile and gathered in
 // one hidden sprite that every tile points into. Outlines and small dark
@@ -15,14 +16,15 @@ import { GROUNDHOG_FACES } from './groundhog-faces.js';
 // tiles.js says, in its own way and with its own names: Halloween's, Boneyard's
 // own, here, whose names are tiles.js's, Thanksgiving's
 // (thanksgiving-faces.js), Christmas's (christmas-faces.js), New Year's
-// (newyear-faces.js) and Groundhog Day's (groundhog-faces.js). A board says
-// which set its tiles wear.
+// (newyear-faces.js), Groundhog Day's (groundhog-faces.js) and Valentine's
+// Day's (valentine-faces.js). A board says which set its tiles wear.
 const SETS = {
   halloween: { prefix: 'face-', draw: (f) => draw(f), index: 'index' },
   thanksgiving: { prefix: 'face-tg-', index: 'index-tg', ...THANKSGIVING },
   christmas: { prefix: 'face-xm-', index: 'index-xm', ...CHRISTMAS },
   'new-year': { prefix: 'face-ny-', index: 'index-ny', ...NEW_YEAR_FACES },
   groundhog: { prefix: 'face-gh-', index: 'index-gh', ...GROUNDHOG_FACES },
+  valentines: { prefix: 'face-vl-', index: 'index-vl', ...VALENTINE_FACES },
 };
 
 // The groups with an index in a corner, in the group's colour, which the tile
@@ -97,8 +99,8 @@ function draw(f) {
 
 // The index, in its group's colour in this set: --index-eyes and so on for
 // Halloween's, --index-tg-eyes for Thanksgiving's, --index-xm-eyes for
-// Christmas's, --index-ny-eyes for New Year's and --index-gh-eyes for
-// Groundhog Day's.
+// Christmas's, --index-ny-eyes for New Year's, --index-gh-eyes for
+// Groundhog Day's and --index-vl-eyes for Valentine's.
 function index(f, set) {
   if (!indexed(f)) return '';
   const ring = 'stroke:var(--face-1);stroke-width:4;stroke-linejoin:round;paint-order:stroke';

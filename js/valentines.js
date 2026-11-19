@@ -9,8 +9,8 @@ import { BOW } from './engine/layouts.js';
 // halfway and every tile turns over. Each chapter is as Thanksgiving's days
 // are (thanksgiving.js says what each part is for). PLAN.md has the story's
 // boards and twists, and tools/valentine-drafts.js the boards still to be
-// made, drawn. Until Valentine's own tiles are drawn, its boards wear
-// Halloween's.
+// made, drawn. Its boards wear Valentine's own tiles (ui/valentine-faces.js)
+// and play its music, Liszt's Liebestraum on a harp (ui/sound.js).
 
 export const LOVE_STORY = [
   {

@@ -8,7 +8,7 @@ Mah Jong solitaire through the year: boards for each of the year's holidays and 
 |---|---|---|---|---|
 | New Year's | January 1 | December 1 | gold, under a midnight blue | the countdown's ten boards and New Year's Day, in the menu |
 | Groundhog Day | February 2 | all year, every year | ice blue, on a winter sky | the board of the day, in the menu |
-| Valentine's Day | February 14 | February 1 | pink, on deep rose | a love story: eight boards, planned |
+| Valentine's Day | February 14 | February 1 | pink, on deep rose | a love story: eight boards, planned, the first made, with its tiles and music |
 | Start of Spring | March 20, the usual day of the equinox | March 1 | leaf green, on deep green | next |
 | April Showers | April 1 to May 31: April's showers, then May's flowers | March 1 | lilac, on rain grey | from showers to flowers: eight boards, planned |
 | Summer Beach Season | Memorial Day to Labor Day | May 1 | sun yellow, on sea blue | next |
@@ -523,10 +523,10 @@ Eight boards, a love story told from Cupid taking aim to "be mine", each board a
 - They are to be reached in turn, as Christmas's twelve days are, and open with Valentine's Day, on February 1st.
 - Each board is shaped by its moment, and the boards grow through the story, from 72 tiles to the full set of 144, all nine across, for phones held upright: on a Galaxy S25+ held upright their tiles come out 37 to 40px wide.
 - The first board is the gentle start, with no twist, as the first day's and the 10 are. The last, Be mine, is planned from the first: halfway through, the question is popped and every tile turns over, as at the Long Night's midnight and on Twelfth Night, and a tile left without a partner is a broken heart, matching only another broken heart. The twists between are planned below, each to be tried and measured as its board is made, as Christmas's and New Year's were.
-- Valentine's boards are to wear Valentine's own tiles (below), wherever they are played, as the twelve days' wear Christmas's. With Valentine's chosen, the turtle wears them too.
+- Valentine's boards wear Valentine's own tiles (below), wherever they are played, as the twelve days' wear Christmas's, and play its music, Liszt's Liebestraum on a harp. With Valentine's chosen, the turtle wears them too, and plays it.
 - While its boards are being made, each plays by its address, as the twelve days' did. With all eight made, Valentine's Day is ready, and its card in the menu is a run of days, kept in main.js's RUNS as `valentines`: the boards in order, each with its title, or its best score once played, and the Valentine's score, the bests added up. The eighth cleared, the question has its answer.
-- Its sky is pink on deep rose; each board's own, from a pink afternoon to the starry night the question is popped, is chosen as the board is made. Its music and sounds are chosen once its boards are made, as the other holidays' were.
-- Each board is drawn already, as planned on 18 November, in `tools/valentine-drafts.js`, and `tools/valentine.html` deals them in a phone's space (with Christmas's tiles, until Valentine's are drawn): each drawing's every deal tried, 100 of each, can be won in its own order. As a board is made its drawing moves to `js/engine/layouts.js`, as the first, Cupid's bow, has.
+- Its sky is pink on deep rose; each board's own, from a pink afternoon to the starry night the question is popped, is chosen as the board is made. The twists' own sounds come with their boards.
+- Each board is drawn already, as planned on 18 November, in `tools/valentine-drafts.js`, and `tools/valentine.html` deals them in a phone's space, in Valentine's tiles: each drawing's every deal tried, 100 of each, can be won in its own order. As a board is made its drawing moves to `js/engine/layouts.js`, as the first, Cupid's bow, has.
 
 | Chapter | Title | Board | Twist |
 |---|---|---|---|
@@ -547,10 +547,49 @@ Drawing the boards changed the outline of 17 November:
 - Candlelight was to score a pair in the glow, as the disco ball's beam already does; now it takes a tile in each candle's glow. Nothing is darkened, as Boneyard's Candlelight, turned down, would have been.
 - Assorted chocolates, a treat in some, would repeat the jack-o'-lanterns' treats and the hatching eggs; the box's twist is now to eat each chocolate whole before the next.
 
+### Valentine's tiles
+
+The same faces as Halloween's, matching just as those do, drawn as Valentine's: only the drawings and the names are Valentine's. `js/ui/valentine-faces.js` holds them, and `faces.html?set=valentines` shows them all.
+
+| Halloween's | Valentine's |
+|---|---|
+| Eyes, one to nine | Hearts, red, each with a shine on it; the one a great heart with a ribbon round it, a banner whose ends fold back behind it |
+| Bones | Cupid's arrows, each with a heart for its head, a golden shaft and pink feathers; the one his bow drawn, an arrow on its string pointing up, as on the first board |
+| Graves | Valentines, each a card in its envelope, the flap closed in a V and sealed with a heart, the number big on the heart |
+| The monsters (E, S, W, N) | Four valentines' puns: a bumblebee with hearts for wings (bee mine), a barn owl, his face a heart (owl always love you), a teddy bear holding a heart (I love you beary much) and a kitten, her nose a heart (you're purr-fect) |
+| Jack-o'-lantern, witch's brew, ghost | A heart-shaped box of chocolates, its lid off, a love potion, little hearts bubbling up out of it where Halloween's brew bubbled, and a paper lace valentine: red, green and white, as the dragons they stand for are |
+| The poison garden | Love's flowers: a red rose, violets, a pink carnation and a daisy, a petal falling from it, any two of which match |
+| The moons | Candy hearts, each its own pastel, saying BE MINE, XOXO, LOVE YOU and HUG ME, any two of which match |
+| The lost soul | A broken heart, its halves fallen apart, for Be mine |
+
+- The middle heart of the five and the nine is pink, as a dots tile's middle dot is red.
+- Each group's corner number has a colour of its own, by day and by night: the hearts' red, the arrows' gold, the envelopes' violet, the animals' brown fur, the leaves' green and the candies' mint.
+- The broken heart glows a tender pink, on the board and held up close, where Groundhog Day's shadow glows the blue of snow at dusk.
+
+### Valentine's music
+
+Valentine's Day is a love story, and its music is Liszt's Liebestraum No. 3 of 1850, his dream of love, on a harp in a drawing room (`js/ui/sound.js`), chosen on 19 November over Elgar's Salut d'Amour. The notes are Liszt's: the theme the nocturne is known by, from its upbeat, sung twice, the second time rising to its high F, and its harmony, a chord to each half bar rippling up and back down over its bass, taken down from flutetunes.com's file of the piece for flute and piano. It plays with Valentine's tiles: on the love story's boards, and on the turtle while Valentine's Day is the holiday chosen last.
+
+| Moment | Valentine's |
+|---|---|
+| A match | the next note of the theme on the harp, over its bass |
+| A chapter's board cleared | the theme's last line, from its ninth bar, the tune over its harmony, and the chord of A flat spread up the harp |
+| Be mine cleared, the question answered | the theme's whole second time, from the upbeat, and the harp swept up two octaves before the chord |
+| The room | a drawing room's, soft |
+| A shuffle | love letters shuffled: a riffle of envelopes, and the pile squared up |
+| A hint | a kiss blown: the lips' smack, a breath after it, and a twinkle on the harp's top string |
+| A treat | a box of chocolates opened: its lid lifted off, and the harp swept up A flat's chord |
+| No pairs left | a heart breaking: a brittle crack, and two notes falling on the harp, a sigh |
+
+- The harp is plucked as the banjo and the harpsichord are, a string in Karplus and Strong's way, by a fingertip a third of the way along, its low strings ringing longest, and each rung down to a whisper before its sound ends, so that none stops short.
+- The theme opens on a C sung again and again; its bass, falling a step at a time beneath it, goes with each note a match plays, so that the first matches move too.
+- A holiday's strings are let go when another's music comes, as the harp's are many.
+- The tests check that the theme keeps time, an upbeat and twelve bars of 6/4, its harmony a chord to each half bar, its second time opening as the first does, ending on A flat; that the harp is in tune; and play every sound offline: each heard, none too loud.
+
 ### Cupid's bow
 
 - The first board, the gentle start, with no twist: 72 tiles, the fewest of the eight, 26 free at the start. Its card tells the free-tile rule by the bow's string, whose tiles are free from the start.
-- Made on 19 November: it plays by its address, `#play/bow`, as the first chapter (`js/valentines.js`), whose card opens the story, and every one of 200 deals can be won in its own order. On a Galaxy S25+ held upright its tiles are 38px wide. Until Valentine's own tiles are drawn it wears Halloween's.
+- Made on 19 November: it plays by its address, `#play/bow`, as the first chapter (`js/valentines.js`), whose card opens the story, and every one of 200 deals can be won in its own order. On a Galaxy S25+ held upright its tiles are 38px wide. It wears Valentine's own tiles, and plays its music.
 
 ### Cupid's arrows
 
@@ -591,21 +630,6 @@ Drawing the boards changed the outline of 17 November:
 
 - The eighth board's twist, on the ring. Halfway through, after 36 of its 72 matches, the question is popped 💍 and every tile turns over; the moon shows the other side coming, and three matches before, the page says so. A player who takes pairs that match on both sides meets no broken hearts; a tile left without a partner turns into a broken heart 💔, and broken hearts match each other.
 - It's told in its own words (main.js): the clock counts down to the question (💍 3 to the question) and then shows it; the score says the answer is yes, with no broken hearts, or counts them. Every deal can be won in its own order through the turn, meeting no broken hearts, and the hints find a way through from a move of the player's own.
-
-### Valentine's tiles, to come
-
-The same faces as Halloween's, matching just as those do, to be drawn as Valentine's, once its boards are made:
-
-| Halloween's | Valentine's |
-|---|---|
-| Eyes, one to nine | Hearts, the one a great heart with a ribbon round it |
-| Bones | Cupid's arrows, the one his bow with an arrow on the string |
-| Graves | Valentines, each a card in its envelope, its number on the heart that seals it |
-| The monsters (E, S, W, N) | Four valentines' puns: a bee (bee mine), an owl (owl always love you), a bear holding a heart (I love you beary much) and a cat (you're purr-fect) |
-| Jack-o'-lantern, witch's brew, ghost | A heart-shaped box of chocolates, a love potion and a paper lace valentine, red, green and white, as the dragons they stand for are: the potion bubbles where Halloween's brew did |
-| The poison garden | Love's flowers: a red rose, a violet, a pink carnation and a daisy, any two of which match |
-| The moons | Sweethearts, candy hearts saying BE MINE, XOXO, LOVE YOU and HUG ME, any two of which match |
-| The lost soul | A broken heart, for Be mine |
 
 ## April Showers: from showers to flowers
 
@@ -668,7 +692,7 @@ The same faces as Halloween's, matching just as those do, to be drawn as April S
 
 ## Milestones
 
-**Thu 19 Nov:** Valentine's Day's first board made: Cupid's bow drawn, an arrow on its string pointing up, ready to fly, 72 tiles on four layers, the love story's gentle start, with no twist. It plays by its address, `#play/bow`, its card opening the story and telling the free-tile rule by the bow's string.
+**Thu 19 Nov:** Valentine's Day's first board made: Cupid's bow drawn, an arrow on its string pointing up, ready to fly, 72 tiles on four layers, the love story's gentle start, with no twist. It plays by its address, `#play/bow`, its card opening the story and telling the free-tile rule by the bow's string. Then Valentine's own tiles: hearts, Cupid's arrows and valentines sealed in their envelopes; a bumblebee, a barn owl, a teddy bear and a kitten, for four valentines' puns; a box of chocolates, a love potion and a lace valentine; love's flowers and candy hearts; and a broken heart for lost souls. Then its music, chosen over Elgar's Salut d'Amour: Liszt's Liebestraum on a harp in a drawing room, a note a match over its bass, the theme's last line for a chapter cleared and its whole second time when the question is answered; love letters shuffled for a shuffle, a kiss blown for a hint, a box of chocolates opened for a treat, and a heart breaking when no pairs are left.
 
 **Wed 18 Nov:** The holidays made simpler. The menu is the holidays, all twelve, to choose one, those not open greyed out with the day they open, or soon, and the turtle; choosing one goes back to its board in progress, or lists its boards, those reached so far, to choose one, and giving a board up lists them again. The card to choose which holidays to play, Your holidays and the cards of holidays not yet open are gone, and the game opens on the board left on the table. Then Thanksgiving's own music, as Halloween has Bach's Toccata on a pipe organ: a banjo in a farmhouse parlour playing "Over the River and Through the Wood" a note a match, and its last line over a guitar's oom-pah for a cleared board; "We Gather Together" on a parlour reed organ when the week is seen through; and autumn leaves for a shuffle, a handbell for a hint, the dinner triangle for a treat, and a turkey's gobble when no pairs are left. Then Christmas's: a music box by the fireside playing "The Twelve Days of Christmas", the fifth verse a note a match and the verse of its day for a cleared board, the twelfth whole with the church bells when Twelfth Night is cleared, and sleigh bells for a shuffle, a silver bell for a hint, a present unwrapped for a treat, and a lump of coal when no pairs are left. Then New Year's: a piano in a ballroom playing "Auld Lang Syne", a note a match and the chorus's last line for a cleared board, the whole chorus with party horns and cheering when the countdown is seen through, midnight's fanfare on brass, and a party horn for a shuffle, a champagne glass for a hint, a cork popping for a treat, and a party horn running out of breath when no pairs are left. Then Groundhog Day's: Vivaldi's Four Seasons on a harpsichord, Spring's tune a note a match, and for the board cleared, as the groundhog forecasts, Spring's opening for an early spring or Winter's shivering strings for six more weeks of it; the groundhog digging for a shuffle, a cardinal's whistle for a hint, a candle lit for Candlemas for a treat, and the groundhog seeing his shadow when no pairs are left. Every holiday whose boards are made now has its own music. Then Valentine's Day's boards planned and drawn, each checked by the engine and dealt in a phone's space: Cupid's bow first, the gentle start, then the pierced heart with Cupid's arrows, the envelope with sweethearts, a vase of roses in bloom, dinner by candlelight, a box of chocolates to savour one at a time, an X and an O for XOXO, and the ring.
 

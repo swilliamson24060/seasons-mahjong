@@ -365,6 +365,13 @@ body.covered #board {
   --index-gh-monster: #2e6b47;
   --index-gh-flower: #7a3fb0;
   --index-gh-moon: #b8233f;
+  /* Valentine's: the hearts' red, the arrows' gold, the envelopes' violet, the animals' fur, the leaves' green and the candies' mint. */
+  --index-vl-eyes: #c8123f;
+  --index-vl-bones: #a86a00;
+  --index-vl-graves: #6a3fb0;
+  --index-vl-monster: #7a4a1e;
+  --index-vl-flower: #2e8a3e;
+  --index-vl-moon: #1d7f8c;
   position: absolute;
   width: calc(var(--tile-w) - var(--gap));
   height: calc(var(--tile-h) - var(--gap));
@@ -767,6 +774,12 @@ body.covered #board {
   --index-gh-monster: #93e6b0;
   --index-gh-flower: #d9a6ff;
   --index-gh-moon: #ff9aae;
+  --index-vl-eyes: #ff8fa8;
+  --index-vl-bones: #ffc86b;
+  --index-vl-graves: #cfb0ff;
+  --index-vl-monster: #f0c08a;
+  --index-vl-flower: #93e6a8;
+  --index-vl-moon: #8fe3f0;
 }
 
 .tile.night svg {
@@ -778,8 +791,9 @@ body.covered #board {
 }
 
 /* Christmas's lost soul is a lump of coal, glowing as an ember does; New
-   Year's is a sleepyhead, glowing a dreamy lilac; and Groundhog Day's is
-   the groundhog's shadow, glowing the pale blue of snow at dusk. */
+   Year's is a sleepyhead, glowing a dreamy lilac; Groundhog Day's is the
+   groundhog's shadow, glowing the pale blue of snow at dusk; and
+   Valentine's is a broken heart, glowing a tender pink. */
 [data-faces='christmas'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(255, 128, 48, 0.9));
 }
@@ -790,6 +804,10 @@ body.covered #board {
 
 [data-faces='groundhog'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(176, 196, 232, 0.95));
+}
+
+[data-faces='valentines'] .tile.soul svg {
+  filter: drop-shadow(0 0 4px rgba(255, 120, 160, 0.95));
 }
 
 .tile.selected {

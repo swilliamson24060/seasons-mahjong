@@ -20,8 +20,8 @@
 <script type="module">
 // Valentine's boards as planned (tools/valentine-drafts.js), each dealt in a
 // phone's board space, a Galaxy S25+'s held upright, 384 by 585, with
-// Christmas's tiles until Valentine's own are drawn (?faces= another set),
-// and how many of its first 50 deals can be won in their own order.
+// Valentine's own tiles (?faces= another set), and how many of its first 50
+// deals can be won in their own order.
 import { DRAFTS, draftLayout } from './valentine-drafts.js';
 import { Game } from '../js/engine/game.js';
 import { sprite } from '../js/ui/faces.js';
@@ -41,7 +41,7 @@ DRAFTS.forEach((d, k) => {
   const figure = document.createElement('figure');
   figure.innerHTML = `<div class="frame"><div></div></div><figcaption>${k + 1}. ${d.title}<small>${d.name}: ${L.count} tiles on ${L.depth} layers (${layers.join(', ')}), ${g.freeTiles().length} free at the start; ${won} of 50 deals won in their own order</small></figcaption>`;
   document.getElementById('sheet').append(figure);
-  new Board(figure.querySelector('.frame > div'), g, { faceSet: p.get('faces') || 'christmas' });
+  new Board(figure.querySelector('.frame > div'), g, { faceSet: p.get('faces') || 'valentines' });
 });
 </script>
 </body>
