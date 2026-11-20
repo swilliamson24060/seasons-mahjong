@@ -474,6 +474,12 @@ export class Board {
     for (const i of landed) this.restart(this.tiles[i].el, 'landing');
   }
 
+  // A rose opens on the vase: its rose pops out as it blooms.
+  opened(tiles) {
+    this.refresh();
+    for (const i of tiles) this.restart(this.tiles[i].el, 'opening');
+  }
+
   // Cupid's arrow strikes: its couple's hearts beat as they're smitten.
   struck(tiles) {
     this.refresh();
@@ -516,6 +522,14 @@ export class Board {
       const { words, tiles } = g.messages[candy.message];
       if (g.awaited(i)) return `${name}, a candy heart saying ${candy.word}: take its pair now to say ${words.join(' ')}`;
       return `${name}, a candy heart saying ${candy.word}: take its pair, and the pair with ${words[1 - tiles.indexOf(i)]} straight after, to say ${words.join(' ')}`;
+    }
+    const rose = g.roseOf(i);
+    if (rose >= 0) {
+      const state = g.roseState(rose);
+      const matches = (n) => `${n} ${n === 1 ? 'match' : 'matches'}`;
+      if (state === 'bud') return `${name}, a rose in bud: it opens in ${matches(g.opensIn(rose))}, and taken before, it's wasted`;
+      if (state === 'bloom') return `${name}, a rose in bloom: take it with a tile of its kind within ${matches(g.bloomLeft(rose))}, for the bouquet`;
+      return `${name}, a wilted rose`;
     }
     if (g.inGlassesWay(i)) return `${name}, in the glasses' way`;
     if (g.tempting(i)) return `${name}, a sweet: leave it alone through January to keep your resolution`;
@@ -639,6 +653,16 @@ export class Board {
         delete el.dataset.word;
         delete el.dataset.message;
       }
+      // On Valentine's vase of roses, a rose in bud carries a bud; in bloom,
+      // it blushes, with a rose counting down the matches it has left,
+      // deeper at the last two; and wilted, a wilted rose.
+      const rose = g.roseOf(i);
+      const bloom = rose >= 0 ? g.roseState(rose) : null;
+      el.classList.toggle('bud', bloom === 'bud');
+      el.classList.toggle('bloom', bloom === 'bloom');
+      el.classList.toggle('fading', bloom === 'bloom' && g.bloomLeft(rose) <= 2);
+      el.classList.toggle('wilted', bloom === 'wilted');
+      if (bloom === 'bloom') el.dataset.bloom = g.bloomLeft(rose);
       el.classList.toggle('in-way', g.inGlassesWay(i)); // on New Year's 2: in the glasses' way
       // On New Year's Day, a sweet carries its treat, and through January,
       // while the resolution holds, it is a tempting pink.
@@ -649,7 +673,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

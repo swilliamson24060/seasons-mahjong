@@ -429,6 +429,33 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     if (words.length) toast(words.join(' '));
   });
+  // On Valentine's vase of roses: a rose taken in bloom joins the bouquet,
+  // one taken in bud is wasted, one left in bloom too long wilts, and every
+  // so many matches another opens.
+  game.on('rose', ({ b, gathered, wasted, opened, wilted }) => {
+    const words = [];
+    if (gathered.length) {
+      const pts = gathered.length * POINTS.rose;
+      sound.gathered();
+      board.float('🌹', b);
+      setTimeout(() => board.float(`+${pts}`, b), 500); // after the pair's own points
+      words.push(`${gathered.length > 1 ? 'Two roses' : 'A rose'} for the bouquet! ${pts} points.`);
+    }
+    if (wasted.length) {
+      sound.snip();
+      words.push(wasted.length > 1 ? 'Those roses were still in bud: wasted.' : 'That rose was still in bud: wasted.');
+    }
+    if (wilted.length) {
+      setTimeout(() => sound.wilt(), gathered.length || wasted.length ? 500 : 0);
+      words.push(wilted.length > 1 ? 'Two roses wilted before they were taken.' : 'A rose wilted before it was taken.');
+    }
+    if (opened.length) {
+      setTimeout(() => sound.bloom(), gathered.length || wasted.length || wilted.length ? 800 : 0);
+      board.opened(opened);
+      words.push(`A rose opens: take it with a tile of its kind within ${game.bloom.lasts} matches.`);
+    }
+    toast(words.join(' '));
+  });
   // On Valentine's envelope: the pair with half of a sweet nothing begins
   // it, the pair with its other half, taken straight after, says it, and
   // anything else taken first leaves it unsaid.
@@ -1472,6 +1499,9 @@ function update() {
   // On Valentine's envelope, the sweet nothings said, of them all.
   $('messages').hidden = !g.messages;
   if (g.messages) $('messages').innerHTML = `💌 <b>${g.messagesSaid}</b>/${g.messages.length}`;
+  // On Valentine's vase of roses, the roses in the bouquet, of the dozen.
+  $('roses').hidden = !g.roses;
+  if (g.roses) $('roses').innerHTML = `🌹 <b>${g.bouquet}</b>/${g.roses.length}`;
   // The lovebirds taken, on a board of turtle doves.
   $('lovebirds').hidden = !g.rules.lovebirds;
   if (g.rules.lovebirds) $('lovebirds').innerHTML = `🕊️ <b>${g.lovebirds}</b>`;

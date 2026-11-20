@@ -1,4 +1,4 @@
-import { BOW, HEART, ENVELOPE } from './engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES } from './engine/layouts.js';
 
 // Valentine's Day: a love story, eight boards told from Cupid taking aim to
 // "be mine", each board a moment of it, to be reached in turn as Christmas's
@@ -6,9 +6,13 @@ import { BOW, HEART, ENVELOPE } from './engine/layouts.js';
 // through the story, from 72 tiles to the full set of 144. The first,
 // Cupid's bow, is the gentle start, with no twist, as the first day's and
 // the 10 are; on the second his arrow has struck, and goes on striking
-// couples to be taken together (engine/cupid.js); the eighth is to be Be
-// mine, when the question is popped halfway and every tile turns over. Each chapter is as Thanksgiving's days
-// are (thanksgiving.js says what each part is for). PLAN.md has the story's
+// couples to be taken together (engine/cupid.js); on the third a secret
+// admirer's valentine comes, its sweet nothings in two halves to be taken
+// one after the other (engine/sweethearts.js); on the fourth a dozen roses,
+// each to be taken while it's in bloom (engine/roses.js); and the eighth is
+// to be Be mine, when the question is popped halfway and every tile turns
+// over. Each chapter is as Thanksgiving's days are (thanksgiving.js says
+// what each part is for). PLAN.md has the story's
 // boards and twists, and tools/valentine-drafts.js the boards still to be
 // made, drawn. Its boards wear Valentine's own tiles (ui/valentine-faces.js)
 // and play its music, Liszt's Liebestraum on a harp (ui/sound.js).
@@ -37,6 +41,14 @@ export const LOVE_STORY = [
     rules: { treats: false, ghostsFloat: false, sweethearts: true },
     sky: ['#70366e', '#240f25'],
     text: 'A valentine has come from a secret admirer, sealed with a heart. Eight tiles carry candy hearts, each with half a sweet nothing, its other half the same colour: BE and MINE, TRUE and LOVE, HUG and ME, SWEET and TALK. Take the pair with one half, and then, as the very next match, the pair with the other, and the message is said: 40 points. Take anything between, and it goes unsaid.',
+  },
+  {
+    name: 'The fourth chapter',
+    title: 'A dozen roses',
+    layout: ROSES,
+    rules: { treats: false, ghostsFloat: false, roses: { count: 12, every: 3, lasts: 6 } },
+    sky: ['#86304b', '#290d18'],
+    text: "The secret admirer sends a dozen roses, the twelve on top of the vase still in bud. From the third match one opens every three matches, from the top down, and stays in bloom for six. Take a rose in bloom with any tile of its kind, and it joins the bouquet: 20 points. A rose taken in bud is wasted, and one left too long wilts.",
   },
 ];
 

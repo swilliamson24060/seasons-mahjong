@@ -2182,6 +2182,51 @@ export const ENVELOPE = parseLayout('Envelope', [
   `,
 ]);
 
+// Valentine's Day's fourth board: a dozen roses in a vase. The twelve
+// roses raised two high over the bouquet, in four rows from the top down;
+// its leaves hanging at the sides; and the vase beneath, its neck narrow
+// and its belly round, raised at its middle. 102 tiles on three layers,
+// nine across and eleven down.
+export const ROSES = parseLayout('Vase of roses', [
+  `
+  ..#.#.#..
+  .#######.
+  #########
+  #########
+  .#######.
+  .#.###.#.
+  ..#####..
+  ...###...
+  ..#####..
+  .#######.
+  ..#####..
+  `,
+  `
+  ..v.v.v..
+  .........
+  .#.#.#.#.
+  ..v.v.v..
+  ...v.v...
+  .........
+  .........
+  .........
+  ..>>>>...
+  .>>>>>>..
+  `,
+  `
+  ..v.v.v..
+  .........
+  .#.#.#.#.
+  ..v.v.v..
+  ...v.v...
+  .........
+  .........
+  .........
+  .........
+  ...###...
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [

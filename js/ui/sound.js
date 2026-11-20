@@ -1143,6 +1143,38 @@ export class Sound {
     [84, 87, 92].forEach((note, k) => this.harp(note, this.now + 0.72 + k * 0.05, 0.08));
   }
 
+  // On Valentine's vase of roses, a rose opening: its petals unfurling, and
+  // the harp rising softly.
+  bloom() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.3, 900, 2200, 0.06);
+    [72, 75, 80].forEach((note, k) => this.harp(note, this.now + 0.05 + k * 0.09, 0.1));
+  }
+
+  // A rose for the bouquet: tissue paper rustling round it, and the chord of
+  // A flat spread up the harp.
+  gathered() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.18, 3000, 1500, 0.14);
+    this.rustle(this.now + 0.16, 0.14, 2600, 1200, 0.1);
+    [56, 63, 68, 72].forEach((note, k) => this.harp(note, this.now + 0.2 + k * 0.04, 0.11));
+  }
+
+  // A bud snipped before it opened: the secateurs' click, and a low note.
+  snip() {
+    if (!this.on) return;
+    for (const [f, gain] of [[2600, 0.1], [4100, 0.06]]) this.ping(f, this.now, { gain, attack: 0.001, fall: 0.05, into: this.master });
+    this.harp(51, this.now + 0.12, 0.16);
+  }
+
+  // A rose wilting: three notes drooping on the harp.
+  wilt() {
+    if (!this.on) return;
+    this.harp(75, this.now, 0.1);
+    this.harp(72, this.now + 0.4, 0.1);
+    this.harp(70, this.now + 0.8, 0.09);
+  }
+
   // A sweet nothing left unsaid: a little sigh on the harp, two notes
   // falling, softer than a heart breaking.
   unsaid() {

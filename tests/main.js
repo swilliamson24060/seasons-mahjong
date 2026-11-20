@@ -35,6 +35,7 @@ import './groundhog.test.js';
 import './valentines.test.js';
 import './cupid.test.js';
 import './sweethearts.test.js';
+import './roses.test.js';
 import './faces.test.js';
 import './site.test.js';
 import './score.test.js';

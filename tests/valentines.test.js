@@ -1,6 +1,6 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { BOW, HEART, ENVELOPE } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
 import { LOVE_STORY, chapterOf } from '../js/valentines.js';
@@ -11,6 +11,7 @@ import { FACE } from '../js/engine/tiles.js';
 const FIRST = LOVE_STORY[0];
 const SECOND = LOVE_STORY[1];
 const THIRD = LOVE_STORY[2];
+const FOURTH = LOVE_STORY[3];
 
 // The tiles of a layout's bottom layer in a row, given in half tiles, by
 // where each starts across.
@@ -147,6 +148,43 @@ test("the envelope's deals can be won in the order they were dealt, saying every
     for (const [a, b] of g.plan) check(g.match(a, b), `seed ${seed}: a pair of the deal's own order cannot be taken`);
     check(g.won, `seed ${seed}: not cleared`);
     equal(g.messagesSaid, 4, `seed ${seed}: sweet nothings said`);
+  }
+  return '200 deals';
+});
+
+test('the fourth chapter is a dozen roses, a vase of roses: 102 tiles on three layers, nine across and eleven down, its twelve roses in bloom one after another', () => {
+  equal(FOURTH.name, 'The fourth chapter', "the fourth chapter's name");
+  equal(FOURTH.title, 'A dozen roses', "the fourth chapter's title");
+  equal(chapterOf(ROSES), FOURTH, "the vase's chapter");
+  check(Object.keys(layouts).includes('ROSES'), 'the vase plays by its address, #play/roses');
+  equal(ROSES.count, 102, 'tiles');
+  equal(ROSES.width / 2, 9, 'tiles across');
+  equal(ROSES.height / 2, 11, 'tiles down');
+  equal(ROSES.depth, 3, 'layers');
+  check(ROSES.count > ENVELOPE.count, 'no more tiles than the envelope');
+  equal(JSON.stringify(dayOptions(FOURTH).roses), JSON.stringify({ count: 12, every: 3, lasts: 6 }), 'twelve roses, one opening every three matches, each in bloom for six');
+  check(['third match', 'every three matches', 'in bloom for six', '20 points', 'in bud is wasted', 'wilts'].every((w) => FOURTH.text.includes(w)), "the card doesn't tell how the roses open, or what one is worth");
+});
+
+test('the vase of roses reads as twelve roses raised two high over the bouquet, its leaves hanging at its sides, and the vase beneath, its neck narrow and its belly round', () => {
+  equal(across(ROSES, 0).join(), '4,8,12', 'the bouquet at its top');
+  equal(across(ROSES, 4).join(), '0,2,4,6,8,10,12,14,16', 'the bouquet at its widest');
+  equal(across(ROSES, 10).join(), '2,6,8,10,14', 'the leaves at the sides, the stems between');
+  equal(across(ROSES, 14).join(), '6,8,10', "the vase's neck");
+  equal(across(ROSES, 18).join(), '2,4,6,8,10,12,14', "the vase's belly");
+  // The roses: the twelve on top over the bouquet, each on another.
+  const top = [...ROSES.x.keys()].filter((i) => ROSES.z[i] === 2 && ROSES.y[i] < 12);
+  equal(top.length, 12, 'roses on top');
+  check(top.every((i) => [...ROSES.x.keys()].some((j) => ROSES.z[j] === 1 && ROSES.x[j] === ROSES.x[i] && ROSES.y[j] === ROSES.y[i])), 'a rose not raised two high');
+});
+
+test("the vase's deals can be won in the order they were dealt, gathering every rose", () => {
+  const options = dayOptions(FOURTH);
+  for (let seed = 1; seed <= 200; seed++) {
+    const g = new Game(ROSES, { seed, ...options });
+    for (const [a, b] of g.plan) check(g.match(a, b), `seed ${seed}: a pair of the deal's own order cannot be taken`);
+    check(g.won, `seed ${seed}: not cleared`);
+    equal(g.bouquet, 12, `seed ${seed}: roses gathered`);
   }
   return '200 deals';
 });

@@ -723,6 +723,78 @@ body.covered #board {
   animation: heartbeat 1.1s ease-out infinite;
 }
 
+/* On Valentine's vase of roses, a rose in bud carries a bud at its top
+   left, where badges go; in bloom it blushes, with a rose counting down the
+   matches it has left in bloom, deeper at the last two, and pops open as it
+   blooms; and a rose left too long wilts. */
+.tile.bud::after {
+  content: '';
+  position: absolute;
+  top: -13%;
+  left: 13%;
+  width: calc(var(--tile-w) * 0.3);
+  height: calc(var(--tile-w) * 0.42);
+  background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 42'%3E%3Cpath d='M15 28V40' stroke='%232f7a34' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M15 3C23 10 23 21 15 28C7 21 7 10 15 3Z' fill='%23d6336c' stroke='%237d1438' stroke-width='1.5'/%3E%3Cpath d='M15 29C10 28 6 24 5 18C9 21 12 23 15 23C18 23 21 21 25 18C24 24 20 28 15 29Z' fill='%233f9142' stroke='%231f5a24' stroke-width='1.2'/%3E%3C/svg%3E");
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+.tile.bloom {
+  --face-1: #fff0f3;
+  --face-2: #ffcfd9;
+  --edge: #e5909f;
+  --edge-deep: #bf6478;
+}
+
+.tile.bloom::after {
+  content: '🌹' attr(data-bloom);
+  position: absolute;
+  top: -12%;
+  left: 6%;
+  padding: 0.1em 0.24em 0.1em 0.08em;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow:
+    0 0 6px rgba(230, 60, 100, 0.85),
+    inset 0 0 0 1px #e7899f;
+  color: #a3123f;
+  font: 800 max(10px, calc(var(--tile-w) * 0.28)) / 1 system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tile.bloom.fading::after {
+  background: #ffd1de;
+  color: #8a0f35;
+}
+
+.tile.opening::after {
+  animation: bloom-open 0.7s ease-out;
+}
+
+@keyframes bloom-open {
+  0% {
+    transform: scale(0.3);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.tile.wilted::after {
+  content: '🥀';
+  position: absolute;
+  top: -11%;
+  left: 13%;
+  font-size: calc(var(--tile-w) * 0.38);
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
 @keyframes heartbeat {
   0%,
   30%,
@@ -1755,6 +1827,7 @@ body.covered #board {
   .tile.sparkler.burning::before,
   .tile.struck::before,
   .tile.awaited::before,
+  .tile.opening::after,
   .star-band.streak::before,
   .glass.clinking svg {
     animation: none;

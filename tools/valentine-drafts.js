@@ -1,5 +1,5 @@
 import { makeLayout } from '../js/engine/layout.js';
-import { BOW, HEART, ENVELOPE } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES } from '../js/engine/layouts.js';
 
 // Valentine's Day's eight boards as planned (PLAN.md), drawn as layout.js
 // reads them, to be checked and looked at (tools/valentine.html) before
@@ -79,53 +79,8 @@ export const DRAFTS = [
   // 3. A valentine in its envelope, the flap closed in a V and sealed with
   // a heart at its point: made, and drawn in js/engine/layouts.js.
   { key: 'ENVELOPE', title: 'A secret admirer', name: 'Envelope', layout: ENVELOPE },
-  // 4. A dozen roses in a vase: the twelve roses raised over the bouquet,
-  // its leaves hanging at the sides, and the vase beneath, its neck narrow
-  // and its belly round. 102 tiles on three layers, nine across.
-  {
-    key: 'ROSES',
-    title: 'A dozen roses',
-    name: 'Vase of roses',
-    layers: [
-      `
-      ..#.#.#..
-      .#######.
-      #########
-      #########
-      .#######.
-      .#.###.#.
-      ..#####..
-      ...###...
-      ..#####..
-      .#######.
-      ..#####..
-      `,
-      `
-      ..v.v.v..
-      .........
-      .#.#.#.#.
-      ..v.v.v..
-      ...v.v...
-      .........
-      .........
-      .........
-      ..>>>>...
-      .>>>>>>..
-      `,
-      `
-      ..v.v.v..
-      .........
-      .#.#.#.#.
-      ..v.v.v..
-      ...v.v...
-      .........
-      .........
-      .........
-      .........
-      ...###...
-      `,
-    ],
-  },
+  // 4. A dozen roses in a vase: made, and drawn in js/engine/layouts.js.
+  { key: 'ROSES', title: 'A dozen roses', name: 'Vase of roses', layout: ROSES },
   // 5. Dinner by candlelight: two tall candles in their candlesticks, their
   // flames above them, on the table. 108 tiles on four layers, nine across.
   {
