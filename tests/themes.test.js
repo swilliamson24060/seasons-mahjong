@@ -4,14 +4,14 @@ import { THEMES, theme, when, calendar, isOpen, opensOn, today, menuList } from 
 const day = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 const ids = (list) => list.map((e) => e.theme.id).join(' ');
 
-test("there are the twelve holidays and seasons, each once, with Halloween, Thanksgiving, Christmas, New Year's and Groundhog Day ready to play", () => {
+test("there are the twelve holidays and seasons, each once, with Halloween, Thanksgiving, Christmas, New Year's, Groundhog Day and Valentine's Day ready to play", () => {
   equal(THEMES.length, 12, 'themes');
   equal(new Set(THEMES.map((t) => t.id)).size, 12, 'different themes');
   const names = THEMES.map((t) => t.name);
   for (const name of ['Thanksgiving', 'Christmas', "New Year's", 'Groundhog Day', "Valentine's Day", 'Start of Spring', 'April Showers', 'Summer Beach Season', 'Independence Day', 'Labor Day', 'Start of Fall', 'Halloween']) {
     check(names.includes(name), `${name} is missing`);
   }
-  equal(THEMES.filter((t) => t.ready).map((t) => t.id).join(), 'new-year,groundhog,halloween,thanksgiving,christmas', 'the ones ready');
+  equal(THEMES.filter((t) => t.ready).map((t) => t.id).join(), 'new-year,groundhog,valentines,halloween,thanksgiving,christmas', 'the ones ready');
 });
 
 test('the holidays that move fall on their weekdays', () => {
@@ -52,15 +52,17 @@ test('the menu lists every holiday, those open first, then the rest, each saying
   const ids = (list) => list.map((e) => e.theme.id).join(' ');
   const november = menuList(new Date(2026, 10, 18, 12));
   equal(november.length, THEMES.length, 'the holidays listed');
-  equal(ids(november.filter((e) => e.open)), 'thanksgiving groundhog halloween', 'open on the 18th of November, in the order they come round');
-  equal(ids(november.slice(0, 3)), 'thanksgiving groundhog halloween', 'listed first');
+  equal(ids(november.filter((e) => e.open)), 'thanksgiving groundhog valentines halloween', 'open on the 18th of November, in the order they come round');
+  equal(ids(november.slice(0, 4)), 'thanksgiving groundhog valentines halloween', 'listed first');
   const note = (id) => november.find((e) => e.theme.id === id).note;
   equal(note('thanksgiving'), 'Nov 26', "an open holiday's day");
   equal(note('christmas'), 'opens Dec 1', 'a holiday whose boards are made, not yet open');
-  equal(note('valentines'), 'Feb 14 · soon', 'one whose boards are still to come');
+  equal(note('valentines'), 'Feb 14', 'another, its day months off');
+  equal(note('spring'), 'Mar 20 · soon', 'one whose boards are still to come');
   equal(note('showers'), 'Apr 1 – May 31 · soon', 'a season');
-  equal(ids(menuList(new Date(2026, 11, 10, 12)).filter((e) => e.open)), 'christmas new-year groundhog halloween thanksgiving', 'open on the 10th of December');
+  equal(ids(menuList(new Date(2026, 11, 10, 12)).filter((e) => e.open)), 'christmas new-year groundhog valentines halloween thanksgiving', 'open on the 10th of December');
   equal(ids(menuList(new Date(2027, 0, 10, 12)).filter((e) => e.open)), 'groundhog', 'with the new year, Groundhog Day alone');
+  equal(ids(menuList(new Date(2027, 1, 5, 12)).filter((e) => e.open)), 'valentines groundhog', "from the 1st of February, Valentine's Day too");
 });
 
 test('each holiday but Groundhog Day opens on the first of a month, weeks before its day', () => {

@@ -1143,6 +1143,16 @@ export class Sound {
     [84, 87, 92].forEach((note, k) => this.harp(note, this.now + 0.72 + k * 0.05, 0.08));
   }
 
+  // On Valentine's Be mine, the question popped: the ring box's lid snapping
+  // open, the harp swept up two octaves, and a hush before its chord.
+  question() {
+    if (!this.on) return;
+    this.ping(1800, this.now, { gain: 0.09, attack: 0.001, fall: 0.04, into: this.master });
+    this.rustle(this.now, 0.06, 2600, 1400, 0.14);
+    GLISSANDO.forEach((note, k) => this.harp(note, this.now + 0.15 + k * 0.045, 0.07));
+    [56, 63, 68, 72].forEach((note) => this.harp(note, this.now + 0.15 + GLISSANDO.length * 0.045 + 0.35, 0.09));
+  }
+
   // On Valentine's hugs and kisses, an XOXO: a kiss, a hug, a kiss and a
   // hug, the lips' smacks and the harp's warm chords in turn, and a twinkle
   // on its top strings.

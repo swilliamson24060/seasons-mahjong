@@ -1,4 +1,4 @@
-import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES, XO } from './engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES, XO, RING } from './engine/layouts.js';
 
 // Valentine's Day: a love story, eight boards told from Cupid taking aim to
 // "be mine", each board a moment of it, to be reached in turn as Christmas's
@@ -13,11 +13,12 @@ import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES, XO } from './engine/l
 // first date, a pair is candlelit with a tile in each candle's glow
 // (engine/candles.js); on the sixth a box of chocolates, each to be eaten
 // whole before the next (engine/chocolates.js); on the seventh hugs and
-// kisses, taken in turn for XOXOs (engine/xoxo.js); and the eighth is to be
-// Be mine, when the question is popped halfway and every tile turns over.
-// Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
-// part is for). PLAN.md has the story's boards and twists, and
-// tools/valentine-drafts.js the boards still to be made, drawn. Its boards wear Valentine's own tiles (ui/valentine-faces.js)
+// kisses, taken in turn for XOXOs (engine/xoxo.js); and the eighth is Be
+// mine, the ring, when the question is popped halfway and every tile turns
+// over, told in its own words (main.js), as Twelfth Night is. Each chapter
+// is as Thanksgiving's days are (thanksgiving.js says what each part is
+// for). PLAN.md has the story's boards and twists, and
+// tools/valentine-drafts.js has them drawn as they were planned. Its boards wear Valentine's own tiles (ui/valentine-faces.js)
 // and play its music, Liszt's Liebestraum on a harp (ui/sound.js).
 
 export const LOVE_STORY = [
@@ -76,6 +77,15 @@ export const LOVE_STORY = [
     rules: { treats: false, ghostsFloat: false, xoxo: { split: 11 } },
     sky: ['#7a2f5c', '#260d1d'],
     text: 'Hugs and kisses. A pair from the X, both its tiles in it, is a kiss; from the O, a hug. Take kisses and hugs in turn, four in a row, kiss, hug, kiss, hug or the other way round, and it makes an XOXO: 15 points. Two kisses or two hugs together, or a pair with a tile in each letter, start it again.',
+  },
+  {
+    name: 'The eighth chapter',
+    title: 'Be mine',
+    layout: RING,
+    rules: { treats: false, ghostsFloat: false, turn: 1 / 2 },
+    words: 'question',
+    sky: ['#2a1a46', '#0a0613'],
+    text: "The ring comes out, and halfway through, the question is popped: will you be mine? Every tile turns over then: hold the moon, or Space, to see the other side coming, and before then, take pairs that match on both sides. A tile left without a partner is a broken heart, and broken hearts match each other.",
   },
 ];
 

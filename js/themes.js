@@ -1,11 +1,11 @@
 // The holidays and seasons of the year, each a theme of the game: its name,
 // its icon, when it falls, and the colour it brings (the night sky behind
 // its boards, and an accent), and when its boards open. The menu lists them
-// all, to choose one to play, those not open greyed out. Five are ready to
+// all, to choose one to play, those not open greyed out. Six are ready to
 // play: Halloween's Long Night, Thanksgiving week, Christmas's twelve days,
-// New Year's countdown, with New Year's Day after it, and Groundhog Day's
-// board of the day; the others are listed, to say when they come, and their
-// boards come next.
+// New Year's countdown, with New Year's Day after it, Groundhog Day's board
+// of the day and Valentine's Day's love story; the others are listed, to
+// say when they come, and their boards come next.
 
 // When each falls, worked out for any year, as some move: a fixed day, or
 // the nth weekday of a month, counting -1 for the last.
@@ -33,7 +33,7 @@ const THURSDAY = 4;
 export const THEMES = [
   { id: 'new-year', name: "New Year's", icon: '🎉', on: fixed(1, 1), opens: fixed(12, 1), accent: '#f2c14e', sky: ['#243266', '#080b1f'], ready: true },
   { id: 'groundhog', name: 'Groundhog Day', icon: '🦫', on: fixed(2, 2), always: true, accent: '#8ccff5', sky: ['#34546b', '#0d1820'], ready: true },
-  { id: 'valentines', name: "Valentine's Day", icon: '💘', on: fixed(2, 14), opens: fixed(2, 1), accent: '#ff6b9a', sky: ['#5c2042', '#1c0913'] },
+  { id: 'valentines', name: "Valentine's Day", icon: '💘', on: fixed(2, 14), opens: fixed(2, 1), accent: '#ff6b9a', sky: ['#5c2042', '#1c0913'], ready: true },
   { id: 'spring', name: 'Start of Spring', icon: '🌷', on: fixed(3, 20), opens: fixed(3, 1), accent: '#8ad66d', sky: ['#2f6650', '#0e221b'] },
   { id: 'showers', name: 'April Showers', icon: '☔', on: fixed(4, 1), until: fixed(5, 31), opens: fixed(3, 1), accent: '#b79cff', sky: ['#4b5866', '#12171c'] },
   { id: 'summer', name: 'Summer Beach Season', icon: '🏖️', on: nth(-1, MONDAY, 5), until: nth(1, MONDAY, 9), opens: fixed(5, 1), accent: '#ffc857', sky: ['#1c6a9e', '#082338'] },

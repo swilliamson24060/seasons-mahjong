@@ -1,10 +1,10 @@
 import { makeLayout } from '../js/engine/layout.js';
-import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES, XO } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES, XO, RING } from '../js/engine/layouts.js';
 
 // Valentine's Day's eight boards as planned (PLAN.md), drawn as layout.js
 // reads them, to be checked and looked at (tools/valentine.html) before
-// each is made: not yet in the game. As a board is made, its drawing moves
-// to js/engine/layouts.js, and may change there as its twist is tried.
+// each was made. Each has been made since, its drawing moved to
+// js/engine/layouts.js, where some changed as their twists were tried.
 //
 // A board is drawn as layers, or as parts, each drawn apart and moved by
 // dx and dy half tiles, joined into one board, as the X and the O were.
@@ -29,77 +29,11 @@ export const DRAFTS = [
   // 7. Hugs and kisses, an X over an O: made, and drawn in
   // js/engine/layouts.js in two parts.
   { key: 'XO', title: 'Hugs and kisses', name: 'X and O', layout: XO },
-  // 8. A ring, its band round an open middle, and a diamond raised high on
-  // top, coming to a point where it sits on the band: the full set of 144,
-  // on six layers.
-  {
-    key: 'RING',
-    title: 'Be mine',
-    name: 'Ring',
-    layers: [
-      `
-      ..#####..
-      .#######.
-      ..#####..
-      ....#....
-      ..#####..
-      .#######.
-      ###...###
-      ##.....##
-      ###...###
-      .#######.
-      ..#####..
-      `,
-      `
-      ..>>>>...
-      .>>>>>>..
-      ..>>>>...
-      ...>>....
-      ..>>>>...
-      .>....>..
-      >>....>>.
-      >......>.
-      >>....>>.
-      .>....>..
-      ..>>>>...
-      `,
-      `
-      ..#####..
-      ..#####..
-      ...###...
-      ....#....
-      ...###...
-      ..#...#..
-      .#.....#.
-      .#.....#.
-      .#.....#.
-      ..#...#..
-      ...###...
-      `,
-      `
-      ...>>....
-      ..>>>>...
-      ...>>....
-      .........
-      ...>>....
-      .........
-      .........
-      .........
-      .........
-      .........
-      ...>>....
-      `,
-      `
-      ....#....
-      ...###...
-      ....#....
-      `,
-      `
-      .........
-      ....#....
-      `,
-    ],
-  },
+  // 8. A ring, a diamond on its band: made, and drawn in
+  // js/engine/layouts.js, its bottom layer hollow under the crown beside the
+  // diamond's middle and the crown two tiles wider, so that the peak never
+  // stands over a number.
+  { key: 'RING', title: 'Be mine', name: 'Ring', layout: RING },
 ];
 
 // A draft's cells, [x, y, layer], as layout.js reads a drawing.

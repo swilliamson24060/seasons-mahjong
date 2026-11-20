@@ -56,7 +56,8 @@ const HEAT = { hot: '🔥', warm: '🌡️', cold: '🧊' };
 // and its lost souls are lumps of coal, for the board that is left; and
 // New Year's midnight, on the 1, when the ball lands, the clock strikes
 // twelve and the new year comes in, its lost souls sleepyheads who missed
-// it. For each: the clock in the top bar, before the turn and after;
+// it; and Valentine's question, on Be mine, when the ring comes out and
+// the question is popped, its lost souls broken hearts. For each: the clock in the top bar, before the turn and after;
 // what its lost souls are; what it says at the turn, and three matches
 // before; the moon's title; the score's words; its sound; and on New
 // Year's, fireworks over the board.
@@ -114,6 +115,19 @@ const TURNS = {
     ring: () => sound.newYear(),
     fireworks: true,
   },
+  question: {
+    ahead: (n) => `💍 <b>${n}</b> to the question`,
+    after: () => '💍 Be mine?',
+    soul: '💔',
+    soulsAhead: 'Broken hearts if the tiles turned over now',
+    soulsWoke: 'Broken hearts on the board',
+    turned: () => 'The question is popped: will you be mine? The tiles turn over.',
+    woke: (n) => (n ? `${n} ${n === 1 ? 'heart breaks' : 'hearts break'}: broken hearts match each other.` : 'Not one broken heart.'),
+    prompt: 'Three matches to the question. Hold the moon to see the other side coming, and take pairs that match on both sides.',
+    moon: 'Hold to see the other side (or hold Space)',
+    score: { night: 'The answer is yes,', day: 'The answer is yes,', souls: 'Broken hearts', none: 'no broken hearts' },
+    ring: () => sound.question(),
+  },
 };
 let turnWords = TURNS.midnight; // the board in play's
 
@@ -136,7 +150,7 @@ let game = null;
 let board = null;
 let hour = -1; // the hour of the Long Night being played, or -1
 let runDay = -1; // the day being played of a run of days, Thanksgiving week, Christmas's twelve or New Year's boards, or -1; with hour, both -1 for free play
-let runId = null; // the run that day is of: 'thanksgiving', 'christmas', 'new-year' or 'groundhog' (RUNS)
+let runId = null; // the run that day is of: 'thanksgiving', 'christmas', 'new-year', 'groundhog' or 'valentines' (RUNS)
 let boardDate = null; // on Groundhog Day, the day the board in play is the board of, as its key
 let moves = []; // what has been done on this board, to play it back after a reload
 let elapsed = 0; // seconds played before the clock last started
@@ -151,8 +165,9 @@ let prompted = false;
 // run's or the one played freely, to go back to; the latest hour of the
 // Long Night reached, the best time and the best score for each hour, with
 // the time that score took;
-// the same for Thanksgiving week, for Christmas's twelve days and for New
-// Year's boards, by the day, and for Groundhog Day's board by the date,
+// the same for Thanksgiving week, for Christmas's twelve days, for New
+// Year's boards and for Valentine's chapters, by the day, and for Groundhog
+// Day's board by the date,
 // with how often each day's was cleared;
 // the boards in play, the night's, the week's, the twelve days' and the one
 // outside them all, each as its seed and its moves; and the player's name on
@@ -168,6 +183,7 @@ let saved = {
   week: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   twelve: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   newyear: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
+  valentines: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   groundhog: { reached: 0, best: {}, scores: {}, times: {}, playing: null, days: {} },
   free: null,
   name: '',
@@ -739,8 +755,9 @@ const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(
 // ------------- Thanksgiving week, Christmas's twelve days, and New Year's boards
 
 // The holidays played as runs of days, reached in turn, as the Long Night's
-// hours are: Thanksgiving week, Christmas's twelve days, and New Year's
-// boards, the countdown from the 10 to the 1 and then New Year's Day. For
+// hours are: Thanksgiving week, Christmas's twelve days, New Year's boards,
+// the countdown from the 10 to the 1 and then New Year's Day, and
+// Valentine's love story, a chapter a board, from Cupid's bow to the ring. For
 // each: its days; where its progress is kept in saved, as the night's is;
 // and the words its card and its end are told in. New Year's also has the
 // ball on its card, dropping a notch with each board of the countdown
@@ -784,6 +801,17 @@ const RUNS = {
       if (at < NEW_YEAR.length - 2) return `The ball drops a notch: ${left} ${left === 1 ? 'board' : 'boards'} to midnight.`;
       return at === NEW_YEAR.length - 2 ? 'The ball has landed: happy New Year!' : '';
     },
+  },
+  valentines: {
+    days: LOVE_STORY,
+    progress: () => saved.valentines,
+    title: "Valentine's Day: a love story",
+    intro: 'Eight boards, a love story told a chapter at a time, from Cupid taking aim to the ring, when the question is popped. Each chapter you reach can be played again.',
+    begin: 'Begin the first chapter',
+    back: 'Back to the love story',
+    meanwhile: "Valentine's love story",
+    score: "Your Valentine's score",
+    over: ['Yes!', 'The question is answered: you have seen the love story through, from Cupid taking aim to the ring.'],
   },
   // Groundhog Day: one board, dealt afresh each day from the date, the
   // same for everyone, and played again as often as one likes (daily).

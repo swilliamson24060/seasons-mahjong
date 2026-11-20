@@ -29,8 +29,8 @@ test("Valentine's love story is told in chapters, each its own board, none more 
     check(d.layout.width / 2 <= 9, `${d.name}'s board is ${d.layout.width / 2} tiles across`);
   }
   equal(new Set(LOVE_STORY.map((d) => d.layout)).size, LOVE_STORY.length, 'boards, one a chapter');
-  check(LOVE_STORY.length <= 8, `${LOVE_STORY.length} chapters, more than eight`);
-  check(!theme('valentines').ready, "Valentine's Day ready, with its boards still being made");
+  equal(LOVE_STORY.length, 8, 'chapters');
+  check(theme('valentines').ready, "Valentine's Day not ready, with all eight of its boards made");
 });
 
 test("the first chapter is Cupid's bow, the gentle start: 72 tiles on four layers, nine across, and no twist", () => {
