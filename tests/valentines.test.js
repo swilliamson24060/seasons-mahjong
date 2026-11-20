@@ -1,12 +1,13 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES, XO } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
 import { LOVE_STORY, chapterOf } from '../js/valentines.js';
 import { theme } from '../js/themes.js';
 import { candlelitIn } from '../js/engine/candles.js';
 import { chocolatesOf } from '../js/engine/chocolates.js';
+import { xoxosIn } from '../js/engine/xoxo.js';
 import { FACE_SETS, faceName } from '../js/ui/faces.js';
 import { FACE } from '../js/engine/tiles.js';
 
@@ -16,6 +17,7 @@ const THIRD = LOVE_STORY[2];
 const FOURTH = LOVE_STORY[3];
 const FIFTH = LOVE_STORY[4];
 const SIXTH = LOVE_STORY[5];
+const SEVENTH = LOVE_STORY[6];
 
 // The tiles of a layout's bottom layer in a row, given in half tiles, by
 // where each starts across.
@@ -269,4 +271,41 @@ test("the box's deals can be won in the order they were dealt, savouring every c
     equal(g.chocolatesIn('savoured'), 9, `seed ${seed}: chocolates savoured`);
   }
   return '200 deals';
+});
+
+test('the seventh chapter is hugs and kisses, an X over an O: 132 tiles on four layers, nine across, kisses and hugs to take in turn', () => {
+  equal(SEVENTH.name, 'The seventh chapter', "the seventh chapter's name");
+  equal(SEVENTH.title, 'Hugs and kisses', "the seventh chapter's title");
+  equal(chapterOf(XO), SEVENTH, "the X and O's chapter");
+  check(Object.keys(layouts).includes('XO'), 'the X and O play by their address, #play/xo');
+  equal(XO.count, 132, 'tiles');
+  equal(XO.width / 2, 9, 'tiles across');
+  equal(XO.depth, 4, 'layers');
+  check(XO.count > CHOCOLATES.count, 'no more tiles than the box of chocolates');
+  equal(JSON.stringify(dayOptions(SEVENTH).xoxo), JSON.stringify({ split: 11 }), 'the O beginning eleven half tiles down');
+  check(['a kiss', 'a hug', 'in turn', 'XOXO', '15 points', 'start it again'].every((w) => SEVENTH.text.includes(w)), "the card doesn't tell how to make an XOXO, or what one is worth");
+});
+
+test('hugs and kisses reads as a bold X over a bold O, half a tile apart, the O round its hole, each with a ridge along its strokes and a crest along the ridge', () => {
+  equal(across(XO, 0).join(), '0,2,4,12,14,16', "the X's arms at the top");
+  equal(across(XO, 4).join(), '4,6,8,10,12', 'where the X crosses');
+  equal(across(XO, 8).join(), '0,2,4,12,14,16', "the X's arms at the foot");
+  equal(across(XO, 11).join(), '2,4,6,8,10,12,14', "the O's top");
+  equal(across(XO, 15).join(), '0,2,14,16', "the O's sides, round its hole");
+  check(![...XO.x.keys()].some((i) => XO.x[i] + 2 > 6 && XO.x[i] < 12 && XO.y[i] + 2 > 15 && XO.y[i] < 17), "a tile in the O's hole");
+  check(![...XO.x.keys()].some((i) => XO.y[i] + 2 > 10 && XO.y[i] < 11), 'no gap of half a tile between the X and the O');
+  equal([...XO.x.keys()].filter((i) => XO.z[i] === 3).length, 4, "the crests' tiles on top, two on each letter");
+});
+
+test("hugs and kisses' deals can be won in the order they were dealt, making thirteen XOXOs or more", () => {
+  const options = dayOptions(SEVENTH);
+  let made = 0;
+  for (let seed = 1; seed <= 200; seed++) {
+    const g = new Game(XO, { seed, ...options });
+    for (const [a, b] of g.plan) check(g.match(a, b), `seed ${seed}: a pair of the deal's own order cannot be taken`);
+    check(g.won, `seed ${seed}: not cleared`);
+    check(g.xoxos >= 13 && g.xoxos === xoxosIn(XO, g.plan, 11), `seed ${seed}: ${g.xoxos} XOXOs`);
+    made += g.xoxos;
+  }
+  return `200 deals, ${(made / 200).toFixed(1)} XOXOs each`;
 });

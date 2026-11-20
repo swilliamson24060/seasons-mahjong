@@ -1,4 +1,4 @@
-import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES } from './engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES, XO } from './engine/layouts.js';
 
 // Valentine's Day: a love story, eight boards told from Cupid taking aim to
 // "be mine", each board a moment of it, to be reached in turn as Christmas's
@@ -12,12 +12,12 @@ import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES } from './engine/layou
 // each to be taken while it's in bloom (engine/roses.js); on the fifth, the
 // first date, a pair is candlelit with a tile in each candle's glow
 // (engine/candles.js); on the sixth a box of chocolates, each to be eaten
-// whole before the next (engine/chocolates.js); and the eighth is to be Be
-// mine, when the question is popped halfway and every tile turns
-// over. Each chapter is as Thanksgiving's days are (thanksgiving.js says
-// what each part is for). PLAN.md has the story's
-// boards and twists, and tools/valentine-drafts.js the boards still to be
-// made, drawn. Its boards wear Valentine's own tiles (ui/valentine-faces.js)
+// whole before the next (engine/chocolates.js); on the seventh hugs and
+// kisses, taken in turn for XOXOs (engine/xoxo.js); and the eighth is to be
+// Be mine, when the question is popped halfway and every tile turns over.
+// Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
+// part is for). PLAN.md has the story's boards and twists, and
+// tools/valentine-drafts.js the boards still to be made, drawn. Its boards wear Valentine's own tiles (ui/valentine-faces.js)
 // and play its music, Liszt's Liebestraum on a harp (ui/sound.js).
 
 export const LOVE_STORY = [
@@ -68,6 +68,14 @@ export const LOVE_STORY = [
     rules: { treats: false, ghostsFloat: false, chocolates: true },
     sky: ['#5a3328', '#1d0f0b'],
     text: "A box of chocolates, the lid off: nine in three rows, each on its paper cup. Bite into a chocolate by taking its top, then eat the rest of it, cup and all, before biting into another, and it's savoured: 30 points. Bite into another first, and the one left half-eaten is just eaten. The box's walls can be taken at any time.",
+  },
+  {
+    name: 'The seventh chapter',
+    title: 'Hugs and kisses',
+    layout: XO,
+    rules: { treats: false, ghostsFloat: false, xoxo: { split: 11 } },
+    sky: ['#7a2f5c', '#260d1d'],
+    text: 'Hugs and kisses. A pair from the X, both its tiles in it, is a kiss; from the O, a hug. Take kisses and hugs in turn, four in a row, kiss, hug, kiss, hug or the other way round, and it makes an XOXO: 15 points. Two kisses or two hugs together, or a pair with a tile in each letter, start it again.',
   },
 ];
 

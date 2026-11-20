@@ -523,6 +523,11 @@ export class Board {
       if (g.awaited(i)) return `${name}, a candy heart saying ${candy.word}: take its pair now to say ${words.join(' ')}`;
       return `${name}, a candy heart saying ${candy.word}: take its pair, and the pair with ${words[1 - tiles.indexOf(i)]} straight after, to say ${words.join(' ')}`;
     }
+    const letter = g.xoLetter(i);
+    if (letter) {
+      const what = letter === 'X' ? 'in the X: a pair from it is a kiss' : 'in the O: a pair from it is a hug';
+      return `${name}, ${what}${g.wantsLetter === letter ? `, and the XOXO wants a ${letter === 'X' ? 'kiss' : 'hug'} next` : ''}`;
+    }
     const choc = g.chocolateOf(i);
     if (choc >= 0 && g.chocolateStates[choc] === 'whole' && g.chocolates[choc].top === i) return `${name}, the top of a chocolate: take it to bite into it, and eat the rest before biting into another`;
     if (choc >= 0 && choc === g.openChocolate) return `${name}, part of the chocolate you bit into: eat it all, cup and all, before biting into another`;
@@ -670,6 +675,7 @@ export class Board {
       if (bloom === 'bloom') el.dataset.bloom = g.bloomLeft(rose);
       el.classList.toggle('glow', Boolean(g.glowOf(i))); // on Valentine's first date: in a candle's glow
       el.classList.toggle('bitten', g.openChocolate >= 0 && g.chocolateOf(i) === g.openChocolate); // on the box of chocolates: the chocolate bitten into
+      el.classList.toggle('xo-next', free && g.wantsLetter !== null && g.xoLetter(i) === g.wantsLetter); // on hugs and kisses: the letter the run wants next
       el.classList.toggle('in-way', g.inGlassesWay(i)); // on New Year's 2: in the glasses' way
       // On New Year's Day, a sweet carries its treat, and through January,
       // while the resolution holds, it is a tempting pink.
@@ -680,7 +686,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

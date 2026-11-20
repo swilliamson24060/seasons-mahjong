@@ -1,5 +1,5 @@
 import { makeLayout } from '../js/engine/layout.js';
-import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES, XO } from '../js/engine/layouts.js';
 
 // Valentine's Day's eight boards as planned (PLAN.md), drawn as layout.js
 // reads them, to be checked and looked at (tools/valentine.html) before
@@ -7,67 +7,7 @@ import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES } from '../js/engine/l
 // to js/engine/layouts.js, and may change there as its twist is tried.
 //
 // A board is drawn as layers, or as parts, each drawn apart and moved by
-// dx and dy half tiles, joined into one board: the X and the O.
-
-const X = [
-  `
-  ###...###
-  .###.###.
-  ..#####..
-  .###.###.
-  ###...###
-  `,
-  `
-  >>....>>.
-  .>>..>>..
-  ..>>>>...
-  .>>..>>..
-  >>....>>.
-  `,
-  `
-  .#.....#.
-  ..#...#..
-  ...###...
-  ..#...#..
-  .#.....#.
-  `,
-  `
-  .........
-  .........
-  ...>>....
-  `,
-];
-
-const O = [
-  `
-  .#######.
-  ###...###
-  ##.....##
-  ###...###
-  .#######.
-  `,
-  `
-  .++++++..
-  ++....++.
-  +......+.
-  ++....++.
-  .++++++..
-  `,
-  `
-  ..#####..
-  .#.....#.
-  .#.....#.
-  .#.....#.
-  ..#####..
-  `,
-  `
-  ....#....
-  .........
-  .........
-  .........
-  ....#....
-  `,
-];
+// dx and dy half tiles, joined into one board, as the X and the O were.
 
 export const DRAFTS = [
   // 1. Cupid's bow drawn, an arrow on its string pointing up, ready to fly:
@@ -86,15 +26,9 @@ export const DRAFTS = [
   // 6. A box of chocolates with its lid off: made, and drawn in
   // js/engine/layouts.js.
   { key: 'CHOCOLATES', title: 'A box of chocolates', name: 'Box of chocolates', layout: CHOCOLATES },
-  // 7. Hugs and kisses: an X over an O, bold, with a ridge along their
-  // strokes and a crest along the ridge, the O half a tile lower. 132 tiles
-  // on four layers, nine across.
-  {
-    key: 'XO',
-    title: 'Hugs and kisses',
-    name: 'X and O',
-    parts: [{ layers: X }, { layers: O, dy: 11 }],
-  },
+  // 7. Hugs and kisses, an X over an O: made, and drawn in
+  // js/engine/layouts.js in two parts.
+  { key: 'XO', title: 'Hugs and kisses', name: 'X and O', layout: XO },
   // 8. A ring, its band round an open middle, and a diamond raised high on
   // top, coming to a point where it sits on the band: the full set of 144,
   // on six layers.

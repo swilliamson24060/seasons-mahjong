@@ -12,6 +12,18 @@ const SHIFT = { '#': [0, 0], '>': [1, 0], v: [0, 1], '+': [1, 1] };
 //   +  a tile shifted half a tile both ways
 // Dots are empty, and the drawings' indentation is ignored.
 export function parseLayout(name, layers) {
+  return makeLayout(name, cellsOf(layers));
+}
+
+// Reads a layout drawn as parts, each drawn as parseLayout() reads a
+// layout and moved by dx and dy half tiles, joined into one board: the X
+// and the O of hugs and kisses.
+export function parseParts(name, parts) {
+  return makeLayout(name, parts.flatMap(({ layers, dx = 0, dy = 0 }) => cellsOf(layers).map(([x, y, z]) => [x + dx, y + dy, z])));
+}
+
+// A drawing's cells, [x, y, layer], in half tiles.
+function cellsOf(layers) {
   const cells = [];
   layers.forEach((drawing, z) => {
     rows(drawing).forEach((row, y) => {
@@ -21,7 +33,7 @@ export function parseLayout(name, layers) {
       });
     });
   });
-  return makeLayout(name, cells);
+  return cells;
 }
 
 function rows(drawing) {

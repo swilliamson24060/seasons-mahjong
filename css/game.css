@@ -723,6 +723,16 @@ body.covered #board {
   animation: heartbeat 1.1s ease-out infinite;
 }
 
+/* On Valentine's hugs and kisses, the free tiles of the letter the run of
+   kisses and hugs wants next blush a soft pink: a kiss from the X after a
+   hug, a hug from the O after a kiss. */
+.tile.xo-next {
+  --face-1: #fff3f7;
+  --face-2: #ffd8e5;
+  --edge: #e9a0b8;
+  --edge-deep: #c27391;
+}
+
 /* On Valentine's box of chocolates, the chocolate bitten into, its tiles
    still to eat, is ringed in milk chocolate brown: eat it all, cup and all,
    before biting into another. */

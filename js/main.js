@@ -429,6 +429,19 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     if (words.length) toast(words.join(' '));
   });
+  // On Valentine's hugs and kisses: kisses and hugs taken in turn, four in
+  // a row, make an XOXO, and a run of two or more is broken by two of a
+  // kind together or a pair with a tile in each letter.
+  game.on('xoxo', ({ b, kiss, xoxoMade }) => {
+    if (xoxoMade) {
+      sound.xoxo();
+      board.float('💋', b);
+      setTimeout(() => board.float(`+${POINTS.xoxo}`, b), 500); // after the pair's own points
+      toast(`XOXO! Hugs and kisses: ${POINTS.xoxo} points.`);
+      return;
+    }
+    toast(kiss ? `Two ${kiss === 'X' ? 'kisses' : 'hugs'} together: the XOXO starts again.` : 'A pair with a tile in each letter: the XOXO starts again.');
+  });
   // On Valentine's box of chocolates: a top taken bites into its chocolate,
   // the chocolate eaten whole is savoured, and one bitten into before it is
   // finished is just eaten.
@@ -1544,6 +1557,9 @@ function update() {
   // On Valentine's vase of roses, the roses in the bouquet, of the dozen.
   $('roses').hidden = !g.roses;
   if (g.roses) $('roses').innerHTML = `🌹 <b>${g.bouquet}</b>/${g.roses.length}`;
+  // On Valentine's hugs and kisses, the XOXOs made, and the run so far.
+  $('kisses').hidden = !g.xoxo;
+  if (g.xoxo) $('kisses').innerHTML = `💋 <b>${g.xoxos}</b>${g.run ? ` · <b>${g.run}</b>` : ''}`;
   // On Valentine's box of chocolates, the chocolates savoured, of the nine.
   $('chocolates').hidden = !g.chocolates;
   if (g.chocolates) $('chocolates').innerHTML = `🍫 <b>${g.chocolatesIn('savoured')}</b>/${g.chocolates.length}`;

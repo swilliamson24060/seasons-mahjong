@@ -1143,6 +1143,20 @@ export class Sound {
     [84, 87, 92].forEach((note, k) => this.harp(note, this.now + 0.72 + k * 0.05, 0.08));
   }
 
+  // On Valentine's hugs and kisses, an XOXO: a kiss, a hug, a kiss and a
+  // hug, the lips' smacks and the harp's warm chords in turn, and a twinkle
+  // on its top strings.
+  xoxo() {
+    if (!this.on) return;
+    [0, 0.3, 0.6, 0.9].forEach((t, k) => {
+      if (k % 2 === 0) {
+        this.rustle(this.now + t, 0.05, 3000, 1800, 0.22);
+        this.ping(1300, this.now + t, { gain: 0.08, attack: 0.002, fall: 0.05, into: this.master });
+      } else [56, 63, 68].forEach((note) => this.harp(note, this.now + t, 0.08));
+    });
+    [80, 84, 87].forEach((note, k) => this.harp(note, this.now + 1.15 + k * 0.06, 0.08));
+  }
+
   // On Valentine's box of chocolates, a bite of chocolate: its shell
   // snapping, crisp, and a crumb or two falling.
   bite() {

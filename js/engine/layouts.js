@@ -1,4 +1,4 @@
-import { parseLayout } from './layout.js';
+import { parseLayout, parseParts } from './layout.js';
 
 // The layouts, drawn as text (layout.js says how to read them).
 
@@ -2319,6 +2319,76 @@ export const CHOCOLATES = parseLayout('Box of chocolates', [
   .........
   .+..v.+..
   `,
+]);
+
+// Valentine's Day's seventh board: hugs and kisses, an X over an O, bold,
+// with a ridge along their strokes and a crest along the ridge, the O half
+// a tile below the X: kisses taken from the X and hugs from the O. 132
+// tiles on four layers, nine across.
+export const XO = parseParts('X and O', [
+  {
+    layers: [
+      `
+      ###...###
+      .###.###.
+      ..#####..
+      .###.###.
+      ###...###
+      `,
+      `
+      >>....>>.
+      .>>..>>..
+      ..>>>>...
+      .>>..>>..
+      >>....>>.
+      `,
+      `
+      .#.....#.
+      ..#...#..
+      ...###...
+      ..#...#..
+      .#.....#.
+      `,
+      `
+      .........
+      .........
+      ...>>....
+      `,
+    ],
+  },
+  {
+    dy: 11,
+    layers: [
+      `
+      .#######.
+      ###...###
+      ##.....##
+      ###...###
+      .#######.
+      `,
+      `
+      .++++++..
+      ++....++.
+      +......+.
+      ++....++.
+      .++++++..
+      `,
+      `
+      ..#####..
+      .#.....#.
+      .#.....#.
+      .#.....#.
+      ..#####..
+      `,
+      `
+      ....#....
+      .........
+      .........
+      .........
+      ....#....
+      `,
+    ],
+  },
 ]);
 
 // The classic turtle: the full set of 144 on five layers, with one tile at
