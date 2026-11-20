@@ -404,6 +404,31 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     if (words.length) toast(words.join(' '));
   });
+  // On Valentine's pierced heart: the couple Cupid's arrow struck, taken
+  // together, is love at first sight, and one of them taken with another
+  // tile breaks a heart; and every so many matches he lets fly again, a
+  // couple still smitten getting over it.
+  game.on('arrow', ({ b, love, heartbreak, arrow, overIt }) => {
+    const words = [];
+    if (love) {
+      sound.love();
+      board.float('💘', b);
+      setTimeout(() => board.float(`+${POINTS.love}`, b), 500); // after the pair's own points
+      words.push(`Love at first sight! ${POINTS.love} points.`);
+    }
+    if (heartbreak) {
+      sound.heartbreak();
+      board.float('💔', b);
+      words.push('A smitten tile went off with another: a broken heart.');
+    }
+    if (overIt) words.push('The smitten couple got over it.');
+    if (arrow) {
+      setTimeout(() => sound.arrow(), love || heartbreak ? 450 : 0);
+      board.struck(arrow);
+      words.push(`Cupid lets fly again: take the two smitten tiles together within ${game.arrowEvery} matches.`);
+    }
+    if (words.length) toast(words.join(' '));
+  });
   // On New Year's Day: a sweet taken in January breaks the resolution, and
   // a match that sees January out without one keeps it.
   game.on('resolution', ({ b, gaveIn }) => {
@@ -1418,6 +1443,10 @@ function update() {
   // On New Year's 2, the places still between the two glasses, or the toast.
   $('glasses').hidden = !g.path;
   if (g.path) $('glasses').innerHTML = g.toastAt ? '🥂 <b>cheers!</b>' : `🥂 <b>${g.glassesApart}</b>`;
+  // On Valentine's pierced heart, the couples taken together, love at first
+  // sight.
+  $('arrows').hidden = !g.arrowEvery;
+  if (g.arrowEvery) $('arrows').innerHTML = `💘 <b>${g.loves}</b>`;
   // The lovebirds taken, on a board of turtle doves.
   $('lovebirds').hidden = !g.rules.lovebirds;
   if (g.rules.lovebirds) $('lovebirds').innerHTML = `🕊️ <b>${g.lovebirds}</b>`;

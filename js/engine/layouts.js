@@ -2111,6 +2111,47 @@ export const BOW = parseLayout("Cupid's bow", [
   `,
 ]);
 
+// Valentine's Day's second board: love at first sight, a heart pierced by
+// Cupid's arrow. The heart's two lobes and its point, raised in the
+// middle; the arrow across it, raised along its way through, from its
+// feathers sticking out at the upper left to its head at the lower right,
+// where a heart leaves room. 92 tiles on three layers, nine across.
+export const HEART = parseLayout('Pierced heart', [
+  `
+  .#.......
+  ##.......
+  .###.###.
+  #########
+  #########
+  .#######.
+  ..#####.#
+  ...###.##
+  ....#.###
+  `,
+  `
+  .#.......
+  ##.......
+  ..#......
+  .###.###.
+  .#######.
+  ..#####..
+  ...####.#
+  ....#..##
+  ......###
+  `,
+  `
+  .........
+  .#.......
+  ..#......
+  ...#.....
+  ....#....
+  .....#...
+  ......#.#
+  .......#.
+  ......#.#
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [

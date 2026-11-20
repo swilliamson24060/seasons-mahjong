@@ -21,8 +21,10 @@
 // each perfect match, a couple of a colour of confetti taken together, on
 // New Year's 3 each wish made on a shooting star, and on New Year's 2 the
 // toast, as the two glasses meet, worth more the more pairs are still on
-// the board; and on New Year's Day each match the resolution held through
-// January, leaving the sweets alone, and the whole month more.
+// the board; on New Year's Day each match the resolution held through
+// January, leaving the sweets alone, and the whole month more; and on
+// Valentine's pierced heart each couple Cupid's arrow strikes, taken
+// together before his next arrow flies: love at first sight.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -58,6 +60,7 @@ export const POINTS = {
   toast: 5, // each pair still on the board as the two glasses meet and clink, a toast
   held: 5, // each match of January the resolution held, the sweets left alone,
   resolution: 100, // and holding it through the whole month
+  love: 30, // each couple Cupid's arrow strikes, taken together before his next flies
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -131,6 +134,10 @@ export function scoreOf(game, seconds, words = TURN) {
   }
   if (game.confetti) rows.push(['Perfect matches', times(game.perfects, POINTS.perfect), game.perfects * POINTS.perfect]);
   if (game.starEvery) rows.push(['Wishes', `${game.wishes} of ${game.starCount} stars`, game.wishes * POINTS.wish]);
+  if (game.arrowEvery) {
+    const how = [`${game.loves} of ${game.arrowsFlown} couples`, game.heartbreaks && `${game.heartbreaks} ${game.heartbreaks === 1 ? 'heart' : 'hearts'} broken`].filter(Boolean).join(', ');
+    rows.push(['Love at first sight', how, game.loves * POINTS.love]);
+  }
   if (game.sweets) {
     const held = game.daysHeld;
     const days = `${held} ${held === 1 ? 'day' : 'days'}`;

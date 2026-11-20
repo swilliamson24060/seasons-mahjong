@@ -1,6 +1,6 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { BOW } from '../js/engine/layouts.js';
+import { BOW, HEART } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
 import { LOVE_STORY, chapterOf } from '../js/valentines.js';
@@ -9,6 +9,7 @@ import { FACE_SETS, faceName } from '../js/ui/faces.js';
 import { FACE } from '../js/engine/tiles.js';
 
 const FIRST = LOVE_STORY[0];
+const SECOND = LOVE_STORY[1];
 
 // The tiles of a layout's bottom layer in a row, given in half tiles, by
 // where each starts across.
@@ -70,4 +71,39 @@ test("Cupid's bow's deals can be won in the order they were dealt, with the bow'
   for (const i of string) check(g.isFree(i), "a tile of the bow's string is not free at the start");
   check(FIRST.text.includes("bow's string"), "the card doesn't tell the free-tile rule by the string");
   return `200 deals; ${(free / 200).toFixed(0)} tiles free at the start`;
+});
+
+test("the second chapter is love at first sight, a heart pierced by Cupid's arrow: 92 tiles on three layers, nine across, an arrow every eight matches", () => {
+  equal(SECOND.name, 'The second chapter', "the second chapter's name");
+  equal(SECOND.title, 'Love at first sight', "the second chapter's title");
+  equal(chapterOf(HEART), SECOND, "the heart's chapter");
+  check(Object.keys(layouts).includes('HEART'), 'the heart plays by its address, #play/heart');
+  equal(HEART.count, 92, 'tiles');
+  equal(HEART.width / 2, 9, 'tiles across');
+  equal(HEART.depth, 3, 'layers');
+  check(HEART.count > BOW.count, 'no more tiles than the bow');
+  equal(dayOptions(SECOND).arrows, 8, 'an arrow every eight matches');
+  check(SECOND.text.includes('love at first sight') && SECOND.text.includes('30 points'), "the card doesn't say what the arrows are for");
+});
+
+test('the pierced heart reads as a heart with an arrow through it, sticking out at both ends: its feathers at the upper left and its head at the lower right', () => {
+  equal(across(HEART, 0).join(), '2', "the feathers' tip");
+  equal(across(HEART, 2).join(), '0,2', 'the feathers');
+  equal(across(HEART, 4).join(), '2,4,6,10,12,14', "the heart's two lobes, the notch between them");
+  equal(across(HEART, 6).join(), '0,2,4,6,8,10,12,14,16', 'the heart at its widest');
+  equal(across(HEART, 16).join(), '8,12,14,16', "the heart's point, and the arrow's head beside it");
+  // The arrow runs across it, raised, on the top layer from its feathers
+  // to its head.
+  equal([...HEART.x.keys()].filter((i) => HEART.z[i] === 2).length, 10, 'tiles of the arrow on the top layer');
+});
+
+test("the pierced heart's deals can be won in the order they were dealt, Cupid letting fly six times", () => {
+  const options = dayOptions(SECOND);
+  for (let seed = 1; seed <= 200; seed++) {
+    const g = new Game(HEART, { seed, ...options });
+    for (const [a, b] of g.plan) check(g.match(a, b), `seed ${seed}: a pair of the deal's own order cannot be taken`);
+    check(g.won, `seed ${seed}: not cleared`);
+    equal(g.arrowsFlown, 6, `seed ${seed}: arrows over 46 matches`);
+  }
+  return '200 deals';
 });

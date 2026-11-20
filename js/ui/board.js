@@ -474,6 +474,12 @@ export class Board {
     for (const i of landed) this.restart(this.tiles[i].el, 'landing');
   }
 
+  // Cupid's arrow strikes: its couple's hearts beat as they're smitten.
+  struck(tiles) {
+    this.refresh();
+    for (const i of tiles) this.restart(this.tiles[i].el, 'struck');
+  }
+
   // A rocket bursts: the tiles it lights up sparkle as they catch the light.
   litUp(tiles) {
     this.refresh();
@@ -504,6 +510,7 @@ export class Board {
     if (g.foundAt && i === g.coin && g.present[i]) return `${name}, where the lucky coin was hidden`;
     if (g.confetti && g.confetti[i] >= 0) return `${name}, with ${COLOURS[g.confetti[i]]} confetti`;
     if (g.inStarRow(i)) return `${name}, in the shooting star's row`;
+    if (g.isSmitten(i)) return `${name}, smitten by Cupid's arrow: take it with the other smitten tile within ${g.untilArrow} ${g.untilArrow === 1 ? 'match' : 'matches'}`;
     if (g.inGlassesWay(i)) return `${name}, in the glasses' way`;
     if (g.tempting(i)) return `${name}, a sweet: leave it alone through January to keep your resolution`;
     if (g.isSweet(i)) return `${name}, a sweet, fair game now`;
@@ -602,6 +609,12 @@ export class Board {
       el.classList.toggle('short', burning && g.burnLeft(spark) <= 2);
       if (burning) el.dataset.burn = g.burnLeft(spark);
       el.classList.toggle('starlit', g.inStarRow(i)); // on New Year's 3: in the row the star crossed, its wish to make
+      // On Valentine's pierced heart, a smitten tile carries a heart, with
+      // the matches until Cupid's next arrow, deeper at the last two.
+      const smitten = g.isSmitten(i);
+      el.classList.toggle('smitten', smitten);
+      el.classList.toggle('pining', smitten && g.untilArrow <= 2);
+      if (smitten) el.dataset.arrow = g.untilArrow;
       el.classList.toggle('in-way', g.inGlassesWay(i)); // on New Year's 2: in the glasses' way
       // On New Year's Day, a sweet carries its treat, and through January,
       // while the resolution holds, it is a tempting pink.
@@ -612,7 +625,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

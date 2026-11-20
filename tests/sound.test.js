@@ -97,6 +97,9 @@ test("Valentine's sounds are all heard, and none too loud", async () => {
     'a hint': [1.6, (s) => s.hint()],
     'a treat': [2, (s) => s.treat()],
     'no pairs left': [2.2, (s) => s.stuck()],
+    "Cupid's arrow": [2, (s) => s.arrow()],
+    'love at first sight': [2.4, (s) => s.love()],
+    'a heart broken': [2.2, (s) => s.heartbreak()],
   };
   const peaks = [];
   for (const [name, [seconds, play]] of Object.entries(sounds)) {

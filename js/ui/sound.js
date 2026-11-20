@@ -1089,16 +1089,42 @@ export class Sound {
       for (let k = 0; k < 7; k++) this.rustle(this.now + 0.4 + k * 0.06, 0.05, 1600 - k * 120, 500, 0.08 * (1 - k / 9));
       return this.ping(80, this.now + 0.85, { gain: 0.12, attack: 0.002, fall: 0.1, into: this.master });
     }
-    if (this.set === 'valentines') {
-      // a heart breaking: a brittle crack, and two notes falling on the
-      // harp, a sigh
-      this.rustle(this.now, 0.04, 5000, 2500, 0.2);
-      for (const f of [2300, 3700, 5100]) this.ping(f, this.now, { gain: 0.04, attack: 0.001, fall: 0.06, into: this.master });
-      this.harp(64, this.now + 0.3, 0.2);
-      return this.harp(63, this.now + 0.8, 0.2);
-    }
+    if (this.set === 'valentines') return this.breakHeart();
     this.organ(38, this.now, 1.2, 0.1);
     this.organ(45, this.now, 1.2, 0.08);
+  }
+
+  // A heart breaking: a brittle crack, and two notes falling on the harp, a
+  // sigh. Valentine's with no pairs left, and a smitten tile gone off with
+  // another.
+  breakHeart() {
+    this.rustle(this.now, 0.04, 5000, 2500, 0.2);
+    for (const f of [2300, 3700, 5100]) this.ping(f, this.now, { gain: 0.04, attack: 0.001, fall: 0.06, into: this.master });
+    this.harp(64, this.now + 0.3, 0.2);
+    this.harp(63, this.now + 0.8, 0.2);
+  }
+
+  heartbreak() {
+    if (this.on) this.breakHeart();
+  }
+
+  // On Valentine's pierced heart, Cupid lets fly: his bowstring twangs, the
+  // arrow swishes through the air and strikes home, and the couple it
+  // strikes ring out on the harp.
+  arrow() {
+    if (!this.on) return;
+    this.string(55, this.now, 0.22, { bright: 0.9, keep: 0.978, pick: 0.12, seconds: 0.8 }, this.master);
+    this.rustle(this.now + 0.04, 0.32, 3200, 700, 0.14);
+    this.ping(180, this.now + 0.38, { gain: 0.16, attack: 0.002, fall: 0.07, into: this.master });
+    [80, 84].forEach((note, k) => this.harp(note, this.now + 0.48 + k * 0.1, 0.1));
+  }
+
+  // Love at first sight: the harp runs up the chord of A flat, and two of
+  // its notes ring out together, a couple.
+  love() {
+    if (!this.on) return;
+    [63, 68, 72, 75].forEach((note, k) => this.harp(note, this.now + k * 0.07, 0.12));
+    [80, 84].forEach((note) => this.harp(note, this.now + 0.32, 0.12));
   }
 
   // A turkey's gobble: a quick string of throaty warbles, each falling, and

@@ -1,5 +1,5 @@
 import { makeLayout } from '../js/engine/layout.js';
-import { BOW } from '../js/engine/layouts.js';
+import { BOW, HEART } from '../js/engine/layouts.js';
 
 // Valentine's Day's eight boards as planned (PLAN.md), drawn as layout.js
 // reads them, to be checked and looked at (tools/valentine.html) before
@@ -73,50 +73,9 @@ export const DRAFTS = [
   // 1. Cupid's bow drawn, an arrow on its string pointing up, ready to fly:
   // made, and drawn in js/engine/layouts.js.
   { key: 'BOW', title: "Cupid's bow", name: "Cupid's bow", layout: BOW },
-  // 2. A heart pierced by Cupid's arrow, from its feathers at the upper
-  // left to its head at the lower right, both sticking out of the heart;
-  // the heart raised in the middle and the arrow raised across it. 92
-  // tiles on three layers, nine across.
-  {
-    key: 'HEART',
-    title: 'Love at first sight',
-    name: 'Pierced heart',
-    layers: [
-      `
-      .#.......
-      ##.......
-      .###.###.
-      #########
-      #########
-      .#######.
-      ..#####.#
-      ...###.##
-      ....#.###
-      `,
-      `
-      .#.......
-      ##.......
-      ..#......
-      .###.###.
-      .#######.
-      ..#####..
-      ...####.#
-      ....#..##
-      ......###
-      `,
-      `
-      .........
-      .#.......
-      ..#......
-      ...#.....
-      ....#....
-      .....#...
-      ......#.#
-      .......#.
-      ......#.#
-      `,
-    ],
-  },
+  // 2. A heart pierced by Cupid's arrow: made, and drawn in
+  // js/engine/layouts.js.
+  { key: 'HEART', title: 'Love at first sight', name: 'Pierced heart', layout: HEART },
   // 3. A valentine in its envelope, the flap closed in a V, with a gap along
   // its edges, raised, and sealed with a heart at its point. 100 tiles on
   // three layers, nine across and seven down.

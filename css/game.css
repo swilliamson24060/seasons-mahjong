@@ -638,6 +638,55 @@ body.covered #board {
   --edge-deep: #b07490;
 }
 
+/* On Valentine's pierced heart, a tile smitten by Cupid's arrow blushes
+   pink and carries a heart, with the matches until his next arrow, deeper
+   at the last two; struck, the heart beats. */
+.tile.smitten {
+  --face-1: #fff0f4;
+  --face-2: #ffd0de;
+  --edge: #e898b2;
+  --edge-deep: #c26a8a;
+}
+
+.tile.smitten::before {
+  content: '💘' attr(data-arrow);
+  position: absolute;
+  top: 36%;
+  right: 4%;
+  padding: 0.1em 0.22em 0.1em 0.08em;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow:
+    0 0 6px rgba(255, 105, 150, 0.85),
+    inset 0 0 0 1px #f29bb6;
+  color: #a3123f;
+  font: 800 max(10px, calc(var(--tile-w) * 0.3)) / 1 system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tile.smitten.pining::before {
+  background: #ffd1de;
+  color: #8a0f35;
+}
+
+.tile.struck::before {
+  animation: heartbeat 0.9s ease-out;
+}
+
+@keyframes heartbeat {
+  0%,
+  30%,
+  60%,
+  100% {
+    transform: scale(1);
+  }
+  15%,
+  45% {
+    transform: scale(1.3);
+  }
+}
+
 /* On New Year's 8, the disco ball's beam lies across the board, a row
    deep, glinting, over the tiles in its light, and glides down a row with
    every match; the ball hangs at its left end. The tiles in it are a cool
@@ -1650,6 +1699,7 @@ body.covered #board {
   .tile.sparkle,
   .tile.landing::after,
   .tile.sparkler.burning::before,
+  .tile.struck::before,
   .star-band.streak::before,
   .glass.clinking svg {
     animation: none;
