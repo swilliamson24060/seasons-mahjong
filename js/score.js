@@ -27,8 +27,10 @@
 // together before his next arrow flies: love at first sight; and on
 // Valentine's envelope each sweet nothing said, the pairs with its two
 // halves taken one straight after the other; on Valentine's vase of roses
-// each rose gathered into the bouquet, taken while it's in bloom; and on
-// Valentine's first date each candlelit pair, a tile in each candle's glow.
+// each rose gathered into the bouquet, taken while it's in bloom; on
+// Valentine's first date each candlelit pair, a tile in each candle's glow;
+// and on Valentine's box of chocolates each chocolate savoured, eaten whole
+// before biting into another.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -68,6 +70,7 @@ export const POINTS = {
   message: 40, // each sweet nothing said: the pairs with its two halves, one straight after the other
   rose: 20, // each rose taken in bloom, with any tile of its kind, for the bouquet
   candlelit: 20, // each pair with a tile in each candle's glow, his and hers
+  savoured: 30, // each chocolate eaten whole, cup and all, before biting into another
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -151,6 +154,11 @@ export function scoreOf(game, seconds, words = TURN) {
     rows.push(['Sweet nothings', how, game.messagesSaid * POINTS.message]);
   }
   if (game.candles) rows.push(['Candlelit pairs', times(game.candlelitPairs, POINTS.candlelit), game.candlelitPairs * POINTS.candlelit]);
+  if (game.chocolates) {
+    const n = game.chocolatesIn('savoured');
+    const eaten = game.chocolatesIn('eaten');
+    rows.push(['Chocolates', [`${n} of ${game.chocolates.length} savoured`, eaten && `${eaten} just eaten`].filter(Boolean).join(', '), n * POINTS.savoured]);
+  }
   if (game.roses) {
     const lost = [
       [game.rosesIn('wasted'), 'wasted in bud'],

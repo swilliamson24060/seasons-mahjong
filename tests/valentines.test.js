@@ -1,11 +1,12 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { BOW, HEART, ENVELOPE, ROSES, CANDLES } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
 import { LOVE_STORY, chapterOf } from '../js/valentines.js';
 import { theme } from '../js/themes.js';
 import { candlelitIn } from '../js/engine/candles.js';
+import { chocolatesOf } from '../js/engine/chocolates.js';
 import { FACE_SETS, faceName } from '../js/ui/faces.js';
 import { FACE } from '../js/engine/tiles.js';
 
@@ -14,6 +15,7 @@ const SECOND = LOVE_STORY[1];
 const THIRD = LOVE_STORY[2];
 const FOURTH = LOVE_STORY[3];
 const FIFTH = LOVE_STORY[4];
+const SIXTH = LOVE_STORY[5];
 
 // The tiles of a layout's bottom layer in a row, given in half tiles, by
 // where each starts across.
@@ -230,4 +232,41 @@ test("the first date's deals can be won in the order they were dealt, each takin
     lit += g.candlelitPairs;
   }
   return `200 deals, ${(lit / 200).toFixed(1)} candlelit pairs each`;
+});
+
+test('the sixth chapter is a box of chocolates: 118 tiles on three layers, nine across and nine down, each chocolate to be savoured', () => {
+  equal(SIXTH.name, 'The sixth chapter', "the sixth chapter's name");
+  equal(SIXTH.title, 'A box of chocolates', "the sixth chapter's title");
+  equal(chapterOf(CHOCOLATES), SIXTH, "the box's chapter");
+  check(Object.keys(layouts).includes('CHOCOLATES'), 'the box plays by its address, #play/chocolates');
+  equal(CHOCOLATES.count, 118, 'tiles');
+  equal(CHOCOLATES.width / 2, 9, 'tiles across');
+  equal(CHOCOLATES.height / 2, 9, 'tiles down');
+  equal(CHOCOLATES.depth, 3, 'layers');
+  check(CHOCOLATES.count > CANDLES.count, 'no more tiles than the candles');
+  equal(dayOptions(SIXTH).chocolates, true, 'chocolates to savour');
+  check(['Bite into a chocolate', 'cup and all', '30 points', 'just eaten', 'walls'].every((w) => SIXTH.text.includes(w)), "the card doesn't tell how to savour a chocolate, or what one is worth");
+});
+
+test("the box of chocolates reads as nine chocolates in three rows, each raised on its paper cup, inside the box's walls, two high all round", () => {
+  const cs = chocolatesOf(CHOCOLATES);
+  equal(cs.length, 9, 'chocolates');
+  check(cs.every((c) => c.tiles.length === 6 && c.tiles.map((t) => CHOCOLATES.z[t]).join() === '2,1,0,0,0,0'), 'a chocolate not its top, the chocolate under it and a cup of four');
+  equal(cs.map((c) => `${CHOCOLATES.x[c.top]},${CHOCOLATES.y[c.top]}`).join(' '), '3,3 8,3 13,3 3,8 8,8 13,8 3,13 8,13 13,13', 'the chocolates, in three rows of three');
+  // The walls: every other tile, two high round the edge of the box.
+  const inside = new Set(cs.flatMap((c) => c.tiles));
+  const walls = [...CHOCOLATES.x.keys()].filter((i) => !inside.has(i));
+  equal(walls.length, 64, 'the walls');
+  check(walls.every((i) => CHOCOLATES.z[i] < 2 && (CHOCOLATES.x[i] === 0 || CHOCOLATES.x[i] === 16 || CHOCOLATES.y[i] === 0 || CHOCOLATES.y[i] === 16)), 'a wall not round the edge, or raised over two high');
+});
+
+test("the box's deals can be won in the order they were dealt, savouring every chocolate", () => {
+  const options = dayOptions(SIXTH);
+  for (let seed = 1; seed <= 200; seed++) {
+    const g = new Game(CHOCOLATES, { seed, ...options });
+    for (const [a, b] of g.plan) check(g.match(a, b), `seed ${seed}: a pair of the deal's own order cannot be taken`);
+    check(g.won, `seed ${seed}: not cleared`);
+    equal(g.chocolatesIn('savoured'), 9, `seed ${seed}: chocolates savoured`);
+  }
+  return '200 deals';
 });

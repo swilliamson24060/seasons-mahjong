@@ -1143,6 +1143,30 @@ export class Sound {
     [84, 87, 92].forEach((note, k) => this.harp(note, this.now + 0.72 + k * 0.05, 0.08));
   }
 
+  // On Valentine's box of chocolates, a bite of chocolate: its shell
+  // snapping, crisp, and a crumb or two falling.
+  bite() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.05, 3400, 1600, 0.3);
+    this.rustle(this.now + 0.05, 0.04, 2400, 1200, 0.18);
+    this.ping(160, this.now, { gain: 0.1, attack: 0.002, fall: 0.06, into: this.master });
+  }
+
+  // A chocolate savoured, cup and all: its paper cup crumpled, and the harp
+  // humming up a chord, contented.
+  savoured() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.22, 2800, 1400, 0.14);
+    [63, 68, 72, 75].forEach((note, k) => this.harp(note, this.now + 0.2 + k * 0.11, 0.11));
+  }
+
+  // A chocolate left half-eaten: a little shrug on the harp, two notes down.
+  justEaten() {
+    if (!this.on) return;
+    this.harp(70, this.now + 0.05, 0.12);
+    this.harp(68, this.now + 0.35, 0.12);
+  }
+
   // On Valentine's first date, a candlelit pair: two glasses raised to each
   // other across the table, and a soft chord on the harp.
   candlelit() {

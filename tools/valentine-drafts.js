@@ -1,5 +1,5 @@
 import { makeLayout } from '../js/engine/layout.js';
-import { BOW, HEART, ENVELOPE, ROSES, CANDLES } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES } from '../js/engine/layouts.js';
 
 // Valentine's Day's eight boards as planned (PLAN.md), drawn as layout.js
 // reads them, to be checked and looked at (tools/valentine.html) before
@@ -83,47 +83,9 @@ export const DRAFTS = [
   { key: 'ROSES', title: 'A dozen roses', name: 'Vase of roses', layout: ROSES },
   // 5. Dinner by candlelight: made, and drawn in js/engine/layouts.js.
   { key: 'CANDLES', title: 'The first date', name: 'Candlelight', layout: CANDLES },
-  // 6. A box of chocolates with its lid off: nine chocolates in three rows,
-  // each a chocolate raised on its paper cup, inside the box's walls. 118
-  // tiles on three layers, nine across and nine down.
-  {
-    key: 'CHOCOLATES',
-    title: 'A box of chocolates',
-    name: 'Box of chocolates',
-    layers: [
-      `
-      #########
-      ###>>.###
-      ###>>.###
-      #vv++.vv#
-      #vv++.vv#
-      #.......#
-      ###>>.###
-      ###>>.###
-      #########
-      `,
-      `
-      #########
-      #+..v.+.#
-      #.......#
-      #.......#
-      #>..#.>.#
-      #.......#
-      #+..v.+.#
-      #.......#
-      #########
-      `,
-      `
-      .........
-      .+..v.+..
-      .........
-      .........
-      .>..#.>..
-      .........
-      .+..v.+..
-      `,
-    ],
-  },
+  // 6. A box of chocolates with its lid off: made, and drawn in
+  // js/engine/layouts.js.
+  { key: 'CHOCOLATES', title: 'A box of chocolates', name: 'Box of chocolates', layout: CHOCOLATES },
   // 7. Hugs and kisses: an X over an O, bold, with a ridge along their
   // strokes and a crest along the ridge, the O half a tile lower. 132 tiles
   // on four layers, nine across.

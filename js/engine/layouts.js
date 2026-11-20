@@ -2283,6 +2283,44 @@ export const CANDLES = parseLayout('Candlelight', [
   `,
 ]);
 
+// Valentine's Day's sixth board: a box of chocolates, its lid off. Nine
+// chocolates in three rows, each its top, the chocolate under it and its
+// paper cup of four tiles under that, inside the box's walls, two high all
+// round. 118 tiles on three layers, nine across and nine down.
+export const CHOCOLATES = parseLayout('Box of chocolates', [
+  `
+  #########
+  ###>>.###
+  ###>>.###
+  #vv++.vv#
+  #vv++.vv#
+  #.......#
+  ###>>.###
+  ###>>.###
+  #########
+  `,
+  `
+  #########
+  #+..v.+.#
+  #.......#
+  #.......#
+  #>..#.>.#
+  #.......#
+  #+..v.+.#
+  #.......#
+  #########
+  `,
+  `
+  .........
+  .+..v.+..
+  .........
+  .........
+  .>..#.>..
+  .........
+  .+..v.+..
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [

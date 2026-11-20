@@ -59,7 +59,7 @@ export const gathers = (order, roses, every, lasts, done = 0) =>
 
 // Whether tile b lies somewhere over tile a, on it or on a tile on it, so
 // that the two can never be taken together.
-function over(L, a, b) {
+export function over(L, a, b) {
   const seen = new Set();
   const look = [a];
   while (look.length) {

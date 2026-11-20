@@ -429,6 +429,27 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     if (words.length) toast(words.join(' '));
   });
+  // On Valentine's box of chocolates: a top taken bites into its chocolate,
+  // the chocolate eaten whole is savoured, and one bitten into before it is
+  // finished is just eaten.
+  game.on('chocolate', ({ b, bitten, savoured, eaten }) => {
+    const words = [];
+    if (savoured >= 0) {
+      sound.savoured();
+      board.float('😋', b);
+      setTimeout(() => board.float(`+${POINTS.savoured}`, b), 500); // after the pair's own points
+      words.push(`Savoured, cup and all! ${POINTS.savoured} points.`);
+    }
+    if (eaten.length) {
+      sound.justEaten();
+      words.push(bitten.length > 1 ? 'Two chocolates bitten into at once: neither can be savoured now.' : 'You bit into another before finishing the last: that one is just eaten.');
+    }
+    if (bitten.length === 1) {
+      setTimeout(() => sound.bite(), savoured >= 0 || eaten.length ? 600 : 0);
+      words.push('A bite of chocolate: eat the rest of it, cup and all, before biting into another.');
+    }
+    toast(words.join(' '));
+  });
   // On Valentine's first date: a pair with a tile in each candle's glow is
   // candlelit, and every so many matches the candles burn down and their
   // glow sinks a row, until they gutter out.
@@ -1523,6 +1544,9 @@ function update() {
   // On Valentine's vase of roses, the roses in the bouquet, of the dozen.
   $('roses').hidden = !g.roses;
   if (g.roses) $('roses').innerHTML = `🌹 <b>${g.bouquet}</b>/${g.roses.length}`;
+  // On Valentine's box of chocolates, the chocolates savoured, of the nine.
+  $('chocolates').hidden = !g.chocolates;
+  if (g.chocolates) $('chocolates').innerHTML = `🍫 <b>${g.chocolatesIn('savoured')}</b>/${g.chocolates.length}`;
   // On Valentine's first date, the candlelit pairs, and while the candles
   // burn, the matches until their glow sinks.
   $('candles').hidden = !g.candles;

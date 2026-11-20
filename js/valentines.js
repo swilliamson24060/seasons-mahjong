@@ -1,4 +1,4 @@
-import { BOW, HEART, ENVELOPE, ROSES, CANDLES } from './engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES, CHOCOLATES } from './engine/layouts.js';
 
 // Valentine's Day: a love story, eight boards told from Cupid taking aim to
 // "be mine", each board a moment of it, to be reached in turn as Christmas's
@@ -11,7 +11,9 @@ import { BOW, HEART, ENVELOPE, ROSES, CANDLES } from './engine/layouts.js';
 // one after the other (engine/sweethearts.js); on the fourth a dozen roses,
 // each to be taken while it's in bloom (engine/roses.js); on the fifth, the
 // first date, a pair is candlelit with a tile in each candle's glow
-// (engine/candles.js); and the eighth is to be Be mine, when the question is popped halfway and every tile turns
+// (engine/candles.js); on the sixth a box of chocolates, each to be eaten
+// whole before the next (engine/chocolates.js); and the eighth is to be Be
+// mine, when the question is popped halfway and every tile turns
 // over. Each chapter is as Thanksgiving's days are (thanksgiving.js says
 // what each part is for). PLAN.md has the story's
 // boards and twists, and tools/valentine-drafts.js the boards still to be
@@ -58,6 +60,14 @@ export const LOVE_STORY = [
     rules: { treats: false, ghostsFloat: false, candles: { every: 6, deep: 3, pairs: 6 } },
     sky: ['#5e2f3e', '#1c0b12'],
     text: "Dinner by candlelight, the first date. Each candle's glow tinges the tiles round its flame gold, his on the left and hers on the right. Take a pair with a tile in each glow, a table for two, and it's a candlelit pair: 20 points. Every six matches the candles burn down and their glow sinks a row toward the table, until they gutter out near the end.",
+  },
+  {
+    name: 'The sixth chapter',
+    title: 'A box of chocolates',
+    layout: CHOCOLATES,
+    rules: { treats: false, ghostsFloat: false, chocolates: true },
+    sky: ['#5a3328', '#1d0f0b'],
+    text: "A box of chocolates, the lid off: nine in three rows, each on its paper cup. Bite into a chocolate by taking its top, then eat the rest of it, cup and all, before biting into another, and it's savoured: 30 points. Bite into another first, and the one left half-eaten is just eaten. The box's walls can be taken at any time.",
   },
 ];
 

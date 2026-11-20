@@ -723,6 +723,27 @@ body.covered #board {
   animation: heartbeat 1.1s ease-out infinite;
 }
 
+/* On Valentine's box of chocolates, the chocolate bitten into, its tiles
+   still to eat, is ringed in milk chocolate brown: eat it all, cup and all,
+   before biting into another. */
+.tile.bitten {
+  --face-1: #fff4e8;
+  --face-2: #f0d4b8;
+  --edge: #c99b72;
+  --edge-deep: #9c6e47;
+}
+
+.tile.bitten::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 calc(var(--tile-w) * 0.06) #8a5530,
+    inset 0 0 calc(var(--tile-w) * 0.2) rgba(138, 85, 48, 0.55);
+  pointer-events: none;
+}
+
 /* On Valentine's first date, a tile in a candle's glow is tinged gold, a
    warm light round its edges; a candlelit pair takes one in each candle's
    glow. */
