@@ -24,6 +24,7 @@ import { inRow, wishRows, starRow } from './stars.js';
 import { pathOf, over, inTheWay, clearingTheWay, glide, together } from './glasses.js';
 import { chooseSweets, resisting, holdsOut } from './sweets.js';
 import { bare, couplesFor, aim } from './cupid.js';
+import { MESSAGES, CANDY, shows, placeMessages, mend } from './sweethearts.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -34,13 +35,13 @@ export const TREATS = ['candle', 'key', 'cat'];
 // midnight, the fridge, doorbusters, touchdowns, lovebirds, eggs, flocks,
 // gold rings, goslings, swans, fresh milk, the dance, leaping lords, pipers,
 // fireworks, the disco ball, the balloon drop, the lucky coin, sparklers,
-// confetti, shooting stars, a toast for two and Cupid's arrows. Nothing
-// here touches the page; the board listens with on() for what happens:
-// 'match', 'thaw', 'list', 'checkout', 'bought', 'grab', 'touchdown',
-// 'lovebirds', 'flock', 'hatch', 'gold', 'gosling', 'swan', 'milk', 'dance',
-// 'leap', 'pipe', 'firework', 'spotlight', 'balloon', 'coin', 'sparkler',
-// 'confetti', 'star', 'toast', 'arrow', 'save', 'turn', 'treat', 'key',
-// 'shuffle', 'undo', 'win' and 'stuck'.
+// confetti, shooting stars, a toast for two, Cupid's arrows and
+// sweethearts. Nothing here touches the page; the board listens with on()
+// for what happens: 'match', 'thaw', 'list', 'checkout', 'bought', 'grab',
+// 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold', 'gosling', 'swan',
+// 'milk', 'dance', 'leap', 'pipe', 'firework', 'spotlight', 'balloon',
+// 'coin', 'sparkler', 'confetti', 'star', 'toast', 'arrow', 'message',
+// 'save', 'turn', 'treat', 'key', 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
@@ -102,7 +103,10 @@ export const TREATS = ['candle', 'key', 'cat'];
 // (sweets.js); and arrows, for Valentine's pierced heart: how often Cupid
 // lets fly, as the board starts and every so many matches after, an arrow
 // striking a couple of tiles of a kind to take together before his next
-// (cupid.js).
+// (cupid.js); and sweethearts, for Valentine's envelope: whether tiles
+// carry candy hearts, each with half a sweet nothing, its two halves' pairs
+// to be taken one straight after the other, or for a board whose faces are
+// set, the tiles each message's halves are on (sweethearts.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -110,7 +114,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0 } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -183,6 +187,14 @@ export class Game {
       this.rockets = new Uint8Array(layout.count);
       for (const i of Array.isArray(fireworks) ? fireworks : chooseRockets(table, onTable, fireworks, seeded(seed ^ 0x9b05688c))) this.rockets[i] = 1;
     }
+    // On Valentine's envelope, where the messages go on a deal: each on two
+    // pairs its order takes one straight after the other, every half on a
+    // tile whose candy heart shows (sweethearts.js).
+    let seen = null;
+    const hearts = (order, faces) => {
+      seen ||= Uint8Array.from({ length: layout.count }, (_, t) => shows(layout, onTable, t));
+      return placeMessages(order, (t) => MATCH[faces[t]], (t) => seen[t] === 1, MESSAGES.length, seeded(seed ^ 0x165667b1), { used: new Set([CANDY]) });
+    };
     if (faces || sides) {
       const given = sides || [faces];
       if (given.length !== (turns ? 2 : 1)) throw new Error(`${table.name} needs ${turns ? 2 : 1} sides of faces`);
@@ -200,8 +212,10 @@ export class Game {
       // could be pails; on New Year's 9 until its own order takes a lit
       // pair; on New Year's 8 until a pair of its own order dances in the
       // disco ball's light; on New Year's 6 until its own order pops a
-      // balloon; and on New Year's Day until its own order leaves the sweets
-      // alone through January.
+      // balloon; on New Year's Day until its own order leaves the sweets
+      // alone through January; and on Valentine's envelope until every
+      // message can go on two pairs its own order takes one straight after
+      // the other.
       const swansAsWanted = (faces, order) => {
         const found = swansIn(layout, this.mirror, faces, onTable);
         const planned = (a, b) => order.some(([p, q]) => (p === a && q === b) || (p === b && q === a));
@@ -216,7 +230,8 @@ export class Game {
         (!this.rockets || litPairsIn(layout, order, this.rockets, onTable) > 0) &&
         (!disco || dancesIn(layout, order, disco) > 0) &&
         (!balloons || poppedIn(layout, order, onTable, balloons, seed, sides[0], (f) => MATCH[f]) > 0) &&
-        (!this.sweets || holdsOut(order, this.sweets, this.january));
+        (!this.sweets || holdsOut(order, this.sweets, this.january)) &&
+        (!sweethearts || hearts(order, sides[0]).length === MESSAGES.length);
       let dealt = null;
       for (let tries = 0; ; tries++) {
         dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { present: onTable, turnAt, ice: this.ice, prefer: this.prefer });
@@ -377,6 +392,73 @@ export class Game {
     this.loves = 0;
     this.heartbreaks = 0;
     if (arrows) this.letFly();
+    // On Valentine's envelope, the sweethearts: each message, its two
+    // words, the tiles its halves are on, and 'waiting' until a half is
+    // taken; then 'begun', first being the half taken, until the very next
+    // match says it, 'said', or leaves it 'unsaid'.
+    this.messages = null;
+    if (sweethearts) {
+      const tiles = Array.isArray(sweethearts) ? sweethearts : this.plan ? hearts(this.plan, this.sides[0]) : [];
+      this.messages = tiles.map((t, k) => ({ words: MESSAGES[k].slice(), tiles: t.slice(), state: 'waiting', first: -1 }));
+    }
+  }
+
+  // On Valentine's envelope, the message a tile still on the board carries
+  // half of, still to be said, and which half, { message, half }; or null.
+  heartOf(i) {
+    if (!this.messages || this.present[i] !== 1) return null;
+    for (const message of this.messages) {
+      if (message.state !== 'waiting' && message.state !== 'begun') continue;
+      const half = message.tiles.indexOf(i);
+      if (half >= 0) return { message, half };
+    }
+    return null;
+  }
+
+  // The word on a tile's candy heart, or null; whether it is the half still
+  // to take of the message begun, to say it; and the messages said.
+  wordOn(i) {
+    const h = this.heartOf(i);
+    return h && h.message.words[h.half];
+  }
+
+  awaited(i) {
+    const h = this.heartOf(i);
+    return h !== null && h.message.state === 'begun';
+  }
+
+  get messagesSaid() {
+    return this.messages ? this.messages.filter((m) => m.state === 'said').length : 0;
+  }
+
+  // The candy hearts go with the tiles as they are shuffled: the half still
+  // to take of a message begun onto a pair of the new deal free now, moved
+  // to the front of its order, to be said next; and each message waiting
+  // onto two pairs the order takes one straight after the other, as the
+  // deal put them (sweethearts.js). Returns the order, for the hints.
+  reheart(order) {
+    const kindOf = (t) => MATCH[this.faces[t]];
+    const showing = (t) => shows(this.layout, this.present, t);
+    const used = new Set([CANDY]);
+    const taken = new Set();
+    this.messages = this.messages.map((m) => ({ ...m, tiles: m.tiles.slice() }));
+    let line = order;
+    const begun = this.messages.find((m) => m.state === 'begun');
+    if (begun) {
+      const fits = (p) => !used.has(kindOf(p[0]));
+      const now = order.findIndex((p) => fits(p) && this.isFree(p[0]) && this.isFree(p[1]));
+      const k = now >= 0 ? now : order.findIndex(fits); // one always fits: the half's own kind is still here
+      const seen = order[k].filter(showing);
+      begun.tiles[1 - begun.first] = this.r.pick(seen.length ? seen : order[k]);
+      used.add(kindOf(order[k][0]));
+      if (now >= 0) {
+        line = [order[k], ...order.slice(0, k), ...order.slice(k + 1)];
+        taken.add(0);
+      } else taken.add(k);
+    }
+    const waiting = this.messages.filter((m) => m.state === 'waiting');
+    placeMessages(line, kindOf, showing, waiting.length, this.r, { used, taken, loose: true }).forEach((t, k) => (waiting[k].tiles = t));
+    return line;
   }
 
   // On Valentine's pierced heart, Cupid lets fly: his arrow strikes a
@@ -1104,6 +1186,31 @@ export class Game {
       this.couple.state = 'broken';
       this.heartbreaks++;
     }
+    // On Valentine's envelope, the pair with half of a message begins it;
+    // the pair with its other half, taken as the very next match, says it,
+    // and anything else taken first leaves it unsaid.
+    let said = null;
+    let unsaid = null;
+    let begun = null;
+    if (this.messages) {
+      entry.messages = this.messages.map((m) => ({ ...m, tiles: m.tiles.slice() })); // as they were, for an undo
+      const open = this.messages.find((m) => m.state === 'begun');
+      const half = this.heartOf(a) || this.heartOf(b);
+      if (open && half && half.message === open) {
+        open.state = 'said';
+        said = open;
+      } else {
+        if (open) {
+          open.state = 'unsaid';
+          unsaid = open;
+        }
+        if (half) {
+          half.message.state = 'begun';
+          half.message.first = half.half;
+          begun = half.message;
+        }
+      }
+    }
     // On New Year's 4, two tiles that caught the same colour of confetti,
     // taken together, are a perfect match.
     const perfect = Boolean(this.confetti) && this.confetti[a] >= 0 && this.confetti[a] === this.confetti[b];
@@ -1274,6 +1381,9 @@ export class Game {
       arrowDue,
       arrow: arrow && arrow.tiles.slice(),
       overIt,
+      said: said && said.words.slice(),
+      unsaid: unsaid && unsaid.words.slice(),
+      begun: begun && { words: begun.words.slice(), first: begun.first, next: begun.tiles[1 - begun.first] },
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -1301,6 +1411,7 @@ export class Game {
     if (wish || starDue) this.emit('star', result);
     if (toasted) this.emit('toast', result);
     if (love || heartbreak || arrowDue) this.emit('arrow', result);
+    if (said || unsaid || begun) this.emit('message', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -1364,6 +1475,7 @@ export class Game {
       if (last.perfect) this.perfects--;
       if (last.stars) Object.assign(this, { star: last.stars.star, starCount: last.stars.count, wishes: last.stars.wishes });
       if (last.cupid) Object.assign(this, { couple: last.cupid.couple, arrowsFlown: last.cupid.flown, loves: last.cupid.loves, heartbreaks: last.cupid.heartbreaks });
+      if (last.messages) this.messages = last.messages;
       if (last.glasses) {
         this.glasses = last.glasses;
         this.toastAt = 0;
@@ -1383,6 +1495,7 @@ export class Game {
       if (last.pails) this.pails = last.pails;
       if (last.confetti) this.confetti = last.confetti;
       if (last.couple) this.couple = last.couple;
+      if (last.messages) this.messages = last.messages;
     }
     this.line = last.line;
     this.outlook = last.outlook;
@@ -1404,12 +1517,17 @@ export class Game {
   }
 
   // The hints' way through the board from here: the winning line kept, or
-  // one found now; null when none is found.
+  // one found now; null when none is found. On Valentine's envelope it is
+  // kept to a way that says the messages still to say, where one does.
   wayAhead() {
     if (!this.line && this.outlook !== 'lost') {
       const { result, line } = solve(this.layout, this.position(), { budget: 20000 });
       this.outlook = result;
       this.line = result === 'win' ? line : null;
+    }
+    if (this.line && this.messages) {
+      const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
+      this.line = mend(this.line, this.messages, { present: this.present, free, kindOf: (t) => MATCH[this.faces[t]], holds: (l) => this.holds(l) });
     }
     return this.line;
   }
@@ -1460,8 +1578,11 @@ export class Game {
     if (!dealt) return false;
     const busterTiles = this.busters && this.busters.map((d) => d.tiles.slice());
     const pails = this.pails && this.pails.map((p) => ({ ...p, tiles: p.tiles.slice() }));
-    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails, confetti: this.confetti, couple: this.couple });
+    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails, confetti: this.confetti, couple: this.couple, messages: this.messages });
     this.sides = dealt.sides;
+    // The candy hearts go with the tiles, put on the new deal as the deal
+    // put them, a message begun to be said next.
+    const line = this.messages ? this.reheart(dealt.order) : dealt.order;
     // The smitten couple goes with the tiles: a pair of the new deal's
     // order with a tile it had, so that its two tiles match again.
     if (this.couple && this.couple.state === 'smitten') {
@@ -1497,7 +1618,7 @@ export class Game {
         d.tiles = order.splice(Math.max(0, k), 1)[0].slice();
       }
     }
-    this.line = dealt.order.slice();
+    this.line = line.slice();
     this.outlook = 'win';
     if (cat) this.treats.cat--;
     else this.shuffles++;

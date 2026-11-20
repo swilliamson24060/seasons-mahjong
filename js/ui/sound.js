@@ -1127,6 +1127,30 @@ export class Sound {
     [80, 84].forEach((note) => this.harp(note, this.now + 0.32, 0.12));
   }
 
+  // On Valentine's envelope, half a sweet nothing read: a note asked on the
+  // harp's high strings, waiting for its answer.
+  halfSaid() {
+    if (this.on) this.harp(87, this.now + 0.14, 0.09);
+  }
+
+  // A sweet nothing said: the secret admirer's note unfolded, its two words
+  // sung on the harp, rising, be mine, and a candy heart's sparkle above.
+  sweetNothing() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.14, 2600, 1300, 0.12);
+    this.harp(75, this.now + 0.12, 0.16);
+    this.harp(80, this.now + 0.42, 0.16);
+    [84, 87, 92].forEach((note, k) => this.harp(note, this.now + 0.72 + k * 0.05, 0.08));
+  }
+
+  // A sweet nothing left unsaid: a little sigh on the harp, two notes
+  // falling, softer than a heart breaking.
+  unsaid() {
+    if (!this.on) return;
+    this.harp(80, this.now + 0.1, 0.12);
+    this.harp(78, this.now + 0.48, 0.12);
+  }
+
   // A turkey's gobble: a quick string of throaty warbles, each falling, and
   // falling as they go.
   gobble() {

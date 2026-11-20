@@ -1,5 +1,5 @@
 import { makeLayout } from '../js/engine/layout.js';
-import { BOW, HEART } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE } from '../js/engine/layouts.js';
 
 // Valentine's Day's eight boards as planned (PLAN.md), drawn as layout.js
 // reads them, to be checked and looked at (tools/valentine.html) before
@@ -76,39 +76,9 @@ export const DRAFTS = [
   // 2. A heart pierced by Cupid's arrow: made, and drawn in
   // js/engine/layouts.js.
   { key: 'HEART', title: 'Love at first sight', name: 'Pierced heart', layout: HEART },
-  // 3. A valentine in its envelope, the flap closed in a V, with a gap along
-  // its edges, raised, and sealed with a heart at its point. 100 tiles on
-  // three layers, nine across and seven down.
-  {
-    key: 'ENVELOPE',
-    title: 'A secret admirer',
-    name: 'Envelope',
-    layers: [
-      `
-      .#######.
-      #.#####.#
-      ##.###.##
-      ###.#.###
-      ####.####
-      #########
-      #########
-      `,
-      `
-      .#######.
-      ..#####..
-      .#.###.#.
-      .##.#.##.
-      .###.###.
-      .#######.
-      `,
-      `
-      ..#####..
-      ...###...
-      ...++....
-      ....v....
-      `,
-    ],
-  },
+  // 3. A valentine in its envelope, the flap closed in a V and sealed with
+  // a heart at its point: made, and drawn in js/engine/layouts.js.
+  { key: 'ENVELOPE', title: 'A secret admirer', name: 'Envelope', layout: ENVELOPE },
   // 4. A dozen roses in a vase: the twelve roses raised over the bouquet,
   // its leaves hanging at the sides, and the vase beneath, its neck narrow
   // and its belly round. 102 tiles on three layers, nine across.

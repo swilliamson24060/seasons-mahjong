@@ -24,7 +24,9 @@
 // the board; on New Year's Day each match the resolution held through
 // January, leaving the sweets alone, and the whole month more; and on
 // Valentine's pierced heart each couple Cupid's arrow strikes, taken
-// together before his next arrow flies: love at first sight.
+// together before his next arrow flies: love at first sight; and on
+// Valentine's envelope each sweet nothing said, the pairs with its two
+// halves taken one straight after the other.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -61,6 +63,7 @@ export const POINTS = {
   held: 5, // each match of January the resolution held, the sweets left alone,
   resolution: 100, // and holding it through the whole month
   love: 30, // each couple Cupid's arrow strikes, taken together before his next flies
+  message: 40, // each sweet nothing said: the pairs with its two halves, one straight after the other
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -137,6 +140,11 @@ export function scoreOf(game, seconds, words = TURN) {
   if (game.arrowEvery) {
     const how = [`${game.loves} of ${game.arrowsFlown} couples`, game.heartbreaks && `${game.heartbreaks} ${game.heartbreaks === 1 ? 'heart' : 'hearts'} broken`].filter(Boolean).join(', ');
     rows.push(['Love at first sight', how, game.loves * POINTS.love]);
+  }
+  if (game.messages) {
+    const unsaid = game.messages.filter((m) => m.state === 'unsaid').length;
+    const how = [`${game.messagesSaid} of ${game.messages.length} said`, unsaid && `${unsaid} unsaid`].filter(Boolean).join(', ');
+    rows.push(['Sweet nothings', how, game.messagesSaid * POINTS.message]);
   }
   if (game.sweets) {
     const held = game.daysHeld;

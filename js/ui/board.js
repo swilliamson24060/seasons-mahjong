@@ -511,6 +511,12 @@ export class Board {
     if (g.confetti && g.confetti[i] >= 0) return `${name}, with ${COLOURS[g.confetti[i]]} confetti`;
     if (g.inStarRow(i)) return `${name}, in the shooting star's row`;
     if (g.isSmitten(i)) return `${name}, smitten by Cupid's arrow: take it with the other smitten tile within ${g.untilArrow} ${g.untilArrow === 1 ? 'match' : 'matches'}`;
+    const candy = this.candyOf(i);
+    if (candy) {
+      const { words, tiles } = g.messages[candy.message];
+      if (g.awaited(i)) return `${name}, a candy heart saying ${candy.word}: take its pair now to say ${words.join(' ')}`;
+      return `${name}, a candy heart saying ${candy.word}: take its pair, and the pair with ${words[1 - tiles.indexOf(i)]} straight after, to say ${words.join(' ')}`;
+    }
     if (g.inGlassesWay(i)) return `${name}, in the glasses' way`;
     if (g.tempting(i)) return `${name}, a sweet: leave it alone through January to keep your resolution`;
     if (g.isSweet(i)) return `${name}, a sweet, fair game now`;
@@ -543,7 +549,14 @@ export class Board {
     const [x, y] = this.at;
     const under = document.elementFromPoint(x, y)?.closest('.tile');
     this.held = under && this.el.contains(under) ? Number(under.dataset.i) : i;
-    this.magnifier.show(this.sidesOf(this.held), this.tileWidth, x, y, this.faceSet);
+    this.magnifier.show(this.sidesOf(this.held), this.tileWidth, x, y, this.faceSet, this.candyOf(this.held));
+  }
+
+  // On Valentine's envelope, the candy heart a tile carries: the word on
+  // it, and which message it is half of, for its colour; or null.
+  candyOf(i) {
+    const h = this.game.heartOf(i);
+    return h && { word: h.message.words[h.half], message: this.game.messages.indexOf(h.message) };
   }
 
   // A tile's faces as the magnifier shows them, each [face, night]: the side
@@ -615,6 +628,17 @@ export class Board {
       el.classList.toggle('smitten', smitten);
       el.classList.toggle('pining', smitten && g.untilArrow <= 2);
       if (smitten) el.dataset.arrow = g.untilArrow;
+      // On Valentine's envelope, a tile with half a sweet nothing on it
+      // carries a candy heart saying it, in its message's colour; the half
+      // still to take of a message begun beats, to be taken next.
+      const candy = this.candyOf(i);
+      el.classList.toggle('candy', Boolean(candy));
+      el.classList.toggle('awaited', g.awaited(i));
+      if (candy) Object.assign(el.dataset, { word: candy.word, message: candy.message });
+      else {
+        delete el.dataset.word;
+        delete el.dataset.message;
+      }
       el.classList.toggle('in-way', g.inGlassesWay(i)); // on New Year's 2: in the glasses' way
       // On New Year's Day, a sweet carries its treat, and through January,
       // while the resolution holds, it is a tempting pink.
@@ -625,7 +649,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

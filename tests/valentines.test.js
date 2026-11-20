@@ -1,6 +1,6 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { BOW, HEART } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
 import { LOVE_STORY, chapterOf } from '../js/valentines.js';
@@ -10,6 +10,7 @@ import { FACE } from '../js/engine/tiles.js';
 
 const FIRST = LOVE_STORY[0];
 const SECOND = LOVE_STORY[1];
+const THIRD = LOVE_STORY[2];
 
 // The tiles of a layout's bottom layer in a row, given in half tiles, by
 // where each starts across.
@@ -104,6 +105,48 @@ test("the pierced heart's deals can be won in the order they were dealt, Cupid l
     for (const [a, b] of g.plan) check(g.match(a, b), `seed ${seed}: a pair of the deal's own order cannot be taken`);
     check(g.won, `seed ${seed}: not cleared`);
     equal(g.arrowsFlown, 6, `seed ${seed}: arrows over 46 matches`);
+  }
+  return '200 deals';
+});
+
+test('the third chapter is a secret admirer, a valentine in its envelope: 100 tiles on three layers, nine across and seven down, with sweet nothings on candy hearts', () => {
+  equal(THIRD.name, 'The third chapter', "the third chapter's name");
+  equal(THIRD.title, 'A secret admirer', "the third chapter's title");
+  equal(chapterOf(ENVELOPE), THIRD, "the envelope's chapter");
+  check(Object.keys(layouts).includes('ENVELOPE'), 'the envelope plays by its address, #play/envelope');
+  equal(ENVELOPE.count, 100, 'tiles');
+  equal(ENVELOPE.width / 2, 9, 'tiles across');
+  equal(ENVELOPE.height / 2, 7, 'tiles down');
+  equal(ENVELOPE.depth, 3, 'layers');
+  check(ENVELOPE.count > HEART.count, 'no more tiles than the heart');
+  equal(dayOptions(THIRD).sweethearts, true, 'sweet nothings on candy hearts');
+  check(['BE and MINE', 'TRUE and LOVE', 'HUG and ME', 'SWEET and TALK', 'very next match', '40 points'].every((w) => THIRD.text.includes(w)), "the card doesn't tell the messages, or what saying one is worth");
+});
+
+test("the envelope reads as a valentine in its envelope: its flap closed in a V down to the middle, a gap along it on both the lower layers, and a heart sealing it at its point, on top", () => {
+  equal(across(ENVELOPE, 0).join(), '2,4,6,8,10,12,14', "the envelope's top edge, under the flap");
+  equal(across(ENVELOPE, 12).join(), '0,2,4,6,8,10,12,14,16', "the envelope's foot");
+  // The V: on each of the rows down to the middle, a gap a tile in from
+  // either side, coming in a tile a row, on both the lower layers.
+  for (const z of [0, 1]) {
+    for (let r = 1; r <= 4; r++) {
+      const gap = [2 * r, 16 - 2 * r];
+      check(!gap.some((x) => [...ENVELOPE.x.keys()].some((i) => ENVELOPE.z[i] === z && ENVELOPE.y[i] === 2 * r && ENVELOPE.x[i] === x)), `layer ${z + 1}, row ${r + 1}: no gap for the flap's V at ${gap.join(' and ')}`);
+    }
+  }
+  // The seal: on top, below the flap's top rows, two lobes side by side
+  // and the point between them, below, over the V's point.
+  const seal = [...ENVELOPE.x.keys()].filter((i) => ENVELOPE.z[i] === 2 && ENVELOPE.y[i] >= 4).map((i) => `${ENVELOPE.x[i]},${ENVELOPE.y[i]}`);
+  equal(seal.join(' '), '7,5 9,5 8,7', "the heart seal's tiles");
+});
+
+test("the envelope's deals can be won in the order they were dealt, saying every sweet nothing", () => {
+  const options = dayOptions(THIRD);
+  for (let seed = 1; seed <= 200; seed++) {
+    const g = new Game(ENVELOPE, { seed, ...options });
+    for (const [a, b] of g.plan) check(g.match(a, b), `seed ${seed}: a pair of the deal's own order cannot be taken`);
+    check(g.won, `seed ${seed}: not cleared`);
+    equal(g.messagesSaid, 4, `seed ${seed}: sweet nothings said`);
   }
   return '200 deals';
 });

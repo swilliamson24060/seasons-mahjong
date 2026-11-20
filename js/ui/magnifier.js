@@ -10,7 +10,9 @@ const EDGE = 8; // and from the edges of the screen
 // board's tiles, so that tired eyes need not peer at a small one. It sits
 // above the finger, which would otherwise hide the tile, or beside it near
 // the top of the screen, a little smaller if it must be to fit. Before the
-// tiles turn over it shows, after an arrow, the side the tile will turn to.
+// tiles turn over it shows, after an arrow, the side the tile will turn to;
+// and on Valentine's envelope, the candy heart a tile carries, its half of a
+// sweet nothing in full.
 export class Magnifier {
   constructor() {
     this.el = document.createElement('div');
@@ -23,12 +25,13 @@ export class Magnifier {
 
   // Shows a tile's sides, each [face, night], for a board whose tiles are
   // `width` pixels wide and wear the set of faces given, near the point
-  // (x, y) on the screen.
-  show(sides, width, x, y, set = 'halloween') {
-    const key = `${sides.join(' ')} ${width} ${set}`;
+  // (x, y) on the screen, with the candy heart it carries, { word, message },
+  // if it has one.
+  show(sides, width, x, y, set = 'halloween', candy = null) {
+    const key = `${sides.join(' ')} ${width} ${set} ${candy ? `${candy.word} ${candy.message}` : ''}`;
     if (key !== this.showing) {
       this.showing = key;
-      this.draw(sides, width, set);
+      this.draw(sides, width, set, candy);
     }
     const { left, top, stacked, scale } = spot(this.sizes, x, y, innerWidth, innerHeight);
     this.el.classList.toggle('stacked', stacked);
@@ -43,8 +46,9 @@ export class Magnifier {
     this.showing = '';
   }
 
-  draw(sides, width, set) {
+  draw(sides, width, set, candy = null) {
     this.el.dataset.faces = set; // for the style of the set's tiles, as the board's
+    this.el.classList.toggle('candied', Boolean(candy)); // room above for a candy heart peeking over the tile
     // Three times the board's tiles, though never so small as to be hard
     // to read, nor so big that two side by side are wider than the screen.
     const w = Math.round(Math.min(Math.max(width * 3, 112), 160, innerWidth / 2 - 50));
@@ -55,7 +59,7 @@ export class Magnifier {
     const parts = [];
     sides.forEach(([face, night], k) => {
       if (k) parts.push(arrow());
-      parts.push(tile(face, night, set));
+      parts.push(tile(face, night, set, k ? null : candy));
     });
     this.el.replaceChildren(...parts);
     // Its size in a row and in a column, for spot() to choose between.
@@ -106,9 +110,10 @@ export function spot(sizes, x, y, W, H) {
   return best;
 }
 
-function tile(face, night, set) {
+function tile(face, night, set, candy = null) {
   const el = document.createElement('div');
-  el.className = `tile${night ? ' night' : ''}${face === LOST ? ' soul' : ''}`;
+  el.className = `tile${night ? ' night' : ''}${face === LOST ? ' soul' : ''}${candy ? ' candy' : ''}`;
+  if (candy) Object.assign(el.dataset, { word: candy.word, message: candy.message });
   const svg = document.createElementNS(SVG, 'svg');
   svg.setAttribute('viewBox', '0 0 60 80');
   const use = document.createElementNS(SVG, 'use');

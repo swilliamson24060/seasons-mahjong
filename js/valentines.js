@@ -1,4 +1,4 @@
-import { BOW, HEART } from './engine/layouts.js';
+import { BOW, HEART, ENVELOPE } from './engine/layouts.js';
 
 // Valentine's Day: a love story, eight boards told from Cupid taking aim to
 // "be mine", each board a moment of it, to be reached in turn as Christmas's
@@ -29,6 +29,14 @@ export const LOVE_STORY = [
     rules: { treats: false, ghostsFloat: false, arrows: 8 },
     sky: ['#8a3554', '#2a0e1b'],
     text: "Cupid's arrow has struck the heart. As the board starts, and again every eight matches, he lets fly: his arrow strikes two tiles of a kind, and they're smitten, a heart on each. Take the two together before his next arrow flies, and it's love at first sight: 30 points. Take either with another tile, and a heart is broken.",
+  },
+  {
+    name: 'The third chapter',
+    title: 'A secret admirer',
+    layout: ENVELOPE,
+    rules: { treats: false, ghostsFloat: false, sweethearts: true },
+    sky: ['#70366e', '#240f25'],
+    text: 'A valentine has come from a secret admirer, sealed with a heart. Eight tiles carry candy hearts, each with half a sweet nothing, its other half the same colour: BE and MINE, TRUE and LOVE, HUG and ME, SWEET and TALK. Take the pair with one half, and then, as the very next match, the pair with the other, and the message is said: 40 points. Take anything between, and it goes unsaid.',
   },
 ];
 

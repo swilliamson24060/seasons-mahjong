@@ -429,6 +429,28 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     if (words.length) toast(words.join(' '));
   });
+  // On Valentine's envelope: the pair with half of a sweet nothing begins
+  // it, the pair with its other half, taken straight after, says it, and
+  // anything else taken first leaves it unsaid.
+  game.on('message', ({ b, said, unsaid, begun }) => {
+    const words = [];
+    if (said) {
+      sound.sweetNothing();
+      board.float('💌', b);
+      setTimeout(() => board.float(`+${POINTS.message}`, b), 500); // after the pair's own points
+      words.push(`${said.join(' ')}! A sweet nothing from your secret admirer: ${POINTS.message} points.`);
+    }
+    if (unsaid) {
+      sound.unsaid();
+      words.push(`${unsaid.join(' ')} went unsaid: another pair came between its halves.`);
+    }
+    if (begun) {
+      setTimeout(() => sound.halfSaid(), unsaid ? 600 : 0);
+      const [now, next] = [begun.words[begun.first], begun.words[1 - begun.first]];
+      words.push(`${now}… Take the pair with ${next} straight after, to say ${begun.words.join(' ')}.`);
+    }
+    toast(words.join(' '));
+  });
   // On New Year's Day: a sweet taken in January breaks the resolution, and
   // a match that sees January out without one keeps it.
   game.on('resolution', ({ b, gaveIn }) => {
@@ -1447,6 +1469,9 @@ function update() {
   // sight.
   $('arrows').hidden = !g.arrowEvery;
   if (g.arrowEvery) $('arrows').innerHTML = `💘 <b>${g.loves}</b>`;
+  // On Valentine's envelope, the sweet nothings said, of them all.
+  $('messages').hidden = !g.messages;
+  if (g.messages) $('messages').innerHTML = `💌 <b>${g.messagesSaid}</b>/${g.messages.length}`;
   // The lovebirds taken, on a board of turtle doves.
   $('lovebirds').hidden = !g.rules.lovebirds;
   if (g.rules.lovebirds) $('lovebirds').innerHTML = `🕊️ <b>${g.lovebirds}</b>`;

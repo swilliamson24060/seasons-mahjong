@@ -2152,6 +2152,36 @@ export const HEART = parseLayout('Pierced heart', [
   `,
 ]);
 
+// Valentine's Day's third board: a secret admirer's valentine in its
+// envelope. The flap closed in a V down to the middle, a gap along its
+// edges, raised over the envelope and sealed with a heart at its point, the
+// heart on top. 100 tiles on three layers, nine across and seven down.
+export const ENVELOPE = parseLayout('Envelope', [
+  `
+  .#######.
+  #.#####.#
+  ##.###.##
+  ###.#.###
+  ####.####
+  #########
+  #########
+  `,
+  `
+  .#######.
+  ..#####..
+  .#.###.#.
+  .##.#.##.
+  .###.###.
+  .#######.
+  `,
+  `
+  ..#####..
+  ...###...
+  ...++....
+  ....v....
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [

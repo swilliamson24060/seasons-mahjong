@@ -674,6 +674,55 @@ body.covered #board {
   animation: heartbeat 0.9s ease-out;
 }
 
+/* On Valentine's envelope, a tile with half a sweet nothing on it carries
+   a candy heart at its top left, where badges go, its word pressed into it
+   in red, as on the candy hearts' own tiles, and in its message's pastel,
+   so that a message's two halves match. Held up close, it reads with ease.
+   The half still to take of a message begun blushes, its heart beating, to
+   be taken next. */
+.tile.candy::before {
+  content: attr(data-word);
+  position: absolute;
+  top: -13%;
+  left: 2%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: calc(var(--tile-w) * 0.68);
+  height: calc(var(--tile-w) * 0.52);
+  padding-bottom: calc(var(--tile-w) * 0.08);
+  background: center / 100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 104' preserveAspectRatio='none'%3E%3Cpath d='M2 27A25 25 0 0 1 52 27A25 25 0 0 1 102 27Q102 64.5 52 102Q2 64.5 2 27Z' fill='%23ffb8ca' stroke='%23d9668a' stroke-width='4'/%3E%3C/svg%3E");
+  color: #c8173f;
+  font: 900 max(6px, calc(var(--tile-w) * 0.165)) / 1 system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.02em;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+
+.tile.candy[data-message='1']::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 104' preserveAspectRatio='none'%3E%3Cpath d='M2 27A25 25 0 0 1 52 27A25 25 0 0 1 102 27Q102 64.5 52 102Q2 64.5 2 27Z' fill='%23d5bff3' stroke='%239a72d6' stroke-width='4'/%3E%3C/svg%3E");
+}
+
+.tile.candy[data-message='2']::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 104' preserveAspectRatio='none'%3E%3Cpath d='M2 27A25 25 0 0 1 52 27A25 25 0 0 1 102 27Q102 64.5 52 102Q2 64.5 2 27Z' fill='%23b7ecc8' stroke='%2353a873' stroke-width='4'/%3E%3C/svg%3E");
+}
+
+.tile.candy[data-message='3']::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 104' preserveAspectRatio='none'%3E%3Cpath d='M2 27A25 25 0 0 1 52 27A25 25 0 0 1 102 27Q102 64.5 52 102Q2 64.5 2 27Z' fill='%23ffe48a' stroke='%23c9a227' stroke-width='4'/%3E%3C/svg%3E");
+}
+
+.tile.awaited {
+  --face-1: #fff0f4;
+  --face-2: #ffd0de;
+  --edge: #e898b2;
+  --edge-deep: #c26a8a;
+}
+
+.tile.awaited::before {
+  animation: heartbeat 1.1s ease-out infinite;
+}
+
 @keyframes heartbeat {
   0%,
   30%,
@@ -1342,6 +1391,11 @@ body.covered #board {
   flex-direction: column;
 }
 
+/* A candy heart peeks over its tile's top edge: room for it above. */
+.magnifier.candied {
+  padding-top: calc(12px + var(--tile-w) * 0.2);
+}
+
 .magnifier .tile {
   position: relative;
   flex: none;
@@ -1700,6 +1754,7 @@ body.covered #board {
   .tile.landing::after,
   .tile.sparkler.burning::before,
   .tile.struck::before,
+  .tile.awaited::before,
   .star-band.streak::before,
   .glass.clinking svg {
     animation: none;
