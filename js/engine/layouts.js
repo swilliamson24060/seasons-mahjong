@@ -2227,6 +2227,62 @@ export const ROSES = parseLayout('Vase of roses', [
   `,
 ]);
 
+// Valentine's Day's fifth board: the first date, dinner by candlelight. Two
+// tall candles, raised four high, his on the left and hers on the right,
+// their flames above them, standing in their candlesticks on the table,
+// which is raised along its far edge. 108 tiles on four layers, nine across
+// and ten and a half down.
+export const CANDLES = parseLayout('Candlelight', [
+  `
+  .>....>..
+  .vv...vv.
+  .vv...vv.
+  .vv...vv.
+  .vv...vv.
+  .vv...vv.
+  +++..+++.
+  .+....+..
+  vvvvvvvvv
+  vvvvvvvvv
+  `,
+  `
+  .>....>..
+  .+....+..
+  .+....+..
+  .+....+..
+  .+....+..
+  .+....+..
+  .vv...vv.
+  .........
+  .........
+  >>>>>>>>.
+  `,
+  `
+  .>....>..
+  .+....+..
+  .+....+..
+  .+....+..
+  .+....+..
+  .+....+..
+  .........
+  .........
+  .........
+  .#######.
+  `,
+  `
+  .>....>..
+  .+....+..
+  .+....+..
+  .+....+..
+  .+....+..
+  .+....+..
+  .........
+  .........
+  .........
+  ..#####..
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [

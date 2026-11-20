@@ -107,6 +107,9 @@ test("Valentine's sounds are all heard, and none too loud", async () => {
     'a rose for the bouquet': [2.4, (s) => s.gathered()],
     'a bud snipped': [2.6, (s) => s.snip()],
     'a rose wilting': [2.4, (s) => s.wilt()],
+    'a candlelit pair': [2.4, (s) => s.candlelit()],
+    'the candles burning down': [2.4, (s) => s.flicker()],
+    'the candles guttering out': [2.8, (s) => s.gutter()],
   };
   const peaks = [];
   for (const [name, [seconds, play]] of Object.entries(sounds)) {

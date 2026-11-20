@@ -723,6 +723,27 @@ body.covered #board {
   animation: heartbeat 1.1s ease-out infinite;
 }
 
+/* On Valentine's first date, a tile in a candle's glow is tinged gold, a
+   warm light round its edges; a candlelit pair takes one in each candle's
+   glow. */
+.tile.glow {
+  --face-1: #fff8e4;
+  --face-2: #ffe4a6;
+  --edge: #e2bb6a;
+  --edge-deep: #b98f3e;
+}
+
+.tile.glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 calc(var(--tile-w) * 0.04) rgba(255, 196, 70, 0.9),
+    inset 0 0 calc(var(--tile-w) * 0.22) rgba(255, 176, 50, 0.6);
+  pointer-events: none;
+}
+
 /* On Valentine's vase of roses, a rose in bud carries a bud at its top
    left, where badges go; in bloom it blushes, with a rose counting down the
    matches it has left in bloom, deeper at the last two, and pops open as it
@@ -1652,10 +1673,15 @@ body.covered #board {
 #card .score td {
   padding: 2px 6px;
   text-align: left;
+  vertical-align: top;
   color: var(--muted);
 }
 
-#card .score td + td {
+/* A row's name and its points each stay on one line, and what it was for
+   wraps, so that a long one, the roses' wasted and wilted, keeps inside the
+   card. */
+#card .score td:first-child,
+#card .score td:last-child {
   white-space: nowrap;
 }
 

@@ -1,5 +1,5 @@
 import { makeLayout } from '../js/engine/layout.js';
-import { BOW, HEART, ENVELOPE, ROSES } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES } from '../js/engine/layouts.js';
 
 // Valentine's Day's eight boards as planned (PLAN.md), drawn as layout.js
 // reads them, to be checked and looked at (tools/valentine.html) before
@@ -81,63 +81,8 @@ export const DRAFTS = [
   { key: 'ENVELOPE', title: 'A secret admirer', name: 'Envelope', layout: ENVELOPE },
   // 4. A dozen roses in a vase: made, and drawn in js/engine/layouts.js.
   { key: 'ROSES', title: 'A dozen roses', name: 'Vase of roses', layout: ROSES },
-  // 5. Dinner by candlelight: two tall candles in their candlesticks, their
-  // flames above them, on the table. 108 tiles on four layers, nine across.
-  {
-    key: 'CANDLES',
-    title: 'The first date',
-    name: 'Candlelight',
-    layers: [
-      `
-      .>....>..
-      .vv...vv.
-      .vv...vv.
-      .vv...vv.
-      .vv...vv.
-      .vv...vv.
-      +++..+++.
-      .+....+..
-      vvvvvvvvv
-      vvvvvvvvv
-      `,
-      `
-      .>....>..
-      .+....+..
-      .+....+..
-      .+....+..
-      .+....+..
-      .+....+..
-      .vv...vv.
-      .........
-      .........
-      >>>>>>>>.
-      `,
-      `
-      .>....>..
-      .+....+..
-      .+....+..
-      .+....+..
-      .+....+..
-      .+....+..
-      .........
-      .........
-      .........
-      .#######.
-      `,
-      `
-      .>....>..
-      .+....+..
-      .+....+..
-      .+....+..
-      .+....+..
-      .+....+..
-      .........
-      .........
-      .........
-      ..#####..
-      `,
-    ],
-  },
+  // 5. Dinner by candlelight: made, and drawn in js/engine/layouts.js.
+  { key: 'CANDLES', title: 'The first date', name: 'Candlelight', layout: CANDLES },
   // 6. A box of chocolates with its lid off: nine chocolates in three rows,
   // each a chocolate raised on its paper cup, inside the box's walls. 118
   // tiles on three layers, nine across and nine down.

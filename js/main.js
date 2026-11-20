@@ -429,6 +429,27 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     if (words.length) toast(words.join(' '));
   });
+  // On Valentine's first date: a pair with a tile in each candle's glow is
+  // candlelit, and every so many matches the candles burn down and their
+  // glow sinks a row, until they gutter out.
+  game.on('candlelight', ({ b, byCandlelight, sank, guttered }) => {
+    const words = [];
+    if (byCandlelight) {
+      sound.candlelit();
+      board.float('🕯️', b);
+      setTimeout(() => board.float(`+${POINTS.candlelit}`, b), 500); // after the pair's own points
+      words.push(`A candlelit pair! ${POINTS.candlelit} points.`);
+    }
+    if (sank) {
+      setTimeout(() => sound.flicker(), byCandlelight ? 700 : 0);
+      words.push('The candles burn down: their glow sinks a row toward the table.');
+    }
+    if (guttered) {
+      setTimeout(() => sound.gutter(), byCandlelight ? 700 : 0);
+      words.push('The candles gutter out.');
+    }
+    toast(words.join(' '));
+  });
   // On Valentine's vase of roses: a rose taken in bloom joins the bouquet,
   // one taken in bud is wasted, one left in bloom too long wilts, and every
   // so many matches another opens.
@@ -1502,6 +1523,10 @@ function update() {
   // On Valentine's vase of roses, the roses in the bouquet, of the dozen.
   $('roses').hidden = !g.roses;
   if (g.roses) $('roses').innerHTML = `🌹 <b>${g.bouquet}</b>/${g.roses.length}`;
+  // On Valentine's first date, the candlelit pairs, and while the candles
+  // burn, the matches until their glow sinks.
+  $('candles').hidden = !g.candles;
+  if (g.candles) $('candles').innerHTML = `🕯️ <b>${g.candlelitPairs}</b>${g.glowTop >= 0 ? ` · ⏳ <b>${g.untilSink}</b>` : ''}`;
   // The lovebirds taken, on a board of turtle doves.
   $('lovebirds').hidden = !g.rules.lovebirds;
   if (g.rules.lovebirds) $('lovebirds').innerHTML = `🕊️ <b>${g.lovebirds}</b>`;

@@ -1,4 +1,4 @@
-import { BOW, HEART, ENVELOPE, ROSES } from './engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES } from './engine/layouts.js';
 
 // Valentine's Day: a love story, eight boards told from Cupid taking aim to
 // "be mine", each board a moment of it, to be reached in turn as Christmas's
@@ -9,8 +9,9 @@ import { BOW, HEART, ENVELOPE, ROSES } from './engine/layouts.js';
 // couples to be taken together (engine/cupid.js); on the third a secret
 // admirer's valentine comes, its sweet nothings in two halves to be taken
 // one after the other (engine/sweethearts.js); on the fourth a dozen roses,
-// each to be taken while it's in bloom (engine/roses.js); and the eighth is
-// to be Be mine, when the question is popped halfway and every tile turns
+// each to be taken while it's in bloom (engine/roses.js); on the fifth, the
+// first date, a pair is candlelit with a tile in each candle's glow
+// (engine/candles.js); and the eighth is to be Be mine, when the question is popped halfway and every tile turns
 // over. Each chapter is as Thanksgiving's days are (thanksgiving.js says
 // what each part is for). PLAN.md has the story's
 // boards and twists, and tools/valentine-drafts.js the boards still to be
@@ -49,6 +50,14 @@ export const LOVE_STORY = [
     rules: { treats: false, ghostsFloat: false, roses: { count: 12, every: 3, lasts: 6 } },
     sky: ['#86304b', '#290d18'],
     text: "The secret admirer sends a dozen roses, the twelve on top of the vase still in bud. From the third match one opens every three matches, from the top down, and stays in bloom for six. Take a rose in bloom with any tile of its kind, and it joins the bouquet: 20 points. A rose taken in bud is wasted, and one left too long wilts.",
+  },
+  {
+    name: 'The fifth chapter',
+    title: 'The first date',
+    layout: CANDLES,
+    rules: { treats: false, ghostsFloat: false, candles: { every: 6, deep: 3, pairs: 6 } },
+    sky: ['#5e2f3e', '#1c0b12'],
+    text: "Dinner by candlelight, the first date. Each candle's glow tinges the tiles round its flame gold, his on the left and hers on the right. Take a pair with a tile in each glow, a table for two, and it's a candlelit pair: 20 points. Every six matches the candles burn down and their glow sinks a row toward the table, until they gutter out near the end.",
   },
 ];
 

@@ -1143,6 +1143,31 @@ export class Sound {
     [84, 87, 92].forEach((note, k) => this.harp(note, this.now + 0.72 + k * 0.05, 0.08));
   }
 
+  // On Valentine's first date, a candlelit pair: two glasses raised to each
+  // other across the table, and a soft chord on the harp.
+  candlelit() {
+    if (!this.on) return;
+    for (const [f, at] of [[1900, 0], [2850, 0.09]]) this.ping(f, this.now + at, { gain: 0.07, attack: 0.002, fall: 0.6, into: this.master });
+    [68, 72, 75].forEach((note) => this.harp(note, this.now + 0.25, 0.1));
+  }
+
+  // The candles burning down: a breath of air through the flames, and the
+  // harp's light lowering.
+  flicker() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.35, 500, 900, 0.1);
+    this.rustle(this.now + 0.22, 0.3, 800, 450, 0.08);
+    this.harp(60, this.now + 0.1, 0.09);
+  }
+
+  // The candles guttering out: a last flicker, a puff, and a low note.
+  gutter() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.25, 900, 500, 0.1);
+    this.rustle(this.now + 0.3, 0.6, 1400, 300, 0.14);
+    this.harp(56, this.now + 0.5, 0.12);
+  }
+
   // On Valentine's vase of roses, a rose opening: its petals unfurling, and
   // the harp rising softly.
   bloom() {

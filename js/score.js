@@ -26,8 +26,9 @@
 // Valentine's pierced heart each couple Cupid's arrow strikes, taken
 // together before his next arrow flies: love at first sight; and on
 // Valentine's envelope each sweet nothing said, the pairs with its two
-// halves taken one straight after the other; and on Valentine's vase of
-// roses each rose gathered into the bouquet, taken while it's in bloom.
+// halves taken one straight after the other; on Valentine's vase of roses
+// each rose gathered into the bouquet, taken while it's in bloom; and on
+// Valentine's first date each candlelit pair, a tile in each candle's glow.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -66,6 +67,7 @@ export const POINTS = {
   love: 30, // each couple Cupid's arrow strikes, taken together before his next flies
   message: 40, // each sweet nothing said: the pairs with its two halves, one straight after the other
   rose: 20, // each rose taken in bloom, with any tile of its kind, for the bouquet
+  candlelit: 20, // each pair with a tile in each candle's glow, his and hers
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -148,6 +150,7 @@ export function scoreOf(game, seconds, words = TURN) {
     const how = [`${game.messagesSaid} of ${game.messages.length} said`, unsaid && `${unsaid} unsaid`].filter(Boolean).join(', ');
     rows.push(['Sweet nothings', how, game.messagesSaid * POINTS.message]);
   }
+  if (game.candles) rows.push(['Candlelit pairs', times(game.candlelitPairs, POINTS.candlelit), game.candlelitPairs * POINTS.candlelit]);
   if (game.roses) {
     const lost = [
       [game.rosesIn('wasted'), 'wasted in bud'],

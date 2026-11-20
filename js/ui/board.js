@@ -523,6 +523,8 @@ export class Board {
       if (g.awaited(i)) return `${name}, a candy heart saying ${candy.word}: take its pair now to say ${words.join(' ')}`;
       return `${name}, a candy heart saying ${candy.word}: take its pair, and the pair with ${words[1 - tiles.indexOf(i)]} straight after, to say ${words.join(' ')}`;
     }
+    const glow = g.glowOf(i);
+    if (glow) return `${name}, in the glow of ${glow === 'his' ? 'his' : 'her'} candle: take it with a tile of its kind in the glow of ${glow === 'his' ? 'hers' : 'his'}, for a candlelit pair`;
     const rose = g.roseOf(i);
     if (rose >= 0) {
       const state = g.roseState(rose);
@@ -663,6 +665,7 @@ export class Board {
       el.classList.toggle('fading', bloom === 'bloom' && g.bloomLeft(rose) <= 2);
       el.classList.toggle('wilted', bloom === 'wilted');
       if (bloom === 'bloom') el.dataset.bloom = g.bloomLeft(rose);
+      el.classList.toggle('glow', Boolean(g.glowOf(i))); // on Valentine's first date: in a candle's glow
       el.classList.toggle('in-way', g.inGlassesWay(i)); // on New Year's 2: in the glasses' way
       // On New Year's Day, a sweet carries its treat, and through January,
       // while the resolution holds, it is a tempting pink.
@@ -673,7 +676,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

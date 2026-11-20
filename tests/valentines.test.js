@@ -1,10 +1,11 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { BOW, HEART, ENVELOPE, ROSES } from '../js/engine/layouts.js';
+import { BOW, HEART, ENVELOPE, ROSES, CANDLES } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
 import { LOVE_STORY, chapterOf } from '../js/valentines.js';
 import { theme } from '../js/themes.js';
+import { candlelitIn } from '../js/engine/candles.js';
 import { FACE_SETS, faceName } from '../js/ui/faces.js';
 import { FACE } from '../js/engine/tiles.js';
 
@@ -12,6 +13,7 @@ const FIRST = LOVE_STORY[0];
 const SECOND = LOVE_STORY[1];
 const THIRD = LOVE_STORY[2];
 const FOURTH = LOVE_STORY[3];
+const FIFTH = LOVE_STORY[4];
 
 // The tiles of a layout's bottom layer in a row, given in half tiles, by
 // where each starts across.
@@ -187,4 +189,45 @@ test("the vase's deals can be won in the order they were dealt, gathering every 
     equal(g.bouquet, 12, `seed ${seed}: roses gathered`);
   }
   return '200 deals';
+});
+
+test('the fifth chapter is the first date, dinner by candlelight: 108 tiles on four layers, nine across and ten and a half down, its candles glowing', () => {
+  equal(FIFTH.name, 'The fifth chapter', "the fifth chapter's name");
+  equal(FIFTH.title, 'The first date', "the fifth chapter's title");
+  equal(chapterOf(CANDLES), FIFTH, "the candles' chapter");
+  check(Object.keys(layouts).includes('CANDLES'), 'the candles play by their address, #play/candles');
+  equal(CANDLES.count, 108, 'tiles');
+  equal(CANDLES.width / 2, 9, 'tiles across');
+  equal(CANDLES.height / 2, 10.5, 'tiles down, the table a half tile lower at the front');
+  equal(CANDLES.depth, 4, 'layers');
+  check(CANDLES.count > ROSES.count, 'no more tiles than the vase');
+  equal(JSON.stringify(dayOptions(FIFTH).candles), JSON.stringify({ every: 6, deep: 3, pairs: 6 }), 'the glow sinking every six matches, three rows deep, and six candlelit pairs in the deal');
+  check(["Each candle's glow", 'a tile in each glow', '20 points', 'Every six matches', 'gutter out'].every((w) => FIFTH.text.includes(w)), "the card doesn't tell the glow, or what a candlelit pair is worth");
+});
+
+test('the first date reads as two tall candles, his and hers, their flames above them, in their candlesticks on the table', () => {
+  equal(across(CANDLES, 0).join(), '3,13', 'the two flames');
+  equal(across(CANDLES, 3).join(), '2,4,12,14', 'the two candles, two tiles wide');
+  equal(across(CANDLES, 13).join(), '1,3,5,11,13,15', "the candlesticks' drip trays");
+  equal(across(CANDLES, 15).join(), '3,13', "the candlesticks' stems");
+  equal(across(CANDLES, 19).join(), '0,2,4,6,8,10,12,14,16', 'the table');
+  // Each flame and each candle's middle, four high.
+  for (const x of [3, 13]) {
+    for (const y of [0, 3, 5, 7, 9, 11]) {
+      equal([...CANDLES.x.keys()].filter((i) => CANDLES.x[i] === x && CANDLES.y[i] === y && CANDLES.z[i] > 0).length, 3, `the stack at ${x},${y}, over the bottom layer`);
+    }
+  }
+});
+
+test("the first date's deals can be won in the order they were dealt, each taking six candlelit pairs or more", () => {
+  const options = dayOptions(FIFTH);
+  let lit = 0;
+  for (let seed = 1; seed <= 200; seed++) {
+    const g = new Game(CANDLES, { seed, ...options });
+    for (const [a, b] of g.plan) check(g.match(a, b), `seed ${seed}: a pair of the deal's own order cannot be taken`);
+    check(g.won, `seed ${seed}: not cleared`);
+    check(g.candlelitPairs >= 6 && g.candlelitPairs === candlelitIn(CANDLES, g.plan, options.candles), `seed ${seed}: ${g.candlelitPairs} candlelit pairs`);
+    lit += g.candlelitPairs;
+  }
+  return `200 deals, ${(lit / 200).toFixed(1)} candlelit pairs each`;
 });
