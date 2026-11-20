@@ -40,6 +40,7 @@ import './candles.test.js';
 import './chocolates.test.js';
 import './xoxo.test.js';
 import './bemine.test.js';
+import './showers.test.js';
 import './faces.test.js';
 import './site.test.js';
 import './score.test.js';

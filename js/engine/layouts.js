@@ -2461,6 +2461,45 @@ export const RING = parseLayout('Ring', [
   `,
 ]);
 
+// April Showers' first board: the first shower, a rain cloud. Its biggest
+// puff billows up in the middle, raised four high, and a smaller one at its
+// left, over a broad body; beneath it, half a tile below, its raindrops fall
+// in three slanting lines, each drop free from the start. 84 tiles on four
+// layers, nine across and ten and a half down: the gentle first board of
+// the season.
+export const CLOUD = parseLayout('Rain cloud', [
+  `
+  ....##...
+  .##.###..
+  ########.
+  #########
+  #########
+  .#######.
+  ..v..v..v
+  .+..+..+.
+  .v..v..v.
+  +..+..+..
+  `,
+  `
+  ....>....
+  .>..>>...
+  .>..>>>>.
+  .>>>>>>>.
+  ..>>>>>..
+  `,
+  `
+  .........
+  ....##...
+  ....##.#.
+  ..#####..
+  `,
+  `
+  .........
+  .........
+  ....>....
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [
