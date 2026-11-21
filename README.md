@@ -50,6 +50,14 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 - Each pair is worth 10 points and a cleared board 250, with 2 more for every second under par. A shuffle costs 100 and a hint 25; treats and undo are free. Turning over at midnight without a lost soul earns 150, and each lost soul costs 10. `js/score.js` holds the numbers.
 - From midnight the tiles turn over partway through each board. Hold the moon button or Space to see the night side. A tile held up close shows its night side beside it, or with the magnifier off, turns over while you hold it. Pairs that match on both sides are the ones to take before midnight.
 - Pairs of jack-o'-lanterns leave treats, whose buttons say what they do: a candle is a free hint, a skeleton key unlocks one blocked tile (press Unlock, then the tile), and a black cat is a free shuffle. A treat you have none of says what it does when you tap it.
+- The turtle, and any board played by address outside a holiday's own, speaks the words of the holiday whose tiles it wears, and changes them with its tiles when another holiday is chosen. Its treats are that holiday's own, left by the tile that stands where Halloween's jack-o'-lantern does:
+  - Thanksgiving's turkeys leave friends' gifts: a tip, a saved seat and musical chairs.
+  - Christmas's stockings hold a star, Santa's key and a sleigh ride.
+  - New Year's party hats bring party favours: a sparkler, a party popper and a rattle.
+  - Groundhog Day's suns change the weather: sunshine, a warm spell and a gust of wind.
+  - Valentine's boxes of chocolates hide sweet surprises: a matchmaker, the key to your heart and speed dating.
+
+  A board that turns over in another holiday's tiles is told in that holiday's words. It's sundown and worries in Thanksgiving's, Twelfth Night and coal in Christmas's, midnight and sleepyheads in New Year's, and the question and broken hearts in Valentine's. In Groundhog Day's, it's the forecast, when the groundhog comes out to look for his shadow, and a tile left without a partner is a shadow.
 - Thanksgiving week is eight boards, from the Sunday before Thanksgiving to the Sunday after. Thanksgiving's card in the menu lists them in order: each day you reach can be played again, and clearing a board opens the next. The week's board in play is kept, as the night's is, so going to the night or the turtle loses nothing. Each day's board also plays freely by its address: `#play/highway`, `#play/turkey`, `#play/cart`, `#play/potluck`, `#play/feast`, `#play/sale`, `#play/football` and `#play/alarm`.
   - On the first Sunday's, the jammed highway, there is no twist: the gentle start, its card telling the free-tile rule as traffic.
   - On Monday's, the frozen turkey, a frozen tile can't be taken until enough matches thaw it: its face shows through the ice, with the matches still to make under its number, and the turkey thaws from the outside in.
@@ -153,6 +161,7 @@ Once loaded, the game plays offline: `sw.js`, a service worker, keeps every file
 - `js/groundhog.js`: Groundhog Day's board of the day: the board, the day's seed made from its date, and the days in a row cleared.
 - `js/valentines.js`: Valentine's Day's love story, its eight chapters: each one's board, rules, sky and the words before it.
 - `js/showers.js`: April Showers, from showers to flowers, its chapters as they are made: each one's board, rules, sky and the words before it.
+- `js/words.js`: the words a board is told in, in each holiday's own: its treats, and its turning over.
 - `js/newyear.js`: New Year's boards, the countdown's ten and New Year's Day: each board's name, title, board, rules, sky and the words before it, and on the 1 the words its midnight is told in.
 - `js/score.js`: the score for a board, worked out from what the game records.
 - `js/leaderboard.js`: the leaderboard's boards, the names it takes, and posting and reading scores; `js/firebase.js` speaks to Firebase, and `js/firebase-config.js` says which project. `firestore.rules` is what Firestore lets players do.

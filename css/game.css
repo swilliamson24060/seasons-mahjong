@@ -1307,17 +1307,14 @@ body.covered #board {
   transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
 }
 
+/* A tile freed by a key wears the key's icon, in the board's own words:
+   a skeleton key, or at the potluck a saved seat's chair (--key-icon). */
 .tile.unlocked::after {
-  content: '🗝️';
+  content: var(--key-icon, '🗝️');
   position: absolute;
   left: 14%;
   top: -6px;
   font-size: calc(var(--tile-w) * 0.3);
-}
-
-/* At the potluck, a tile freed by a saved seat has a chair on it. */
-#board.potluck .tile.unlocked::after {
-  content: '🪑';
 }
 
 /* A Thanksgiving day's board with no treats has no treat buttons. */

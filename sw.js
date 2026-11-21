@@ -9,7 +9,7 @@
 // since other games on the same site share the browser's cache store.
 
 const PREFIX = 'seasons-';
-const CACHE = `${PREFIX}39`;
+const CACHE = `${PREFIX}40`;
 const SLOW = 3500; // ms to wait on the network before answering from the cache
 
 const FILES = [
@@ -35,6 +35,7 @@ const FILES = [
   'js/valentines.js',
   'js/showers.js',
   'js/themes.js',
+  'js/words.js',
   'js/ui/board.js',
   'js/ui/ball.js',
   'js/ui/christmas-faces.js',

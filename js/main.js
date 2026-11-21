@@ -7,6 +7,7 @@ import { NEW_YEAR, newYearOf } from './newyear.js';
 import { GROUNDHOG_DAY, groundhogOf, dayKey, daySeed, streakOf, weekTo } from './groundhog.js';
 import { LOVE_STORY, chapterOf } from './valentines.js';
 import { showerOf } from './showers.js';
+import { GIFTS, TURNS, wordsOf } from './words.js';
 import { ballDrop } from './ui/ball.js';
 import { KINDS, MATCH } from './engine/tiles.js';
 import { sprite, symbolId, faceName, kindName, FACE_SETS } from './ui/faces.js';
@@ -19,118 +20,13 @@ import { theme, when, isOpen, opensOn, today, short, menuList } from './themes.j
 
 const MIDNIGHT = HOURS.findIndex((h) => h.name === 'Midnight');
 
-// The treats a board gives, in its own words: Halloween's, which the
-// jack-o'-lanterns leave, and the potluck's, the gifts friends bring at
-// Friendsgiving. The game knows them as candle, key and cat: a free hint, a
-// blocked tile freed, and a free shuffle. For each: its icon; its name, as
-// a toast gives it when one comes; what it does, for a player who taps one
-// with none in hand, and where they come from; and what it says when used.
-const GIFTS = {
-  halloween: {
-    icons: { candle: '🕯️', key: '🗝️', cat: '🐈‍⬛' },
-    names: { candle: 'a candle, to show you a match', key: 'a skeleton key, to free a blocked tile', cat: 'a black cat, for a free shuffle' },
-    help: { candle: 'A candle shows you a match, for free.', key: 'A skeleton key frees one blocked tile.', cat: 'A black cat shuffles the tiles for free.' },
-    came: (name) => `The jack-o'-lanterns left ${name}.`,
-    from: (on) => (on ? "Each pair of jack-o'-lanterns leaves a treat." : 'Treats begin at 7 pm.'),
-    used: { candle: 'The candle shows you a match, for free.', cat: 'The black cat knocks the tiles about: a free shuffle.', key: 'Choose a blocked tile for the skeleton key.' },
-    keyName: 'key',
-  },
-  potluck: {
-    icons: { candle: '💬', key: '🪑', cat: '🎶' },
-    names: { candle: 'a tip, to show you a match', key: 'a saved seat, to free a blocked tile', cat: 'musical chairs, for a free shuffle' },
-    help: { candle: "A friend's tip shows you a match, for free.", key: 'A saved seat frees one blocked tile.', cat: 'Musical chairs shuffles the tiles for free.' },
-    came: (name) => `A friend brought ${name}.`,
-    from: () => 'Each pair of turkeys, green beans or mashed potatoes leaves a gift.',
-    used: { candle: "A friend's tip: there's a match.", cat: 'Musical chairs: everyone moves round, a free shuffle.', key: 'Choose a blocked tile for the saved seat.' },
-    keyName: 'saved seat',
-  },
-};
-let gifts = GIFTS.halloween; // the board in play's
+// The treats the board in play gives, and how its turning over is told,
+// in its holiday's words (words.js).
+let gifts = GIFTS.halloween;
+let turnWords = TURNS.midnight;
 
 // On New Year's 7, how close a pair came to the lucky coin, as a sign.
 const HEAT = { hot: '🔥', warm: '🌡️', cold: '🧊' };
-
-// How a board's turning over is told: Halloween's midnight, or its sunrise
-// on a board that starts on its night side; the Sunday Scaries' sundown,
-// when the weekend turns over to Monday and its lost souls are worries;
-// Christmas's Twelfth Night, when the drummers drum, the tiles turn over,
-// and its lost souls are lumps of coal, for the board that is left; and
-// New Year's midnight, on the 1, when the ball lands, the clock strikes
-// twelve and the new year comes in, its lost souls sleepyheads who missed
-// it; and Valentine's question, on Be mine, when the ring comes out and
-// the question is popped, its lost souls broken hearts. For each: the clock in the top bar, before the turn and after;
-// what its lost souls are; what it says at the turn, and three matches
-// before; the moon's title; the score's words; its sound; and on New
-// Year's, fireworks over the board.
-const TURNS = {
-  midnight: {
-    ahead: (n, night) => `${night ? '🕛' : '🌅'} <b>${n}</b> to ${night ? 'midnight' : 'sunrise'}`,
-    after: (night) => (night ? '🌙 night' : '☀️ day'),
-    soul: '👻',
-    soulsAhead: 'Lost souls if the tiles turned over now',
-    soulsWoke: 'Lost souls that woke',
-    turned: (night) => (night ? 'Midnight! The tiles turn over.' : 'Sunrise! The tiles turn back to day.'),
-    woke: (n) => (n ? `${n} lost ${n === 1 ? 'soul wakes' : 'souls wake'}: lost souls match each other.` : 'Not one lost soul.'),
-    prompt: 'Three matches to midnight. Hold the moon to see the night side, and take pairs that match on both sides.',
-    moon: 'Hold to see the night side (or hold Space)',
-    score: { night: 'Midnight', day: 'Sunrise', souls: 'Lost souls', none: 'no lost souls' },
-    ring: (night) => (night ? sound.midnight() : sound.sunrise()),
-  },
-  sundown: {
-    ahead: (n) => `🌇 <b>${n}</b> to sundown`,
-    after: () => '😟 Monday',
-    soul: '😟',
-    soulsAhead: 'Worries if the tiles turned over now',
-    soulsWoke: 'Worries that woke',
-    turned: () => "Sundown! The weekend's over, and the tiles turn over to Monday.",
-    woke: (n) => (n ? `${n} ${n === 1 ? 'worry wakes' : 'worries wake'}: worries match each other.` : 'Not one worry.'),
-    prompt: 'Three matches to sundown. Hold the moon to see Monday coming, and take pairs that match on both sides.',
-    moon: "Hold to see Monday's side (or hold Space)",
-    score: { night: 'Sundown', day: 'Sundown', souls: 'Worries', none: 'no worries' },
-    ring: () => sound.alarm(),
-  },
-  twelfth: {
-    ahead: (n) => `🌟 <b>${n}</b> to Twelfth Night`,
-    after: () => '🎭 Twelfth Night',
-    soul: '🪨',
-    soulsAhead: 'Lumps of coal if the tiles turned over now',
-    soulsWoke: 'Lumps of coal on the board',
-    turned: () => "Twelfth Night! The drummers drum, and the tiles turn over.",
-    woke: (n) => (n ? `${n} ${n === 1 ? 'tile turns' : 'tiles turn'} to coal: coal matches coal.` : 'Not one lump of coal.'),
-    prompt: 'Three matches to Twelfth Night. Hold the moon to see the other side, and take pairs that match on both sides.',
-    moon: "Hold to see Twelfth Night's side (or hold Space)",
-    score: { night: 'Twelfth Night', day: 'Twelfth Night', souls: 'Lumps of coal', none: 'no coal' },
-    ring: () => sound.drums(),
-  },
-  newyear: {
-    ahead: (n) => `🕛 <b>${n}</b> to midnight`,
-    after: () => '🎆 New Year',
-    soul: '😴',
-    soulsAhead: 'Sleepyheads if the tiles turned over now',
-    soulsWoke: 'Sleepyheads on the board',
-    turned: () => 'Happy New Year! The ball lands, the clock strikes twelve, and the tiles turn over.',
-    woke: (n) => (n ? `${n} ${n === 1 ? 'tile' : 'tiles'} missed midnight, fast asleep: sleepyheads match each other.` : 'Everyone made it to midnight.'),
-    prompt: "Three matches to midnight. Hold the moon to see the new year's side, and take pairs that match on both sides.",
-    moon: "Hold to see the new year's side (or hold Space)",
-    score: { night: 'Midnight', day: 'Midnight', souls: 'Sleepyheads', none: 'everyone awake' },
-    ring: () => sound.newYear(),
-    fireworks: true,
-  },
-  question: {
-    ahead: (n) => `💍 <b>${n}</b> to the question`,
-    after: () => '💍 Be mine?',
-    soul: '💔',
-    soulsAhead: 'Broken hearts if the tiles turned over now',
-    soulsWoke: 'Broken hearts on the board',
-    turned: () => 'The question is popped: will you be mine? The tiles turn over.',
-    woke: (n) => (n ? `${n} ${n === 1 ? 'heart breaks' : 'hearts break'}: broken hearts match each other.` : 'Not one broken heart.'),
-    prompt: 'Three matches to the question. Hold the moon to see the other side coming, and take pairs that match on both sides.',
-    moon: 'Hold to see the other side (or hold Space)',
-    score: { night: 'The answer is yes,', day: 'The answer is yes,', souls: 'Broken hearts', none: 'no broken hearts' },
-    ring: () => sound.question(),
-  },
-};
-let turnWords = TURNS.midnight; // the board in play's
 
 // The set of faces the board in play's tiles wear, and are named by
 // (faces.js): Halloween's on the night's boards, Thanksgiving's on the
@@ -241,12 +137,10 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
   faceSet = faces;
   sound.use(faces); // the holiday's music with its tiles
   sound.hush(); // the last board's music fading
-  turnWords = TURNS[turnSet] || TURNS.midnight;
-  $('moon').title = turnWords.moon;
+  speak({ turnSet, treatSet }, treatBar);
   game = new Game(layout, { seed, ...options });
   for (const move of replay) redo(move);
   moves = replay.slice();
-  showGifts(treatSet, treatBar);
   $('fridge').hidden = !game.fridgeSize;
   if (!game.fridgeSize) $('fridge').querySelector('.slots').replaceChildren(); // no containers left over from a board that had them
   const fridge = game.fridgeSize ? $('fridge').querySelector('.slots') : null;
@@ -705,7 +599,8 @@ function turtleKey() {
 // A board outside the night, as often as you like: the turtle that fits the
 // screen, or any of the night's boards by name, with or without a midnight.
 // It wears the faces of the holiday chosen, as the page wears its look, and
-// a day's board its holiday's. Like the night's, the board in play is kept,
+// speaks its words, its treats and its turning over; a day's board wears
+// and speaks its holiday's. Like the night's, the board in play is kept,
 // to go on with after a reload or a visit to the night: `keep` is that
 // board.
 let freeKey = 'turtle'; // the board free play deals,
@@ -719,8 +614,10 @@ function freePlay(key = turtleKey(), seed = newSeed(), turnAt = 0, keep = null) 
   if (shut) [key, turnAt, keep] = [turtleKey(), 0, null];
   freeKey = key;
   freeTurn = turnAt;
-  const today = dayFor(FREE[key]); // a holiday's day's board plays by its day's rules, and gives its own treats or none
-  const { options, ...rest } = today ? dayPlay(today) : { options: {}, faces: holidayFaces() };
+  // A holiday's day's board plays by its day's rules, and gives its own
+  // treats or none; any other is told in the words of the tiles it wears.
+  const today = dayFor(FREE[key]);
+  const { options, ...rest } = today ? dayPlay(today) : { options: {}, faces: holidayFaces(), ...wordsOf(holidayFaces()) };
   if (turnAt) options.turnAt = turnAt;
   play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...rest });
   saved.free = { key, seed, turnAt, moves, elapsed };
@@ -847,20 +744,21 @@ function ballFigure() {
 const named = (d) => d.called || d.name.replace(/^The /, 'the ');
 
 // What play() wants for a day's board: its options, the treats it gives or
-// none, its nap, the words its turning over is told in, and its holiday's
-// faces: Thanksgiving's, Christmas's, New Year's, Groundhog Day's or
-// Valentine's, and Halloween's for a holiday whose own are still to come,
-// April Showers'.
+// none, in its own words or its holiday's, its nap, the words its turning
+// over is told in, and its holiday's faces: Thanksgiving's, Christmas's,
+// New Year's, Groundhog Day's or Valentine's, and Halloween's for a holiday
+// whose own are still to come, April Showers'.
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;
+  const faces = DAYS.includes(d) ? 'thanksgiving' : TWELVE_DAYS.includes(d) ? 'christmas' : NEW_YEAR.includes(d) ? 'new-year' : d === GROUNDHOG_DAY ? 'groundhog' : LOVE_STORY.includes(d) ? 'valentines' : 'halloween';
   return {
     options,
-    treatSet: d.gifts || 'halloween',
+    treatSet: d.gifts || wordsOf(faces).treatSet,
     treatBar: Boolean(options.treats),
     napAt: napFrom ? { from: napFrom, to: napFrom + d.nap.matches } : null,
     turnSet: d.words || 'midnight',
-    faces: DAYS.includes(d) ? 'thanksgiving' : TWELVE_DAYS.includes(d) ? 'christmas' : NEW_YEAR.includes(d) ? 'new-year' : d === GROUNDHOG_DAY ? 'groundhog' : LOVE_STORY.includes(d) ? 'valentines' : 'halloween',
+    faces,
   };
 }
 
@@ -1066,7 +964,7 @@ function dailyWon(total, time, lines, timing) {
 function turned({ souls }) {
   woke = souls.length;
   const night = game.sideName === 'night';
-  turnWords.ring(night);
+  sound[turnWords.ring(night)]();
   toast(`${turnWords.turned(night)} ${turnWords.woke(woke)}`);
   // On New Year's, fireworks over the board: as the clock finishes
   // striking twelve, or with no sound, once the tiles have turned.
@@ -1133,8 +1031,8 @@ function nightScore() {
 
 function stuck() {
   const actions = [['Shuffle', () => help('shuffle')], ['Undo', () => help('undo')]];
-  if (game.treats.cat) actions.unshift(['Black cat', () => help('cat')]);
-  if (game.treats.key) actions.push(['Skeleton key', () => help('key')]);
+  if (game.treats.cat) actions.unshift([gifts.buttons.cat, () => help('cat')]);
+  if (game.treats.key) actions.push([gifts.buttons.key, () => help('key')]);
   actions.push(['Give up', giveUp]);
   showCard('No pairs left', 'Shuffle the tiles left, take back a move, or give up the board.', actions);
 }
@@ -1247,7 +1145,8 @@ function askToLose({ which, then, go, back, keep = 'Keep playing' }) {
 // is on the table, Thanksgiving's or Christmas's while a day of theirs is,
 // and otherwise the one chosen last, whose faces the board then wears too,
 // unless it is one of a holiday's days played freely. Another holiday
-// chosen with the turtle on the table changes its tiles with its colours.
+// chosen with the turtle on the table changes its tiles with its colours,
+// and its music and words with them.
 function applyTheme() {
   wear(theme(hour >= 0 ? 'halloween' : runDay >= 0 ? runId : saved.theme) || theme('halloween'));
   // The day is found by the key free play dealt: a board with a fridge
@@ -1256,6 +1155,7 @@ function applyTheme() {
   if (faces !== faceSet) {
     board.setFaces((faceSet = faces));
     sound.use(faceSet); // and its music
+    speak(wordsOf(faceSet)); // and its words
   }
 }
 
@@ -1648,8 +1548,18 @@ function sky() {
   }
 }
 
-// The treat buttons in the board's own words, with their icons; hidden on
-// a day's board with no treats, as none will come.
+// The words the board in play is told in (words.js): its turning over, and
+// its treats, whose buttons show while it gives them.
+function speak({ turnSet, treatSet }, bar = true) {
+  turnWords = TURNS[turnSet] || TURNS.midnight;
+  $('moon').title = turnWords.moon;
+  showGifts(treatSet, bar);
+  if (board) board.keyName = gifts.keyName;
+}
+
+// The treat buttons in the board's own words, with their icons, the key's
+// on a tile it freed too; hidden on a day's board with no treats, as none
+// will come.
 function showGifts(set, bar) {
   gifts = GIFTS[set] || GIFTS.halloween;
   for (const t of ['candle', 'key', 'cat']) {
@@ -1657,7 +1567,7 @@ function showGifts(set, bar) {
     $(t).title = gifts.help[t].replace(/\.$/, '');
   }
   document.querySelector('.treats').hidden = !bar;
-  $('board').classList.toggle('potluck', set === 'potluck');
+  $('board').style.setProperty('--key-icon', JSON.stringify(gifts.icons.key));
 }
 
 // The shopping list, on a board with one: a small tile for each thing on
