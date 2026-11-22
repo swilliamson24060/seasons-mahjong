@@ -1,4 +1,4 @@
-import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY, CAN, BED } from './engine/layouts.js';
+import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY, CAN, BED, BASKET } from './engine/layouts.js';
 
 // April Showers: from showers to flowers, eight boards from the first
 // shower to May Day, the sky clearing as they go, to be reached in turn as
@@ -16,8 +16,10 @@ import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY, CAN, BED } from './engine/layout
 // picked (engine/watering.js); on the sixth, the watering can, its body
 // fills it and its drops pour it (engine/pour.js); on the seventh, the
 // flower bed, a bee flies from tulip to tulip, a pair with the one she's on
-// making honey (engine/bees.js); the eighth is to be May Day, when April
-// turns to May halfway and every tile turns over. Each chapter is as
+// making honey (engine/bees.js); and on the eighth, May Day, a May basket,
+// the full set of 144, the board starts on the last night of April and
+// turns over to May's side halfway, at dawn, a tile left without a partner
+// a wilted flower (words.js tells it). Each chapter is as
 // Thanksgiving's days are (thanksgiving.js says what each part is for), and
 // PLAN.md has the season's boards and twists. Until April Showers' own
 // tiles are drawn, its boards wear Halloween's.
@@ -65,6 +67,23 @@ const CAN_DROPS = [
   [12, 16],
   [12, 18],
 ];
+
+// The May basket's look, each tile's part by where it is, in half tiles,
+// for the board to tint once the tiles turn over to May's side (board.js):
+// the bow tied at the top of its handle, the handle, the rim, and the woven
+// body, its weave in two shades; and the flowers heaped in it, in May's
+// colours a clump at a time, with leaves at their edges.
+const LEAVES = ['2,6,0', '14,6,0', '4,4,0', '12,4,0', '3,5,1', '13,5,1'];
+const BLOOMS = ['lilac', 'pink', 'yellow', 'white'];
+export function basketPart(L, i) {
+  const [x, y, z] = [L.x[i], L.y[i], L.z[i]];
+  if (y === 0 && z > 0) return 'bow';
+  if (y >= 10) return ((x >> 1) + (y >> 1) + z) % 2 ? 'weave' : 'weave-2';
+  if (y === 8) return 'rim';
+  if (z === 0 && y < 6 && y !== 4) return 'handle';
+  if (LEAVES.includes(`${x},${y},${z}`)) return 'leaf';
+  return BLOOMS[(((x + 1) >> 2) + ((y + 1) >> 2) + z) % BLOOMS.length];
+}
 
 export const SHOWERS = [
   {
@@ -122,6 +141,15 @@ export const SHOWERS = [
     rules: { treats: false, ghostsFloat: false, bees: { tops: 2 } },
     sky: ['#6787a2', '#1c2a37'],
     text: "The tulips are out in rows, and a bee 🐝 is busy among them. With every match she flies to another tulip, and the one she's flying to next is ringed, so you can see her coming. Take the tulip she's on, the top of its head, with any tile of its kind, and she makes honey 🍯: 20 points. A tulip taken while she's elsewhere is just a tile, and she won't visit it again.",
+  },  {
+    name: 'The eighth chapter',
+    title: 'May Day',
+    layout: BASKET,
+    rules: { treats: false, ghostsFloat: false, soulsFloat: true, turn: 1 / 2, firstSide: 'night' },
+    words: 'may',
+    look: basketPart,
+    sky: ['#6f97bd', '#1e3042'],
+    text: "The last night of April, and a May basket hangs on the door, brimming with flowers for the morning. Halfway through, dawn breaks on May Day: April turns to May, and every tile turns over to May's side. Hold the moon, or Space, to see it coming, and before then, take pairs that match on both sides. A tile left without a partner is a flower that wilted 🥀: wilted flowers match each other, and can be taken wherever they lie.",
   },
 ];
 

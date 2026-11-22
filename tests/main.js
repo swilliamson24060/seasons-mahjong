@@ -47,6 +47,7 @@ import './colours.test.js';
 import './watering.test.js';
 import './pour.test.js';
 import './bees.test.js';
+import './mayday.test.js';
 import './faces.test.js';
 import './site.test.js';
 import './score.test.js';

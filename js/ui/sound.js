@@ -1316,6 +1316,18 @@ export class Sound {
     o.stop(this.now + 0.36);
   }
 
+  // May morning, on April Showers' May Day, as April turns to May: a
+  // cuckoo calling twice at dawn, as it does in May, and the bells rung for
+  // May morning, up into the spring.
+  mayDay() {
+    if (!this.on) return;
+    [0, 0.75].forEach((t) => {
+      this.whistle(this.now + t, 760, 730, 0.2, 0.07);
+      this.whistle(this.now + t + 0.28, 610, 585, 0.34, 0.07);
+    });
+    [1046.5, 1318.5, 1568, 2093, 1568, 2093].forEach((f, k) => this.bell(f, this.now + 1.6 + k * 0.16, 0.06, 2));
+  }
+
   // Honey made: the bee's buzz, and a sweet run down the glockenspiel and
   // up again.
   honey() {

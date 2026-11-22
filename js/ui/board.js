@@ -111,9 +111,10 @@ export function tileSpots(layout, w) {
 // faceSet is the set of faces its tiles wear (faces.js), and are named by,
 // which the board says as data-faces, for the page's style to follow.
 export class Board {
-  constructor(el, game, { say = () => {}, sound = null, magnifier = null, keyName = 'key', fridge = null, faceSet = 'halloween' } = {}) {
+  constructor(el, game, { say = () => {}, sound = null, magnifier = null, keyName = 'key', fridge = null, faceSet = 'halloween', look = null } = {}) {
     this.el = el;
     this.game = game;
+    this.look = look; // a board's look of its own: each tile's part, by where it is, for its tint (showers.js)
     this.faceSet = faceSet;
     el.dataset.faces = faceSet;
     this.say = say;
@@ -183,6 +184,9 @@ export class Board {
         const k = L.z[i] >= 1 ? g.tulips.findIndex((t) => t === i || L.above[i].includes(t)) : -1;
         button.dataset.flower = k >= 0 ? TULIPS[k % TULIPS.length] : L.y[i] >= 16 ? 'soil' : 'leaf';
       }
+      // A board with a look of its own, as May Day's basket is, each tile
+      // tinted as the part of it it is: its handle, its bow, its flowers.
+      if (this.look) button.dataset.look = this.look(L, i);
       const svg = document.createElementNS(SVG, 'svg');
       svg.setAttribute('viewBox', '0 0 60 80');
       svg.setAttribute('aria-hidden', 'true');

@@ -837,6 +837,62 @@ body.covered #board {
   --face-2: #e9d8c0;
 }
 
+
+/* On April Showers' May Day, once the tiles turn over to May's side, the
+   basket shows its colours: its handle and rim wicker, its body woven in
+   two shades, the bow tied on its handle ribbon pink, and the flowers
+   heaped in it lilac, pink, yellow and white, with green leaves. April's
+   side is the night's, and keeps its dark tiles (.tile.night, below). */
+.tile[data-look='handle'] {
+  --face-1: #f6e8d4;
+  --face-2: #d1a978;
+}
+
+.tile[data-look='rim'] {
+  --face-1: #f2dfc4;
+  --face-2: #b88a55;
+}
+
+.tile[data-look='weave'] {
+  --face-1: #f8ecda;
+  --face-2: #dfc196;
+}
+
+.tile[data-look='weave-2'] {
+  --face-1: #f1dcbc;
+  --face-2: #c79c62;
+}
+
+.tile[data-look='bow'] {
+  --face-1: #fff0f6;
+  --face-2: #f0a0c2;
+}
+
+.tile[data-look='lilac'] {
+  --face-1: #f7f0ff;
+  --face-2: #d2bbf3;
+}
+
+.tile[data-look='pink'] {
+  --face-1: #fff0f5;
+  --face-2: #f6bfd2;
+}
+
+.tile[data-look='yellow'] {
+  --face-1: #fffbe4;
+  --face-2: #f3df8e;
+}
+
+.tile[data-look='white'] {
+  --face-1: #ffffff;
+  --face-2: #ece8f3;
+}
+
+.tile[data-look='leaf'] {
+  --face-1: #f2fbec;
+  --face-2: #c4e3b2;
+}
+
 .bee {
   position: absolute;
   left: 0;

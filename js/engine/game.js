@@ -60,10 +60,12 @@ export const TREATS = ['candle', 'key', 'cat'];
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
 // matches after which the tiles turn over, and firstSide, 'day' or 'night',
-// the side they start on; whether ghosts float, and whether treats are
-// left, and by pairs of which faces (treatFaces: jack-o'-lanterns, unless
-// a board says otherwise); ice, for a board with frozen tiles: the matches
-// each tile takes to thaw (ice.js); list, for a board with a shopping list
+// the side they start on; whether ghosts float, and whether lost souls do
+// (soulsFloat, free wherever they lie, as May Day's wilted flowers are);
+// whether treats are left, and by pairs of which faces (treatFaces:
+// jack-o'-lanterns, unless a board says otherwise); ice, for a board with
+// frozen tiles: the matches each tile takes to thaw (ice.js); list, for a
+// board with a shopping list
 // (list.js): { items, by }, how many things it has and after what share of
 // the matches checkout comes, or for a board whose faces are set, { kinds,
 // checkout }; fridge, for a board with leftovers (fridge.js): how many
@@ -160,7 +162,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -171,7 +173,7 @@ export class Game {
     this.tableCount = n;
     this.fridgeSize = fridge;
     this.seed = seed;
-    this.rules = { ghostsFloat, treats, lovebirds, flock, goslings, swans, dance, disco };
+    this.rules = { ghostsFloat, soulsFloat, treats, lovebirds, flock, goslings, swans, dance, disco };
     this.danceR = seeded(seed ^ 0x1d872b41); // who dances with whom
     this.lords = null; // until the lords are chosen, below
     this.treatFaces = treatFaces;
@@ -1368,10 +1370,11 @@ export class Game {
   }
 
   // Free whatever lies on them: ghosts, when they float, tiles opened with a
-  // skeleton key, and lords, who leap. A tile floats only while its ghost
-  // face is up.
+  // skeleton key, lords, who leap, and on April Showers' May Day, wilted
+  // flowers, the lost souls there. A tile floats only while its ghost face,
+  // or its lost soul's, is up.
   loose(i, faces = this.faces) {
-    return this.unlocked[i] === 1 || (this.lords !== null && this.lords[i] === 1) || (this.rules.ghostsFloat && faces[i] === GHOST);
+    return this.unlocked[i] === 1 || (this.lords !== null && this.lords[i] === 1) || (this.rules.ghostsFloat && faces[i] === GHOST) || (this.rules.soulsFloat && faces[i] === LOST);
   }
 
   // On the crown, whether a tile is a lord still on the board, and how many
@@ -2443,6 +2446,7 @@ export class Game {
       present: this.present,
       unlocked: this.lords ? Uint8Array.from(this.unlocked, (u, i) => u | this.lords[i]) : this.unlocked, // lords are as free as tiles opened with a key
       ghostsFloat: this.rules.ghostsFloat,
+      soulsFloat: this.rules.soulsFloat,
       turn: this.turnAhead ? { after: this.turnAt - this.matches, faces: this.sides[1] } : null,
       ice: this.iceAhead(),
     };

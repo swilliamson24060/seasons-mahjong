@@ -29,15 +29,17 @@ const BOTH = 3;
 // already proved lost.
 //
 // The position: faces, the faces showing; present; unlocked, the tiles
-// opened with a skeleton key; ghostsFloat; turn, while the tiles have still
-// to turn over: { after, faces }, the matches until they do and the faces
-// they turn over to; and ice, on a board with frozen tiles, the matches each
-// tile still needs to thaw, which the pairs taken in the search count down.
+// opened with a skeleton key; ghostsFloat; soulsFloat, lost souls free
+// wherever they lie, as on April Showers' May Day; turn, while the tiles
+// have still to turn over: { after, faces }, the matches until they do and
+// the faces they turn over to; and ice, on a board with frozen tiles, the
+// matches each tile still needs to thaw, which the pairs taken in the
+// search count down.
 //
 // Returns { result, line, steps }, where result is 'win', 'lost', or
 // 'unknown' when the budget of steps ran out first.
 export function solve(L, position, { budget = 200000 } = {}) {
-  const { faces, unlocked = null, ghostsFloat = false, turn = null, ice = null } = position;
+  const { faces, unlocked = null, ghostsFloat = false, soulsFloat = false, turn = null, ice = null } = position;
   const n = L.count;
   const K = KINDS.length;
   const present = Uint8Array.from(position.present);
@@ -46,7 +48,7 @@ export function solve(L, position, { budget = 200000 } = {}) {
   let settled = !turn; // no turning over still to come
   let souls = ''; // which tiles woke as lost souls: part of every position after midnight
   const kindOf = (i) => MATCH[cur[i]];
-  const loose = (i) => (unlocked !== null && unlocked[i] === 1) || (ghostsFloat && cur[i] === GHOST);
+  const loose = (i) => (unlocked !== null && unlocked[i] === 1) || (ghostsFloat && cur[i] === GHOST) || (soulsFloat && cur[i] === LOST);
   let taken = 0; // the pairs taken so far at this point of the search, which thaw the ice
   const free = (i) => (ice === null || ice[i] <= taken) && (loose(i) || isFree(L, present, i));
   const r = seeded(7);

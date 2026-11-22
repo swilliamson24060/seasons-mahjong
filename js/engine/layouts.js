@@ -2910,3 +2910,56 @@ export const UPRIGHT_TURTLE = parseLayout('Turtle', [
   ...>>....
   `,
 ]);
+
+// April Showers' eighth board: May Day, a May basket brimming with flowers,
+// hung on the door by its handle. The handle arches over the flowers with a
+// window under it, a ribbon bow tied at its top; the flowers are heaped in
+// the arch over the rim, six high in the middle, with leaves at their edges;
+// and the basket is woven, round-bellied, its rim two high (showers.js has
+// its parts, for its look). The full set of 144 tiles on six layers, nine
+// across and ten down.
+export const BASKET = parseLayout('May basket', [
+  `
+  ..v###v..
+  .v.....v.
+  v.#####.v
+  .#######.
+  #########
+  #########
+  #########
+  #########
+  >>>>>>>>.
+  .#######.
+  `,
+  `
+  ...>>....
+  ..++++...
+  .++++++..
+  .........
+  #########
+  >>>>>>>>.
+  >>>>>>>>.
+  >>>>>>>>.
+  .#######.
+  `,
+  `
+  ....#....
+  .........
+  ..#####..
+  ..#####..
+  `,
+  `
+  .........
+  .........
+  ..++++...
+  `,
+  `
+  .........
+  .........
+  ...###...
+  `,
+  `
+  .........
+  ...++....
+  `,
+]);

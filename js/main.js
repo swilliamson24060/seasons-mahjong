@@ -131,7 +131,7 @@ const leaderboard = new Leaderboard();
 // Sets up a board: deals it from its seed, plays back any moves already
 // made on it, and puts it on the page. The board it takes the place of is
 // kept first, with all the time played on it.
-function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDay = -1, ofRun = null, treatSet = 'halloween', treatBar = true, napAt = null, turnSet = 'midnight', faces = 'halloween' }) {
+function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDay = -1, ofRun = null, treatSet = 'halloween', treatBar = true, napAt = null, turnSet = 'midnight', faces = 'halloween', look = null }) {
   if (game && !finished) store();
   hideCard();
   hour = at;
@@ -148,7 +148,7 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
   $('fridge').hidden = !game.fridgeSize;
   if (!game.fridgeSize) $('fridge').querySelector('.slots').replaceChildren(); // no containers left over from a board that had them
   const fridge = game.fridgeSize ? $('fridge').querySelector('.slots') : null;
-  board = new Board($('board'), game, { say: toast, sound, magnifier: magnifying ? magnifier : null, keyName: gifts.keyName, fridge, faceSet });
+  board = new Board($('board'), game, { say: toast, sound, magnifier: magnifying ? magnifier : null, keyName: gifts.keyName, fridge, faceSet, look });
   game.on('match', ({ a, b }) => {
     sound.match();
     board.float(`+${POINTS.pair}`, b);
@@ -848,9 +848,10 @@ const named = (d) => d.called || d.name.replace(/^The /, 'the ');
 
 // What play() wants for a day's board: its options, the treats it gives or
 // none, in its own words or its holiday's, its nap, the words its turning
-// over is told in, and its holiday's faces: Thanksgiving's, Christmas's,
-// New Year's, Groundhog Day's or Valentine's, and Halloween's for a holiday
-// whose own are still to come, April Showers'.
+// over is told in, its holiday's faces: Thanksgiving's, Christmas's, New
+// Year's, Groundhog Day's or Valentine's, and Halloween's for a holiday
+// whose own are still to come, April Showers'; and its look, the parts of
+// a board whose tiles are tinted by them, as May Day's basket is.
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;
@@ -862,6 +863,7 @@ function dayPlay(d) {
     napAt: napFrom ? { from: napFrom, to: napFrom + d.nap.matches } : null,
     turnSet: d.words || 'midnight',
     faces,
+    look: d.look || null,
   };
 }
 

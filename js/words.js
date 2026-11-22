@@ -101,7 +101,9 @@ export const GIFTS = {
 // Year's midnight, on the 1, when the ball lands, the clock strikes twelve
 // and the new year comes in, its lost souls sleepyheads who missed it;
 // Valentine's question, on Be mine, when the ring comes out and the
-// question is popped, its lost souls broken hearts; and Groundhog Day's
+// question is popped, its lost souls broken hearts; April Showers' May
+// morning, on May Day, when dawn breaks and April turns to May, its lost
+// souls flowers that wilted; and Groundhog Day's
 // forecast, on a board in its tiles turning over outside its own, when the
 // groundhog comes out to look for his shadow, its lost souls shadows. For
 // each: the clock in the top bar, before the turn and after; what its lost
@@ -174,6 +176,19 @@ export const TURNS = {
     moon: 'Hold to see the other side (or hold Space)',
     score: { night: 'The answer is yes,', day: 'The answer is yes,', souls: 'Broken hearts', none: 'no broken hearts' },
     ring: () => 'question',
+  },
+  may: {
+    ahead: (n) => `🌸 <b>${n}</b> to May`,
+    after: () => '🌸 May Day',
+    soul: '🥀',
+    soulsAhead: 'Wilted flowers if the tiles turned over now',
+    soulsWoke: 'Wilted flowers on the board',
+    turned: () => 'May morning! April turns to May, and the tiles turn over.',
+    woke: (n) => (n ? `${n} ${n === 1 ? 'flower wilts' : 'flowers wilt'}: wilted flowers match each other.` : 'Not one flower wilted.'),
+    prompt: "Three matches to May. Hold the moon to see May's side coming, and take pairs that match on both sides.",
+    moon: "Hold to see May's side (or hold Space)",
+    score: { night: 'May Day', day: 'May Day', souls: 'Wilted flowers', none: 'no wilted flowers' },
+    ring: () => 'mayDay',
   },
   forecast: {
     ahead: (n) => `⛅ <b>${n}</b> to the forecast`,
