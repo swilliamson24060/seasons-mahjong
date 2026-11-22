@@ -2548,6 +2548,44 @@ export const UMBRELLA = parseLayout('Umbrella', [
   `,
 ]);
 
+// April Showers' third board: puddle jumping, a pair of rain boots side by
+// side, their toes to the left, standing in a puddle. Each boot is a shaft
+// three across over a foot four across, two high, with a ridge down the
+// middle of its shaft a layer higher, its cuff higher still, and its toe
+// raised; its sole stands in the puddle, with the arch under it between
+// the ball of the foot and the heel. The puddle lies flat on the table, a
+// tile deep, nine across under the soles and seven below: the splash zone
+// (showers.js). 100 tiles on four layers, nine across and seven down.
+export const BOOTS = parseLayout('Rain boots', [
+  `
+  .###..###
+  .###..###
+  .###..###
+  .###..###
+  ####.####
+  #########
+  .#######.
+  `,
+  `
+  .###..###
+  .###..###
+  .###..###
+  .###..###
+  ####.####
+  ##.#.##.#
+  `,
+  `
+  ..#....#.
+  ..#....#.
+  ..#....#.
+  ..#....#.
+  ##...##..
+  `,
+  `
+  ..#....#.
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [

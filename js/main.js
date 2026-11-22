@@ -375,6 +375,22 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     toast(words.join(' '));
   });
+  // On April Showers' rain boots: a pair from the puddle splashes, higher
+  // with each one straight after another, and a pair from anywhere else
+  // lets the puddle settle.
+  game.on('splash', ({ b, splashed, settled }) => {
+    if (splashed) {
+      const pts = splashed * POINTS.splash;
+      sound.splash(splashed);
+      board.splashed(b);
+      board.float('💦', b);
+      setTimeout(() => board.float(`+${pts}`, b), 500); // after the pair's own points
+      const what = splashed > 1 ? `Splash! ${splashed} in a row: ${pts} points.` : `Splash! ${pts} points.`;
+      toast(game.puddleLeft >= 2 ? `${what} Another from the puddle straight after splashes higher.` : what);
+      return;
+    }
+    toast(`The puddle settles${settled > 1 ? ` after ${settled} splashes in a row` : ''}: the next splash starts again at ${POINTS.splash}.`);
+  });
   // On Valentine's box of chocolates: a top taken bites into its chocolate,
   // the chocolate eaten whole is savoured, and one bitten into before it is
   // finished is just eaten.
@@ -1525,6 +1541,10 @@ function update() {
   // the next lands, while one still can.
   $('raindrops').hidden = !g.rain;
   if (g.rain) $('raindrops').innerHTML = `💧 <b>${g.dropsCaught}</b>${g.untilRain !== Infinity ? ` · ⏳ <b>${g.untilRain}</b>` : ''}`;
+  // On its rain boots, the splashes in a row now, and while the puddle has a
+  // splash left in it, what the next would score.
+  $('splashes').hidden = g.puddleEdge === null;
+  if (g.puddleEdge !== null) $('splashes').innerHTML = `💦 <b>${g.splashRun}</b>${g.puddleLeft >= 2 ? ` · <b>+${g.nextSplash * POINTS.splash}</b>` : ''}`;
   // The lovebirds taken, on a board of turtle doves.
   $('lovebirds').hidden = !g.rules.lovebirds;
   if (g.rules.lovebirds) $('lovebirds').innerHTML = `🕊️ <b>${g.lovebirds}</b>`;

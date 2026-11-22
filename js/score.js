@@ -31,9 +31,11 @@
 // Valentine's first date each candlelit pair, a tile in each candle's glow;
 // on Valentine's box of chocolates each chocolate savoured, eaten whole
 // before biting into another; on Valentine's hugs and kisses each XOXO,
-// kisses from the X and hugs from the O taken in turn, four in a row; and
-// on April Showers' umbrella each raindrop caught, the tile it was on taken
-// as it ran down the canopy.
+// kisses from the X and hugs from the O taken in turn, four in a row; on
+// April Showers' umbrella each raindrop caught, the tile it was on taken as
+// it ran down the canopy; and on its rain boots each splash, a pair from
+// the puddle, worth the more the higher it splashed, its place in a run of
+// splashes taken one straight after another.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -76,6 +78,7 @@ export const POINTS = {
   savoured: 30, // each chocolate eaten whole, cup and all, before biting into another
   xoxo: 15, // each XOXO: kisses from the X and hugs from the O taken in turn, four in a row
   raindrop: 20, // each raindrop caught on the umbrella: the tile it was on taken as it ran down
+  splash: 10, // each splash, a pair from the puddle, times how high it splashed: its place in a run of them
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -161,6 +164,10 @@ export function scoreOf(game, seconds, words = TURN) {
   if (game.candles) rows.push(['Candlelit pairs', times(game.candlelitPairs, POINTS.candlelit), game.candlelitPairs * POINTS.candlelit]);
   if (game.xoxo) rows.push(['XOXOs', times(game.xoxos, POINTS.xoxo), game.xoxos * POINTS.xoxo]);
   if (game.rain) rows.push(['Raindrops', `${game.dropsCaught} of ${game.dropsLanded} caught`, game.dropsCaught * POINTS.raindrop]);
+  if (typeof game.puddleEdge === 'number') {
+    const n = game.splashCount;
+    rows.push(['Splashes', n ? `${n} ${n === 1 ? 'splash' : 'splashes'}, ${game.splashBest} in a row at the most` : 'none yet', game.splashHeights * POINTS.splash]);
+  }
   if (game.chocolates) {
     const n = game.chocolatesIn('savoured');
     const eaten = game.chocolatesIn('eaten');

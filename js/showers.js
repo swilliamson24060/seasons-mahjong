@@ -1,4 +1,4 @@
-import { CLOUD, UMBRELLA } from './engine/layouts.js';
+import { CLOUD, UMBRELLA, BOOTS } from './engine/layouts.js';
 
 // April Showers: from showers to flowers, eight boards from the first
 // shower to May Day, the sky clearing as they go, to be reached in turn as
@@ -7,7 +7,9 @@ import { CLOUD, UMBRELLA } from './engine/layouts.js';
 // last four May's, coming into flower. The first, the first shower, is the
 // gentle start, with no twist, as Cupid's bow is; on the second, umbrella
 // weather, raindrops land on the umbrella and run down its ribs, to be
-// caught (engine/raindrops.js); the eighth is to be May Day, when April
+// caught (engine/raindrops.js); on the third, puddle jumping, rain boots
+// splash in a puddle, pairs from it taken one after another splashing
+// higher (engine/splash.js); the eighth is to be May Day, when April
 // turns to May halfway and every tile turns over. Each chapter is as
 // Thanksgiving's days are (thanksgiving.js says what each part is for), and
 // PLAN.md has the season's boards and twists. Until April Showers' own
@@ -40,6 +42,14 @@ export const SHOWERS = [
     rules: { treats: false, ghostsFloat: false, raindrops: { every: 4, ribs: RIBS } },
     sky: ['#56677a', '#141b24'],
     text: "Showers on and off all day: umbrella weather. As the board starts and every four matches, a raindrop 💧 lands on the umbrella's peak and runs down the canopy along a rib, a row with every match, dripping off at the rim; the tiles still in its way are ringed in blue. Take the tile a drop is on, with any tile of its kind, to catch it: 20 points.",
+  },
+  {
+    name: 'The third chapter',
+    title: 'Puddle jumping',
+    layout: BOOTS,
+    rules: { treats: false, ghostsFloat: false, splash: { edge: 10 } },
+    sky: ['#5a6b74', '#151c21'],
+    text: "Rain boots on, and straight into the puddle. Its tiles, along the bottom, tinged blue, are the splash zone 💦: take a pair from it, both tiles in the puddle, and it splashes, 10 points. Take another straight after and it splashes higher, 20, then 30, and on, 10 more each time; a pair from anywhere else lets the puddle settle, and the next splash starts again at 10. The boots are standing in it: it's all yours once they're out.",
   },
 ];
 

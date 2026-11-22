@@ -540,6 +540,18 @@ export class Board {
     for (const i of tiles) this.restart(this.tiles[i].el, 'opening');
   }
 
+  // A splash on April Showers' rain boots: the puddle's tiles still there
+  // ripple, outward from where the pair was taken.
+  splashed(from) {
+    const L = this.game.layout;
+    for (let i = 0; i < this.tableCount; i++) {
+      if (!this.game.inSplashZone(i)) continue;
+      const el = this.tiles[i].el;
+      el.style.animationDelay = `${Math.round(Math.hypot(L.x[i] - L.x[from], L.y[i] - L.y[from]) * 35)}ms`;
+      this.restart(el, 'ripple');
+    }
+  }
+
   // Cupid's arrow strikes: its couple's hearts beat as they're smitten.
   struck(tiles) {
     this.refresh();
@@ -604,6 +616,7 @@ export class Board {
     if (g.inGlassesWay(i)) return `${name}, in the glasses' way`;
     if (g.dropOn(i)) return `${name}, with a raindrop on it: take it with a tile of its kind to catch the drop`;
     if (g.inRainWay(i)) return `${name}, in a raindrop's way down the umbrella`;
+    if (g.inSplashZone(i)) return `${name}, in the puddle: a pair from it splashes${g.splashRun ? `, ${g.nextSplash} in a row` : ''}`;
     if (g.tempting(i)) return `${name}, a sweet: leave it alone through January to keep your resolution`;
     if (g.isSweet(i)) return `${name}, a sweet, fair game now`;
     const spark = g.sparklerOf(i);
@@ -740,6 +753,7 @@ export class Board {
       el.classList.toggle('xo-next', free && g.wantsLetter !== null && g.xoLetter(i) === g.wantsLetter); // on hugs and kisses: the letter the run wants next
       el.classList.toggle('in-way', g.inGlassesWay(i)); // on New Year's 2: in the glasses' way
       el.classList.toggle('rain-way', g.inRainWay(i)); // on April Showers' umbrella: in a raindrop's way down
+      el.classList.toggle('puddle', g.inSplashZone(i)); // on its rain boots: in the puddle, the splash zone
       // On New Year's Day, a sweet carries its treat, and through January,
       // while the resolution holds, it is a tempting pink.
       el.classList.toggle('sweet', g.isSweet(i));
@@ -749,7 +763,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

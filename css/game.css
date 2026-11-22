@@ -706,6 +706,30 @@ body.covered #board {
   }
 }
 
+/* On April Showers' rain boots, the puddle's tiles, the splash zone, are
+   tinged the blue of rainwater, a little deeper than the lake's; with each
+   splash they ripple, outward from where the pair was taken. */
+.tile.puddle {
+  --face-1: #eef7fd;
+  --face-2: #c9e3f5;
+  --edge: #94bfdc;
+  --edge-deep: #6f9cbd;
+}
+
+.tile.ripple {
+  animation: ripple 0.55s ease-out;
+}
+
+@keyframes ripple {
+  30% {
+    transform: translateY(calc(var(--tile-w) * -0.06));
+    filter: brightness(1.12);
+  }
+  60% {
+    transform: translateY(calc(var(--tile-w) * 0.03));
+  }
+}
+
 .tile.rain-way::before {
   content: '';
   position: absolute;
@@ -1985,7 +2009,8 @@ body.covered #board {
   .tile.opening::after,
   .star-band.streak::before,
   .glass.clinking svg,
-  .raindrop svg {
+  .raindrop svg,
+  .tile.ripple {
     animation: none;
   }
   .tile.hint {

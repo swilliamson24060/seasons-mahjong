@@ -1294,6 +1294,19 @@ export class Sound {
     this.rustle(this.now + 0.12, 0.1, 3000, 1500, 0.05);
   }
 
+  // On April Showers' rain boots, a splash in the puddle, the `height`-th in
+  // a run: a boot stamping into the water, the spray flying up, and the
+  // drops pattering back down, each splash a little higher in pitch than
+  // the one before, and from the fourth with a glint of light in the spray.
+  splash(height = 1) {
+    if (!this.on) return;
+    const up = Math.min(height - 1, 9);
+    this.ping(90, this.now, { gain: 0.12, attack: 0.003, fall: 0.12, into: this.master });
+    this.rustle(this.now, 0.35, 900 + up * 120, 3200 + up * 400, 0.13);
+    [0.12, 0.2, 0.27].forEach((t, k) => this.plip(this.now + t, 600 + up * 70 + k * 120, 1400 + up * 160 + k * 200, 0.06));
+    if (height >= 4) this.ping(2093 * 2 ** (Math.min(height - 4, 6) / 12), this.now + 0.18, { gain: 0.03, fall: 0.5 });
+  }
+
   // A turkey's gobble: a quick string of throaty warbles, each falling, and
   // falling as they go.
   gobble() {
