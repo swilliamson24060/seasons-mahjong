@@ -1,4 +1,4 @@
-import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY, CAN } from './engine/layouts.js';
+import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY, CAN, BED } from './engine/layouts.js';
 
 // April Showers: from showers to flowers, eight boards from the first
 // shower to May Day, the sky clearing as they go, to be reached in turn as
@@ -14,8 +14,10 @@ import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY, CAN } from './engine/layouts.js'
 // (engine/colours.js); on the fifth, seedlings, the first of May's, a seed
 // tray's seedlings are watered by pairs taken beside them, to bloom and be
 // picked (engine/watering.js); on the sixth, the watering can, its body
-// fills it and its drops pour it (engine/pour.js); the eighth is to be May
-// Day, when April turns to May halfway and every tile turns over. Each chapter is as
+// fills it and its drops pour it (engine/pour.js); on the seventh, the
+// flower bed, a bee flies from tulip to tulip, a pair with the one she's on
+// making honey (engine/bees.js); the eighth is to be May Day, when April
+// turns to May halfway and every tile turns over. Each chapter is as
 // Thanksgiving's days are (thanksgiving.js says what each part is for), and
 // PLAN.md has the season's boards and twists. Until April Showers' own
 // tiles are drawn, its boards wear Halloween's.
@@ -112,6 +114,14 @@ export const SHOWERS = [
     rules: { treats: false, ghostsFloat: false, pour: { body: CAN_BODY, drops: CAN_DROPS, most: 5 } },
     sky: ['#63809a', '#1b2733'],
     text: "Sunshine, and the garden wants watering. The can starts empty. Take a pair from its body, both tiles in it, and it fills a measure 💧, up to five. Take a pair from the drops sprinkling from its rose, both tiles drops, and it pours one out onto the garden: 20 points. With the can empty a pair of drops waters nothing, and with it full a pair from its body fills nothing: so fill, pour, and fill again.",
+  },
+  {
+    name: 'The seventh chapter',
+    title: 'The flower bed',
+    layout: BED,
+    rules: { treats: false, ghostsFloat: false, bees: { tops: 2 } },
+    sky: ['#6787a2', '#1c2a37'],
+    text: "The tulips are out in rows, and a bee 🐝 is busy among them. With every match she flies to another tulip, and the one she's flying to next is ringed, so you can see her coming. Take the tulip she's on, the top of its head, with any tile of its kind, and she makes honey 🍯: 20 points. A tulip taken while she's elsewhere is just a tile, and she won't visit it again.",
   },
 ];
 

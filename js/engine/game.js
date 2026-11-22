@@ -34,6 +34,7 @@ import { inPuddle, isSplash, runAfter, dryFirst, runsIn } from './splash.js';
 import { bandOf, litBand, inColour, chasing } from './colours.js';
 import { seedlingsOf, waters, tending, bloomsIn } from './watering.js';
 import { partOf, pairDoes, pourIn, pouring } from './pour.js';
+import { tulipsOf, firstFlight, flyOn, makesHoney, honeyIn, foraging } from './bees.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -46,15 +47,15 @@ export const TREATS = ['candle', 'key', 'cat'];
 // fireworks, the disco ball, the balloon drop, the lucky coin, sparklers,
 // confetti, shooting stars, a toast for two, Cupid's arrows, sweethearts,
 // roses in bloom, candlelight, a box of chocolates, hugs and kisses,
-// raindrops, the splash zone, chasing colours, watering and the watering
-// can. Nothing here touches the page; the board
+// raindrops, the splash zone, chasing colours, watering, the watering can
+// and busy bees. Nothing here touches the page; the board
 // listens with on() for what happens: 'match', 'thaw', 'list', 'checkout',
 // 'bought', 'grab', 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold',
 // 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe', 'firework',
 // 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti', 'star', 'toast',
 // 'arrow', 'message', 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain',
-// 'splash', 'colour', 'garden', 'can', 'save', 'turn', 'treat', 'key',
-// 'shuffle', 'undo', 'win' and 'stuck'.
+// 'splash', 'colour', 'garden', 'can', 'bee', 'save', 'turn', 'treat',
+// 'key', 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
@@ -149,7 +150,9 @@ export const TREATS = ['candle', 'key', 'cat'];
 // (watering.js); and pour, for its watering can: { body, drops, most }, the
 // can's body, a box, and its drops, their places, a pair from the body
 // filling it a measure, up to `most`, and a pair of drops pouring one out
-// (pour.js).
+// (pour.js); and bees, for its flower bed: { tops }, the layer its tulips'
+// tops are on, a bee flying from tulip to tulip with every match, a pair
+// with the tulip she's on making honey (bees.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -157,7 +160,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -233,6 +236,8 @@ export class Game {
     // (pour.js).
     this.can = pour && { body: pour.body, drops: pour.drops };
     this.canMost = pour ? pour.most : 0;
+    // On its flower bed, the tulips, by their tops (bees.js).
+    this.tulips = bees ? tulipsOf(table, bees.tops) : null;
     // The board of gold rings is dealt, and shuffled, a ring at a time, in
     // an order of its own; the board of the swan with its swans, a tile and
     // its reflection, coming free at different times; the milk pail with
@@ -247,8 +252,9 @@ export class Game {
     // keeping the puddle till last, to take it in one run of splashes
     // (splash.js); its rainbow catching the colours it can (colours.js); its
     // seed tray watering every seedling and picking it in bloom
-    // (watering.js); and its watering can pouring every pair of drops with
-    // water in the can (pour.js).
+    // (watering.js); its watering can pouring every pair of drops with water
+    // in the can (pour.js); and its flower bed making honey at every tulip
+    // (bees.js).
     this.prefer = this.rings
       ? ringByRing(layout, this.rings.map((r) => r.tiles), seeded(seed ^ 0x68e31da4).shuffle(this.rings.map((_, k) => k)))
       : swans
@@ -275,7 +281,9 @@ export class Game {
                             ? tending(table, this.garden.seedlings, this.garden.drinks)
                             : this.can
                               ? pouring(table, this.can, this.canMost)
-                              : null;
+                              : this.tulips
+                                ? foraging(this.tulips, seed)
+                                : null;
     // On New Year's 9, the rockets, 1 for a tile that is one, chosen by
     // where they lie, before the deal, so that it can be made with them.
     this.rockets = null;
@@ -318,8 +326,9 @@ export class Game {
       // takes every pair from one letter; on April Showers' rain boots
       // until its own order takes the whole puddle in one run of splashes;
       // on its seed tray until its own order picks every seedling in bloom;
-      // and on its watering can until its own order pours every pair of
-      // drops with water in the can.
+      // on its watering can until its own order pours every pair of drops
+      // with water in the can; and on its flower bed until its own order
+      // makes honey at every tulip.
       const dropPairs = this.can ? [...table.x.keys()].filter((i) => partOf(table, i, this.can) === 'drops').length / 2 : 0;
       const puddlePairs = splash ? [...table.x.keys()].filter((i) => inPuddle(table, i, splash.edge)).length / 2 : 0;
       const swansAsWanted = (faces, order) => {
@@ -344,7 +353,8 @@ export class Game {
         (!xoxo || order.every(([a, b]) => pairLetter(layout, a, b, xoxo.split) !== null)) &&
         (!splash || runsIn(layout, order, splash.edge).includes(puddlePairs)) &&
         (!this.garden || bloomsIn(layout, order, this.garden.seedlings, this.garden.drinks) === this.garden.seedlings.length) &&
-        (!this.can || pourIn(layout, order, this.can, this.canMost).pours === dropPairs);
+        (!this.can || pourIn(layout, order, this.can, this.canMost).pours === dropPairs) &&
+        (!this.tulips || honeyIn(this.tulips, order, onTable, seed).honey === this.tulips.length);
       let dealt = null;
       for (let tries = 0; ; tries++) {
         dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { present: onTable, turnAt, ice: this.ice, prefer: this.prefer });
@@ -550,6 +560,11 @@ export class Game {
     this.fills = 0;
     this.pours = 0;
     this.dryPours = 0;
+    // On its flower bed, the bee, { at, next, flights }, the tulip she's on
+    // and the one she flies to next, by their places in the tulips, or -1
+    // once she's flown off; and the honey made.
+    this.bee = this.tulips ? firstFlight(this.tulips, seed) : null;
+    this.honey = 0;
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -854,6 +869,54 @@ export class Game {
     let n = 0;
     if (this.puddleEdge !== null) for (let i = 0; i < this.layout.count; i++) if (this.inSplashZone(i)) n++;
     return n;
+  }
+
+  // On April Showers' flower bed, whether a tile still on the board is the
+  // tulip the bee is on, and whether it's the tulip she flies to next; and
+  // the tulips still standing.
+  beeOn(i) {
+    return this.bee !== null && this.bee.at >= 0 && this.tulips[this.bee.at] === i && this.present[i] === 1;
+  }
+
+  beeNext(i) {
+    return this.bee !== null && this.bee.next >= 0 && this.tulips[this.bee.next] === i && this.present[i] === 1;
+  }
+
+  get tulipsLeft() {
+    return this.tulips ? this.tulips.filter((t) => this.present[t]).length : 0;
+  }
+
+  // On its flower bed, the hints' way making honey now, if the bee's tulip
+  // can be taken and the board still won after it: the way given, if it
+  // does already; or else made to take her tulip first, with a free tile of
+  // its kind, as Cupid's couples are (cupid.js), or else a way found from
+  // where that leaves the tiles; or else, with another tulip first, the
+  // first pair that can be taken now without one moved there; or the way
+  // given.
+  forage(way) {
+    if (!way.length) return way;
+    const tulip = (t) => this.tulips.includes(t);
+    if (makesHoney(this.tulips, this.bee, ...way[0])) return way;
+    const on = this.bee.at >= 0 ? this.tulips[this.bee.at] : -1;
+    if (on >= 0 && this.isFree(on)) {
+      for (const p of this.freeTiles()) {
+        if (p === on || MATCH[this.faces[p]] !== MATCH[this.faces[on]]) continue;
+        const made = wayWith(way, [on, p], 1, (l) => this.holds(l));
+        if (made) return made;
+        const present = Uint8Array.from(this.present);
+        present[on] = present[p] = 0;
+        const { result, line } = solve(this.layout, { ...this.position(), present }, { budget: 20000 });
+        if (result === 'win') return [[on, p], ...line];
+      }
+    }
+    if (way[0].some(tulip)) {
+      const k = way.findIndex((p) => !p.some(tulip) && this.isFree(p[0]) && this.isFree(p[1]));
+      if (k > 0) {
+        const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+        if (this.holds(tried)) return tried;
+      }
+    }
+    return way;
   }
 
   // On April Showers' watering can, which part of it a tile still on the
@@ -1572,9 +1635,10 @@ export class Game {
   // run, or 0 for no splash, and the run it let settle, or 0; on its
   // rainbow, the band whose colour it caught, or -1; on its seed tray, the
   // seedlings it watered and those that bloomed, and those it picked in
-  // bloom or pulled up before; and on its watering can, what it did to the
-  // can: 'fill', 'full', 'pour', 'dry', or null. Null if the pair cannot be
-  // taken.
+  // bloom or pulled up before; on its watering can, what it did to the can:
+  // 'fill', 'full', 'pour', 'dry', or null; and on its flower bed, whether it
+  // made honey, and the tulip the bee flew from after it, or -1. Null if the
+  // pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -1733,6 +1797,11 @@ export class Game {
     // On April Showers' watering can, a pair from its body fills it a
     // measure, if there's room, and a pair of its drops pours one out, if
     // there's water in it.
+    // On April Showers' flower bed, a pair with the tulip the bee is on
+    // makes honey.
+    const honey = this.bee !== null && makesHoney(this.tulips, this.bee, a, b);
+    if (this.bee) entry.bee = { ...this.bee, honey: this.honey }; // as it was, for an undo
+    if (honey) this.honey++;
     const poured = this.can ? pairDoes(this.layout, a, b, this.can, this.canLevel, this.canMost) : null;
     if (poured) {
       entry.can = { level: this.canLevel, fills: this.fills, pours: this.pours, dry: this.dryPours }; // as they were, for an undo
@@ -1853,6 +1922,9 @@ export class Game {
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
+    // On its flower bed, the bee flies on to another tulip.
+    const flew = this.bee ? this.bee.at : -1;
+    if (this.bee) this.bee = flyOn(this.tulips, this.bee, this.present, this.seed);
     // A rocket in the pair bursts, lighting up the tiles round it.
     let lit = [];
     if (rockets.length) {
@@ -2032,6 +2104,8 @@ export class Game {
       picked,
       pulled,
       canDoes: poured,
+      honey,
+      beeFrom: flew >= 0 ? this.tulips[flew] : -1,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -2069,6 +2143,7 @@ export class Game {
     if (colour >= 0) this.emit('colour', result);
     if (watered.length || picked.length || pulled.length) this.emit('garden', result);
     if (poured) this.emit('can', result);
+    if (this.tulips && flew >= 0) this.emit('bee', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -2147,6 +2222,10 @@ export class Game {
       if (last.colour) this.coloursCaught--;
       if (last.garden) Object.assign(this, { water: last.garden.water, seedlingsTaken: last.garden.taken });
       if (last.can) Object.assign(this, { canLevel: last.can.level, fills: last.can.fills, pours: last.can.pours, dryPours: last.can.dry });
+      if (last.bee) {
+        const { honey, ...bee } = last.bee;
+        Object.assign(this, { bee, honey });
+      }
       if (last.litBefore) {
         this.lit = last.litBefore;
         this.bursts -= last.rockets;
@@ -2193,7 +2272,8 @@ export class Game {
   // on its rain boots to one that keeps the puddle till last, to splash
   // through it in one run; on its rainbow to one that catches the colour
   // lit whenever it can; on its seed tray to one that picks each seedling
-  // in bloom; and on its watering can to one that pours with water in it.
+  // in bloom; on its watering can to one that pours with water in it; and on
+  // its flower bed to one that makes honey whenever it can.
   wayAhead() {
     if (!this.line && this.outlook !== 'lost') {
       const { result, line } = solve(this.layout, this.position(), { budget: 20000 });
@@ -2215,6 +2295,7 @@ export class Game {
     if (this.line && this.colourClouds !== null) this.line = this.byColour(this.line);
     if (this.line && this.garden) this.line = this.tend(this.line);
     if (this.line && this.can) this.line = this.pourWell(this.line);
+    if (this.line && this.tulips) this.line = this.forage(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
@@ -2266,8 +2347,9 @@ export class Game {
     // rain boots, so that what is left of the puddle goes last, in a run;
     // on its rainbow, so that the colours lit are caught where they can be;
     // on its seed tray, so that the seedlings still in it are watered and
-    // picked in bloom; and on its watering can, so that the drops still to
-    // pour are poured with water in the can.
+    // picked in bloom; on its watering can, so that the drops still to pour
+    // are poured with water in the can; and on its flower bed, so that the
+    // bee makes honey at the tulips still standing.
     const january = this.resolving ? this.january - this.matches : 0;
     for (let tries = 0; ; tries++) {
       const prefer = this.mirror
@@ -2292,7 +2374,9 @@ export class Game {
                         ? tending(this.layout, this.garden.seedlings, this.garden.drinks, this.water, this.seedlingsTaken)
                         : this.can
                           ? pouring(this.layout, this.can, this.canMost, this.canLevel)
-                          : this.prefer;
+                          : this.tulips
+                            ? foraging(this.tulips, this.seed, this.bee)
+                            : this.prefer;
       dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead(), prefer);
       const fine = (d) =>
         (!this.mirror || swansIn(this.layout, this.mirror, d.sides[this.side], this.present).length === swans) &&

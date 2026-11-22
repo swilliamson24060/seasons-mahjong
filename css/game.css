@@ -802,6 +802,71 @@ body.covered #board {
   }
 }
 
+/* On April Showers' flower bed, each tulip's head is its colour, red,
+   yellow, pink or violet, its top deeper; the leaves are green and the
+   soil a pale brown. The bee sits at the top left of the tulip she's on,
+   flying from tulip to tulip, and the tulip she flies to next is ringed in
+   honey gold, not filled with it, so as not to look chosen. */
+.tile[data-flower='red'] {
+  --face-1: #ffecea;
+  --face-2: #f5bdb6;
+}
+
+.tile[data-flower='yellow'] {
+  --face-1: #fffbe4;
+  --face-2: #f2e29c;
+}
+
+.tile[data-flower='pink'] {
+  --face-1: #fff0f6;
+  --face-2: #f5c6db;
+}
+
+.tile[data-flower='violet'] {
+  --face-1: #f6efff;
+  --face-2: #dacbf3;
+}
+
+.tile[data-flower='leaf'] {
+  --face-1: #f2fbec;
+  --face-2: #d2ecc4;
+}
+
+.tile[data-flower='soil'] {
+  --face-1: #fbf5ec;
+  --face-2: #e9d8c0;
+}
+
+.bee {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 99999;
+  font-size: calc(var(--tile-w) * 0.42);
+  line-height: 1;
+  pointer-events: none;
+  transition: transform 0.55s cubic-bezier(0.3, 1.4, 0.6, 1);
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.55));
+  animation: bee-hover 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes bee-hover {
+  to {
+    translate: 0 calc(var(--tile-w) * -0.05);
+  }
+}
+
+.tile.bee-next::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 calc(var(--tile-w) * 0.05) #e0a91a,
+    inset 0 0 calc(var(--tile-w) * 0.16) rgba(240, 190, 40, 0.6);
+  pointer-events: none;
+}
+
 /* On April Showers' watering can, its body is painted a garden green, its
    drops the blue of water, and its handle, spout and rose are bare
    galvanised metal. */
@@ -2186,7 +2251,8 @@ body.covered #board {
   .star-band,
   .glass,
   .glass svg,
-  .raindrop {
+  .raindrop,
+  .bee {
     transition: none;
   }
   .tile.hint,
@@ -2205,7 +2271,8 @@ body.covered #board {
   .raindrop svg,
   .tile.ripple,
   .tile.shimmer,
-  .tile.drinking::after {
+  .tile.drinking::after,
+  .bee {
     animation: none;
   }
   .tile.hint {

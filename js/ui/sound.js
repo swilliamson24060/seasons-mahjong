@@ -1294,6 +1294,36 @@ export class Sound {
     this.rustle(this.now + 0.12, 0.1, 3000, 1500, 0.05);
   }
 
+  // On April Showers' flower bed, the bee flying on: a short buzz, rising
+  // and falling as she goes.
+  buzz() {
+    if (!this.on) return;
+    const o = this.ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(210, this.now);
+    o.frequency.linearRampToValueAtTime(260, this.now + 0.12);
+    o.frequency.linearRampToValueAtTime(190, this.now + 0.3);
+    const f = this.ctx.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.value = 900;
+    f.Q.value = 2;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, this.now);
+    g.gain.linearRampToValueAtTime(0.11, this.now + 0.04);
+    g.gain.linearRampToValueAtTime(0.0001, this.now + 0.34);
+    o.connect(f).connect(g).connect(this.master);
+    o.start(this.now);
+    o.stop(this.now + 0.36);
+  }
+
+  // Honey made: the bee's buzz, and a sweet run down the glockenspiel and
+  // up again.
+  honey() {
+    if (!this.on) return;
+    this.buzz();
+    [2093, 1760, 1568, 2093].forEach((f, k) => this.bell(f, this.now + 0.15 + k * 0.08, 0.035, 1.2));
+  }
+
   // On April Showers' watering can, a measure poured in: water glugging
   // into the can, a little higher the fuller it is.
   fill(level = 1) {

@@ -2761,6 +2761,45 @@ export const CAN = parseLayout('Watering can', [
   `,
 ]);
 
+// April Showers' seventh board: the flower bed, rows of tulips in it,
+// four rows of four, staggered. Each tulip stands on a block two across and
+// two down, its leaves; its head is the block's top two raised, and the top
+// of its head sits between them a layer higher, where the bee lands
+// (showers.js). Below the tulips lies the bed's soil, two rows of nine.
+// 130 tiles on three layers, nine across and ten down.
+export const BED = parseLayout('Flower bed', [
+  `
+  ########.
+  ########.
+  .########
+  .########
+  ########.
+  ########.
+  .########
+  .########
+  #########
+  #########
+  `,
+  `
+  ########.
+  .........
+  .########
+  .........
+  ########.
+  .........
+  .########
+  `,
+  `
+  >.>.>.>..
+  .........
+  .>.>.>.>.
+  .........
+  >.>.>.>..
+  .........
+  .>.>.>.>.
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [

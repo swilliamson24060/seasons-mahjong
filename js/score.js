@@ -38,7 +38,8 @@
 // splashes taken one straight after another; on its rainbow each colour
 // caught, a pair from the band lit as it was taken; on its seed tray each
 // seedling picked in bloom, watered by pairs taken beside it; and on its
-// watering can each pour, a pair of its drops taken with water in the can.
+// watering can each pour, a pair of its drops taken with water in the can;
+// and on its flower bed each pot of honey, the tulip the bee is on taken.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -85,6 +86,7 @@ export const POINTS = {
   colour: 15, // each colour caught on the rainbow: a pair from the band lit as it was taken
   bloom: 30, // each seedling picked in bloom, watered three times by pairs taken beside it
   pour: 20, // each pour of the watering can: a pair of its drops taken with water in it
+  honey: 20, // each pot of honey on the flower bed: the tulip the bee is on, taken
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -179,6 +181,7 @@ export function scoreOf(game, seconds, words = TURN) {
     const [n, pulled] = [game.seedlingsIn('picked'), game.seedlingsIn('pulled')];
     rows.push(['Blooms', [`${n} of ${game.garden.seedlings.length} picked`, pulled && `${pulled} pulled up`].filter(Boolean).join(', '), n * POINTS.bloom]);
   }
+  if (game.tulips) rows.push(['Honey', `${game.honey} of ${game.tulips.length} tulips`, game.honey * POINTS.honey]);
   if (game.can) rows.push(['Pours', [`${game.pours} of ${game.dropPairs}`, game.dryPours && `${game.dryPours} dry`].filter(Boolean).join(', '), game.pours * POINTS.pour]);
   if (game.chocolates) {
     const n = game.chocolatesIn('savoured');

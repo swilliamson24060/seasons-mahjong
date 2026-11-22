@@ -64,6 +64,9 @@ const RAINDROP =
   '<circle cx="8.4" cy="23" r="1.3" fill="#fff" opacity="0.7"/>' +
   '</svg>';
 
+// The colours of the flower bed's tulips, in turn along its rows.
+const TULIPS = ['red', 'yellow', 'pink', 'violet'];
+
 // The treats New Year's Day's sweets carry, one to a sweet, in turn.
 const SWEETS = ['🍩', '🍪', '🧁', '🍫', '🍬', '🍰'];
 
@@ -173,6 +176,13 @@ export class Board {
       // On its watering can, the body painted, the drops water blue, and
       // the handle, spout and rose bare metal.
       if (this.game.can) button.dataset.part = partOf(L, i, this.game.can) || 'metal';
+      // On its flower bed, each tulip's head its colour, the leaves green and
+      // the soil brown.
+      if (this.game.tulips) {
+        const g = this.game;
+        const k = L.z[i] >= 1 ? g.tulips.findIndex((t) => t === i || L.above[i].includes(t)) : -1;
+        button.dataset.flower = k >= 0 ? TULIPS[k % TULIPS.length] : L.y[i] >= 16 ? 'soil' : 'leaf';
+      }
       const svg = document.createElementNS(SVG, 'svg');
       svg.setAttribute('viewBox', '0 0 60 80');
       svg.setAttribute('aria-hidden', 'true');
@@ -236,6 +246,15 @@ export class Board {
     // On April Showers' umbrella, the raindrops drawn, by their places in
     // the game's drops, made as they land.
     this.dropEls = new Map();
+    // On its flower bed, the bee.
+    this.beeEl = null;
+    if (this.game.tulips) {
+      this.beeEl = document.createElement('div');
+      this.beeEl.className = 'bee';
+      this.beeEl.setAttribute('aria-hidden', 'true');
+      this.beeEl.textContent = '🐝';
+      el.append(this.beeEl);
+    }
     // On New Year's Day, the treat each sweet carries.
     this.sweetOf = new Map();
     if (this.game.sweets) for (let i = 0; i < L.count; i++) if (this.game.sweets[i]) this.sweetOf.set(i, SWEETS[this.sweetOf.size % SWEETS.length]);
@@ -388,6 +407,7 @@ export class Board {
     this.placeStar();
     this.placeGlasses();
     this.placeDrops();
+    this.placeBee();
     if (!this.beam || !this.rowTop) return;
     const s = this.beam.style;
     s.top = `${this.rowTop(this.game.lightTop)}px`;
@@ -483,6 +503,20 @@ export class Board {
       el.classList.toggle('bare', tile < 0); // over a place whose tiles are all taken
       if (fresh && forward && drop.at === g.matches) this.restart(el, 'landing');
     }
+  }
+
+  // On April Showers' flower bed, where the bee is: on the tulip she's on,
+  // at the top left of its top, as a tile's badges sit, flying there from
+  // the one before; gone once she's flown off.
+  placeBee() {
+    if (!this.beeEl || !this.spotOf) return;
+    const g = this.game;
+    const L = g.layout;
+    const t = g.bee.at >= 0 ? g.tulips[g.bee.at] : -1;
+    this.beeEl.hidden = t < 0 || !g.present[t];
+    if (this.beeEl.hidden) return;
+    const [left, top] = this.spotOf(L.x[t], L.y[t], L.z[t]);
+    this.beeEl.style.transform = `translate(${Math.round(left + this.tileWidth * 0.04)}px, ${Math.round(top - this.tileWidth * 0.2)}px)`;
   }
 
   // The glasses meet: they clink, tilting together, and a toast rises
@@ -650,6 +684,9 @@ export class Board {
     if (g.dropOn(i)) return `${name}, with a raindrop on it: take it with a tile of its kind to catch the drop`;
     if (g.inRainWay(i)) return `${name}, in a raindrop's way down the umbrella`;
     if (g.inSplashZone(i)) return `${name}, in the puddle: a pair from it splashes${g.splashRun ? `, ${g.nextSplash} in a row` : ''}`;
+    if (g.beeOn(i)) return `${name}, a tulip with the bee on it: take it with a tile of its kind to make honey`;
+    if (g.beeNext(i)) return `${name}, the tulip the bee flies to next`;
+    if (g.tulips && g.tulips.includes(i)) return `${name}, a tulip`;
     const part = g.canPart(i);
     if (part === 'body') return `${name}, in the can's body: a pair from it fills the can${g.canLevel >= g.canMost ? ', but it is full' : ''}`;
     if (part === 'drops') return `${name}, a drop from the can's rose: a pair of drops pours the can${g.canLevel ? '' : ', but it is empty'}`;
@@ -802,6 +839,7 @@ export class Board {
       const band = g.colourOf(i);
       el.classList.toggle('shining', band >= 0 && band === g.bandLit);
       el.classList.toggle('next-band', band >= 0 && band === g.bandNext);
+      el.classList.toggle('bee-next', g.beeNext(i)); // on its flower bed: the tulip the bee flies to next
       // On its seed tray, a seedling carries a sprout and the waterings it
       // still needs, and once it blooms, a tulip.
       const seedling = g.seedlingOf(i);
@@ -818,7 +856,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

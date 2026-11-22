@@ -420,6 +420,16 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     toast(words.join(' '));
   });
+  // On April Showers' flower bed: a pair with the tulip the bee is on makes
+  // honey, and with every match she flies to another.
+  game.on('bee', ({ honey, beeFrom }) => {
+    if (honey) {
+      sound.honey();
+      board.float('🍯', beeFrom);
+      setTimeout(() => board.float(`+${POINTS.honey}`, beeFrom), 500); // after the pair's own points
+      toast(`Honey! ${POINTS.honey} points.${game.bee.at >= 0 ? ' The bee flies on to another tulip.' : ' The bee flies off: every tulip is picked.'}`);
+    } else if (game.bee.at >= 0) sound.buzz();
+  });
   // On April Showers' watering can: a pair from its body fills it, if
   // there's room, and a pair of its drops pours it, if there's water in it.
   game.on('can', ({ b, canDoes }) => {
@@ -1598,6 +1608,9 @@ function update() {
   if (g.rain) $('raindrops').innerHTML = `💧 <b>${g.dropsCaught}</b>${g.untilRain !== Infinity ? ` · ⏳ <b>${g.untilRain}</b>` : ''}`;
   // On its rain boots, the splashes in a row now, and while the puddle has a
   // splash left in it, what the next would score.
+  // On its flower bed, the honey made, of the tulips.
+  $('honey').hidden = !g.tulips;
+  if (g.tulips) $('honey').innerHTML = `🍯 <b>${g.honey}</b>/${g.tulips.length}`;
   // On its watering can, how full it is, and the pours made.
   $('can').hidden = !g.can;
   if (g.can) $('can').innerHTML = `💧 <b>${g.canLevel}</b>/${g.canMost} · 🌼 <b>${g.pours}</b>`;
