@@ -1256,6 +1256,44 @@ export class Sound {
     this.harp(78, this.now + 0.48, 0.12);
   }
 
+  // A drop of water: the little bubble it makes, ringing up in pitch as it
+  // closes, quickly gone.
+  plip(at, from = 700, to = 1700, gain = 0.12, length = 0.09, into = this.bus) {
+    const o = this.ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(from, at);
+    o.frequency.exponentialRampToValueAtTime(to, at + length);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(gain, at + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + length + 0.03);
+    o.connect(g).connect(into);
+    o.start(at);
+    o.stop(at + length + 0.06);
+  }
+
+  // On April Showers' umbrella, a raindrop landing on its peak: a pat on
+  // the canopy, and a little plip.
+  raindrop() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.06, 1400, 600, 0.1);
+    this.plip(this.now + 0.02, 600, 1300, 0.07);
+  }
+
+  // A raindrop caught: a bright plip, and the light catching it.
+  catchDrop() {
+    if (!this.on) return;
+    this.plip(this.now, 900, 2200, 0.14);
+    [2637, 3520].forEach((f, k) => this.ping(f, this.now + 0.07 + k * 0.07, { gain: 0.035, fall: 0.5 }));
+  }
+
+  // A raindrop dripping off the rim: a lower plop, and a splash below.
+  drip() {
+    if (!this.on) return;
+    this.plip(this.now, 380, 900, 0.1, 0.12);
+    this.rustle(this.now + 0.12, 0.1, 3000, 1500, 0.05);
+  }
+
   // A turkey's gobble: a quick string of throaty warbles, each falling, and
   // falling as they go.
   gobble() {

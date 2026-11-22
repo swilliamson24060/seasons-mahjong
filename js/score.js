@@ -30,8 +30,10 @@
 // each rose gathered into the bouquet, taken while it's in bloom; on
 // Valentine's first date each candlelit pair, a tile in each candle's glow;
 // on Valentine's box of chocolates each chocolate savoured, eaten whole
-// before biting into another; and on Valentine's hugs and kisses each XOXO,
-// kisses from the X and hugs from the O taken in turn, four in a row.
+// before biting into another; on Valentine's hugs and kisses each XOXO,
+// kisses from the X and hugs from the O taken in turn, four in a row; and
+// on April Showers' umbrella each raindrop caught, the tile it was on taken
+// as it ran down the canopy.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -73,6 +75,7 @@ export const POINTS = {
   candlelit: 20, // each pair with a tile in each candle's glow, his and hers
   savoured: 30, // each chocolate eaten whole, cup and all, before biting into another
   xoxo: 15, // each XOXO: kisses from the X and hugs from the O taken in turn, four in a row
+  raindrop: 20, // each raindrop caught on the umbrella: the tile it was on taken as it ran down
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -157,6 +160,7 @@ export function scoreOf(game, seconds, words = TURN) {
   }
   if (game.candles) rows.push(['Candlelit pairs', times(game.candlelitPairs, POINTS.candlelit), game.candlelitPairs * POINTS.candlelit]);
   if (game.xoxo) rows.push(['XOXOs', times(game.xoxos, POINTS.xoxo), game.xoxos * POINTS.xoxo]);
+  if (game.rain) rows.push(['Raindrops', `${game.dropsCaught} of ${game.dropsLanded} caught`, game.dropsCaught * POINTS.raindrop]);
   if (game.chocolates) {
     const n = game.chocolatesIn('savoured');
     const eaten = game.chocolatesIn('eaten');

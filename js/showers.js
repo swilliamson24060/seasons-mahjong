@@ -1,15 +1,28 @@
-import { CLOUD } from './engine/layouts.js';
+import { CLOUD, UMBRELLA } from './engine/layouts.js';
 
 // April Showers: from showers to flowers, eight boards from the first
 // shower to May Day, the sky clearing as they go, to be reached in turn as
 // Valentine's chapters are. The boards grow from 84 tiles to the full set of
 // 144, all nine across: the first four are April's, in the rain, and the
 // last four May's, coming into flower. The first, the first shower, is the
-// gentle start, with no twist, as Cupid's bow is; the eighth is to be May
-// Day, when April turns to May halfway and every tile turns over. Each
-// chapter is as Thanksgiving's days are (thanksgiving.js says what each part
-// is for), and PLAN.md has the season's boards and twists. Until April
-// Showers' own tiles are drawn, its boards wear Halloween's.
+// gentle start, with no twist, as Cupid's bow is; on the second, umbrella
+// weather, raindrops land on the umbrella and run down its ribs, to be
+// caught (engine/raindrops.js); the eighth is to be May Day, when April
+// turns to May halfway and every tile turns over. Each chapter is as
+// Thanksgiving's days are (thanksgiving.js says what each part is for), and
+// PLAN.md has the season's boards and twists. Until April Showers' own
+// tiles are drawn, its boards wear Halloween's.
+
+// The umbrella's ribs, fanning out from its peak to the five points of its
+// rim, each as its places, [column, row]: the outer two along the canopy's
+// edges, and the middle one straight down over its handle.
+const RIBS = [
+  [[4, 0], [2, 1], [1, 2], [0, 3], [0, 4], [0, 5]],
+  [[4, 0], [3, 1], [3, 2], [2, 3], [2, 4], [2, 5]],
+  [[4, 0], [4, 1], [4, 2], [4, 3], [4, 4], [4, 5]],
+  [[4, 0], [5, 1], [5, 2], [6, 3], [6, 4], [6, 5]],
+  [[4, 0], [6, 1], [7, 2], [8, 3], [8, 4], [8, 5]],
+];
 
 export const SHOWERS = [
   {
@@ -19,6 +32,14 @@ export const SHOWERS = [
     rules: { treats: false, ghostsFloat: false },
     sky: ['#59626d', '#15191e'],
     text: "April comes in with its first shower, and the season begins. A tile is free when nothing lies on it and its left or right side is open, as every raindrop's is: take two free tiles that match.",
+  },
+  {
+    name: 'The second chapter',
+    title: 'Umbrella weather',
+    layout: UMBRELLA,
+    rules: { treats: false, ghostsFloat: false, raindrops: { every: 4, ribs: RIBS } },
+    sky: ['#56677a', '#141b24'],
+    text: "Showers on and off all day: umbrella weather. As the board starts and every four matches, a raindrop 💧 lands on the umbrella's peak and runs down the canopy along a rib, a row with every match, dripping off at the rim; the tiles still in its way are ringed in blue. Take the tile a drop is on, with any tile of its kind, to catch it: 20 points.",
   },
 ];
 

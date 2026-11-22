@@ -267,3 +267,19 @@ test("Thanksgiving's sounds are all heard, and none too loud", async () => {
   }
   return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
+
+test("April Showers' rain is heard, and not too loud: a raindrop landing, one caught and one dripping off the rim", async () => {
+  const sounds = {
+    'a raindrop landing': [0.6, (s) => s.raindrop()],
+    'a raindrop caught': [1.2, (s) => s.catchDrop()],
+    'a raindrop dripping off': [0.8, (s) => s.drip()],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('showers', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
+});

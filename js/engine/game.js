@@ -29,6 +29,7 @@ import { rosesOf, roseState, opensAt, inBloom, gathers, gather } from './roses.j
 import { glowTop, glowOf, candlelit, candlelitIn } from './candles.js';
 import { chocolatesOf, eat, oneAtATime, savoursAll, savour } from './chocolates.js';
 import { letterOf, pairLetter, runOn, byTurns } from './xoxo.js';
+import { ribsOf, topOf, wet, running, rainOn, firstRain, catching } from './raindrops.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -40,14 +41,14 @@ export const TREATS = ['candle', 'key', 'cat'];
 // gold rings, goslings, swans, fresh milk, the dance, leaping lords, pipers,
 // fireworks, the disco ball, the balloon drop, the lucky coin, sparklers,
 // confetti, shooting stars, a toast for two, Cupid's arrows, sweethearts,
-// roses in bloom, candlelight, a box of chocolates and hugs and kisses.
-// Nothing here touches the page; the board listens with on() for what
-// happens: 'match', 'thaw', 'list', 'checkout', 'bought', 'grab',
+// roses in bloom, candlelight, a box of chocolates, hugs and kisses and
+// raindrops. Nothing here touches the page; the board listens with on() for
+// what happens: 'match', 'thaw', 'list', 'checkout', 'bought', 'grab',
 // 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold', 'gosling', 'swan',
 // 'milk', 'dance', 'leap', 'pipe', 'firework', 'spotlight', 'balloon',
 // 'coin', 'sparkler', 'confetti', 'star', 'toast', 'arrow', 'message',
-// 'rose', 'candlelight', 'chocolate', 'xoxo', 'save', 'turn', 'treat',
-// 'key', 'shuffle', 'undo', 'win' and 'stuck'.
+// 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain', 'save', 'turn',
+// 'treat', 'key', 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
@@ -125,7 +126,12 @@ export const TREATS = ['candle', 'key', 'cat'];
 // be eaten one at a time, each with the tiles under it (chocolates.js); and
 // xoxo, for Valentine's hugs and kisses: { split }, the half tiles down
 // where the X ends and the O begins, a pair from the X a kiss and from the
-// O a hug, to be taken in turn (xoxo.js).
+// O a hug, to be taken in turn (xoxo.js); and raindrops, for April Showers'
+// umbrella: { every, ribs }, every how many matches a raindrop lands on
+// the umbrella's peak, as the board starts and after, and the ribs it runs
+// down, a place a match, each given as its places, [column, row], from the
+// peak to the rim: a pair taken with the tile a drop is on catches it
+// (raindrops.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -133,7 +139,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -192,6 +198,10 @@ export class Game {
     // (chocolates.js).
     this.chocolates = chocolates ? chocolatesOf(table) : null;
     this.chocolateStates = this.chocolates && this.chocolates.map(() => 'whole');
+    // On April Showers' umbrella, the rain: how often a drop lands, and the
+    // ribs the drops run down, each place with the tiles over it
+    // (raindrops.js).
+    this.rain = raindrops && { every: raindrops.every, ribs: ribsOf(table, raindrops.ribs) };
     // The board of gold rings is dealt, and shuffled, a ring at a time, in
     // an order of its own; the board of the swan with its swans, a tile and
     // its reflection, coming free at different times; the milk pail with
@@ -200,8 +210,9 @@ export class Game {
     // their way can be cleared from the start (glasses.js); New Year's Day
     // leaving its sweets till after January (sweets.js); Valentine's vase of
     // roses taking each rose while it's in bloom (roses.js); the box of
-    // chocolates eating them one at a time (chocolates.js); and hugs and
-    // kisses taking a kiss and a hug in turn (xoxo.js).
+    // chocolates eating them one at a time (chocolates.js); hugs and kisses
+    // taking a kiss and a hug in turn (xoxo.js); and April Showers' umbrella
+    // catching the raindrops it can (raindrops.js).
     this.prefer = this.rings
       ? ringByRing(layout, this.rings.map((r) => r.tiles), seeded(seed ^ 0x68e31da4).shuffle(this.rings.map((_, k) => k)))
       : swans
@@ -218,7 +229,9 @@ export class Game {
                   ? oneAtATime(this.chocolates)
                   : xoxo
                     ? byTurns(table, xoxo.split)
-                    : null;
+                    : this.rain
+                      ? catching(this.rain.ribs, this.rain.every, seed)
+                      : null;
     // On New Year's 9, the rockets, 1 for a tile that is one, chosen by
     // where they lie, before the deal, so that it can be made with them.
     this.rockets = null;
@@ -458,6 +471,11 @@ export class Game {
       const tiles = Array.isArray(sweethearts) ? sweethearts : this.plan ? hearts(this.plan, this.sides[0]) : [];
       this.messages = tiles.map((t, k) => ({ words: MESSAGES[k].slice(), tiles: t.slice(), state: 'waiting', first: -1 }));
     }
+    // On April Showers' umbrella, the raindrops that have landed, each { rib,
+    // at, state }: the rib it runs down, the matches made as it landed, and
+    // 'running' until it's 'caught' or has 'dripped' off the rim. The first
+    // lands as the board starts.
+    this.raindrops = this.rain ? firstRain(this.rain.ribs, seed, onTable) : null;
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -705,6 +723,70 @@ export class Game {
 
   get glassesApart() {
     return this.path ? this.glasses.right - this.glasses.left - 1 : 0;
+  }
+
+  // On April Showers' umbrella, the raindrops still running, each { drop,
+  // step, tile }: how far down its rib it is, and the tile it's on, or -1
+  // over a place whose tiles are all taken (raindrops.js).
+  runningDrops() {
+    return this.rain ? running(this.rain.ribs, this.raindrops, this.present, this.matches) : [];
+  }
+
+  // The running drop a tile still on the board has on it, { drop, step,
+  // tile }, or null; and whether a tile lies in a running drop's way, at the
+  // top of a place further down its rib.
+  dropOn(i) {
+    if (!this.rain || !this.present[i]) return null;
+    return this.runningDrops().find((d) => d.tile === i) || null;
+  }
+
+  inRainWay(i) {
+    if (!this.rain || !this.present[i]) return false;
+    return this.runningDrops().some(({ drop, step }) => this.rain.ribs[drop.rib].slice(step + 1).some((spot) => topOf(spot, this.present) === i));
+  }
+
+  // The drops caught so far, and those landed; and the matches until the
+  // next lands, while one still can: while a rib with a tile on it is no
+  // longer than the matches that will be left then (raindrops.js).
+  get dropsCaught() {
+    return this.raindrops ? this.raindrops.filter((d) => d.state === 'caught').length : 0;
+  }
+
+  get dropsLanded() {
+    return this.raindrops ? this.raindrops.length : 0;
+  }
+
+  get untilRain() {
+    if (!this.rain) return Infinity;
+    const until = this.rain.every - (this.matches % this.rain.every);
+    const then = this.left / 2 - until; // the pairs left as it's due
+    return this.rain.ribs.some((rib) => rib.length <= then && wet(rib, this.present)) ? until : Infinity;
+  }
+
+  // On April Showers' umbrella, the hints' way catching a drop now, if one
+  // can be caught and the board still won after it: the way given, if its
+  // first pair catches one already; or else made to take a pair that does
+  // first, the drop furthest down its rib first, as Cupid's couples are
+  // (cupid.js), or else a way found from where that leaves the tiles; or,
+  // with none, the way given.
+  byRaindrops(way) {
+    const drops = this.runningDrops()
+      .filter(({ tile }) => tile >= 0 && this.isFree(tile))
+      .sort((p, q) => q.step - p.step);
+    if (!drops.length || (way[0] && way[0].some((t) => drops.some((d) => d.tile === t)))) return way;
+    const free = this.freeTiles();
+    for (const { tile } of drops) {
+      for (const p of free) {
+        if (p === tile || MATCH[this.faces[p]] !== MATCH[this.faces[tile]]) continue;
+        const made = wayWith(way, [tile, p], 1, (l) => this.holds(l));
+        if (made) return made;
+        const present = Uint8Array.from(this.present);
+        present[tile] = present[p] = 0;
+        const { result, line } = solve(this.layout, { ...this.position(), present }, { budget: 20000 });
+        if (result === 'win') return [[tile, p], ...line];
+      }
+    }
+    return way;
   }
 
   // On New Year's 3, a shooting star crosses a row where a wish can be made
@@ -1247,8 +1329,10 @@ export class Game {
   // first sight, the couple Cupid's arrow struck taken together, or broke a
   // heart, taking one of them with another tile, and whether Cupid let fly
   // again after it: the couple his arrow struck, or null with none to
-  // strike, and the couple still smitten before it, who got over it. Null if
-  // the pair cannot be taken.
+  // strike, and the couple still smitten before it, who got over it; and on
+  // April Showers' umbrella, the tiles the raindrops it caught were on, how
+  // many drops dripped off the rim after it, and the drop that landed after
+  // it, or null. Null if the pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -1458,6 +1542,15 @@ export class Game {
         } else s.state = 'out';
       }
     }
+    // On April Showers' umbrella, a pair with the tile a raindrop is on
+    // catches it; then the drops still running run on a place down their
+    // ribs, those past the rim drip off, and every so many matches another
+    // lands on the peak.
+    const rain = this.rain ? rainOn(this.rain.ribs, this.rain.every, this.seed, this.raindrops, this.present, this.matches, [a, b]) : null;
+    if (rain) {
+      entry.raindrops = this.raindrops; // as they were, for an undo
+      this.raindrops = rain.drops;
+    }
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
@@ -1629,6 +1722,9 @@ export class Game {
       kiss: letter,
       xoxoMade,
       runBroke,
+      catches: rain ? rain.caught.map((c) => c.tile) : [],
+      drips: rain ? rain.dripped.length : 0,
+      newDrop: rain ? rain.landed : null,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -1661,6 +1757,7 @@ export class Game {
     if (byCandlelight || burnt) this.emit('candlelight', result);
     if (ate && (ate.bitten.length || ate.savoured >= 0 || ate.eaten.length)) this.emit('chocolate', result);
     if (xoxoMade || runBroke) this.emit('xoxo', result);
+    if (rain && (rain.caught.length || rain.dripped.length || rain.landed)) this.emit('rain', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -1734,6 +1831,7 @@ export class Game {
         this.toastAt = 0;
       }
       if (last.gaveIn) this.brokenAt = 0;
+      if (last.raindrops) this.raindrops = last.raindrops;
       if (last.litBefore) {
         this.lit = last.litBefore;
         this.bursts -= last.rockets;
@@ -1774,8 +1872,10 @@ export class Game {
   // kept to a way that says the messages still to say, where one does; on
   // the vase of roses to one that gathers the roses still to gather; on the
   // first date to one that takes a candlelit pair whenever it can; on the
-  // box of chocolates to one that savours the chocolates still to eat; and
-  // on hugs and kisses to one that carries the run of kisses and hugs on.
+  // box of chocolates to one that savours the chocolates still to eat; on
+  // hugs and kisses to one that carries the run of kisses and hugs on; and
+  // on April Showers' umbrella to one that catches a raindrop whenever it
+  // can.
   wayAhead() {
     if (!this.line && this.outlook !== 'lost') {
       const { result, line } = solve(this.layout, this.position(), { budget: 20000 });
@@ -1792,6 +1892,7 @@ export class Game {
       this.line = gather(this.line, board) || this.line;
     }
     if (this.line && this.candles) this.line = this.byCandlelight(this.line);
+    if (this.line && this.rain) this.line = this.byRaindrops(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
@@ -1837,8 +1938,9 @@ export class Game {
     // On New Year's Day, while the resolution holds, the board is dealt
     // again so that the sweets can still be left alone through what is left
     // of January; on Valentine's vase of roses, so that each rose still to
-    // gather can be taken while it's in bloom; and on the box of chocolates,
-    // so that each chocolate still to eat can be savoured.
+    // gather can be taken while it's in bloom; on the box of chocolates, so
+    // that each chocolate still to eat can be savoured; and on April Showers'
+    // umbrella, so that the raindrops are caught where they can be.
     const january = this.resolving ? this.january - this.matches : 0;
     for (let tries = 0; ; tries++) {
       const prefer = this.mirror
@@ -1853,7 +1955,9 @@ export class Game {
               ? oneAtATime(this.chocolates, this.chocolateStates.map((s, k) => (s === 'eaten' ? k : -1)).filter((k) => k >= 0))
               : this.xoxo
                 ? byTurns(this.layout, this.xoxo.split, this.run ? this.run.at(-1) : 'O')
-                : this.prefer;
+                : this.rain
+                  ? catching(this.rain.ribs, this.rain.every, this.seed, this.matches, this.raindrops)
+                  : this.prefer;
       dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead(), prefer);
       const fine = (d) =>
         (!this.mirror || swansIn(this.layout, this.mirror, d.sides[this.side], this.present).length === swans) &&

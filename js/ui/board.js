@@ -51,6 +51,16 @@ function flute(k) {
   );
 }
 
+// A raindrop, for April Showers' umbrella: a drop of rain, clear blue with
+// the light catching it, pointed at the top and round below.
+const RAINDROP =
+  '<svg viewBox="0 0 24 32">' +
+  '<defs><radialGradient id="rain-blue" cx="0.38" cy="0.62" r="0.7"><stop offset="0" stop-color="#d9f1ff"/><stop offset="0.55" stop-color="#5fb4ec"/><stop offset="1" stop-color="#1f6fb2"/></radialGradient></defs>' +
+  '<path d="M12 1.5 C12 1.5 3.2 13 3.2 20.2 A8.8 8.8 0 0 0 20.8 20.2 C20.8 13 12 1.5 12 1.5 Z" fill="url(#rain-blue)" stroke="#16588f" stroke-width="1.2" stroke-linejoin="round"/>' +
+  '<path d="M7.6 19 Q7.8 14.5 10.6 10.6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>' +
+  '<circle cx="8.4" cy="23" r="1.3" fill="#fff" opacity="0.7"/>' +
+  '</svg>';
+
 // The treats New Year's Day's sweets carry, one to a sweet, in turn.
 const SWEETS = ['🍩', '🍪', '🧁', '🍫', '🍬', '🍰'];
 
@@ -208,6 +218,9 @@ export class Board {
         return -1;
       });
     }
+    // On April Showers' umbrella, the raindrops drawn, by their places in
+    // the game's drops, made as they land.
+    this.dropEls = new Map();
     // On New Year's Day, the treat each sweet carries.
     this.sweetOf = new Map();
     if (this.game.sweets) for (let i = 0; i < L.count; i++) if (this.game.sweets[i]) this.sweetOf.set(i, SWEETS[this.sweetOf.size % SWEETS.length]);
@@ -359,6 +372,7 @@ export class Board {
   placeBeam() {
     this.placeStar();
     this.placeGlasses();
+    this.placeDrops();
     if (!this.beam || !this.rowTop) return;
     const s = this.beam.style;
     s.top = `${this.rowTop(this.game.lightTop)}px`;
@@ -408,6 +422,52 @@ export class Board {
       glass.style.setProperty('--tilt', k ? '-16deg' : '16deg');
     });
     this.meetingAt = met ? [(feet[0][0] + feet[1][0]) / 2, feet[0][1] - w * 0.6] : null;
+  }
+
+  // On April Showers' umbrella, where each raindrop still running is: at
+  // the top left of its place, as a tile's badges sit, on the tile at the
+  // top there, or on the table where its tiles are all taken, gliding a
+  // place down its rib with every match. A drop just landed falls onto the
+  // peak; one caught splashes; one past the rim drips off and falls away;
+  // and one an undo takes back goes, or comes back.
+  placeDrops() {
+    const g = this.game;
+    if (!g.rain || !this.spotOf) return;
+    const L = g.layout;
+    const w = this.tileWidth;
+    const forward = g.matches > (this.dropsAt ?? g.matches); // a match made, not taken back
+    this.dropsAt = g.matches;
+    const running = new Map(g.runningDrops().map((d) => [g.raindrops.indexOf(d.drop), d]));
+    for (const [k, el] of this.dropEls) {
+      if (running.has(k)) continue;
+      const drop = g.raindrops[k];
+      const how = drop && drop.state === 'caught' ? 'caught' : drop && drop.state === 'dripped' ? 'dripping' : null;
+      this.dropEls.delete(k);
+      if (!how || !forward || still()) {
+        el.remove();
+        continue;
+      }
+      el.classList.add('going', how);
+      el.addEventListener('animationend', () => el.remove(), { once: true });
+      setTimeout(() => el.remove(), 1000); // should the animation never end, as in a tab out of sight
+    }
+    for (const [k, { drop, step, tile }] of running) {
+      let el = this.dropEls.get(k);
+      const fresh = !el;
+      if (fresh) {
+        el = document.createElement('div');
+        el.className = 'raindrop';
+        el.setAttribute('aria-hidden', 'true');
+        el.innerHTML = RAINDROP;
+        this.el.append(el);
+        this.dropEls.set(k, el);
+      }
+      const [x, y] = g.rain.ribs[drop.rib][step].place;
+      const [left, top] = tile >= 0 ? this.spotOf(L.x[tile], L.y[tile], L.z[tile]) : this.spotOf(x, y, 0);
+      el.style.transform = `translate(${Math.round(left + w * 0.1)}px, ${Math.round(top - w * 0.12)}px)`;
+      el.classList.toggle('bare', tile < 0); // over a place whose tiles are all taken
+      if (fresh && forward && drop.at === g.matches) this.restart(el, 'landing');
+    }
   }
 
   // The glasses meet: they clink, tilting together, and a toast rises
@@ -542,6 +602,8 @@ export class Board {
       return `${name}, a wilted rose`;
     }
     if (g.inGlassesWay(i)) return `${name}, in the glasses' way`;
+    if (g.dropOn(i)) return `${name}, with a raindrop on it: take it with a tile of its kind to catch the drop`;
+    if (g.inRainWay(i)) return `${name}, in a raindrop's way down the umbrella`;
     if (g.tempting(i)) return `${name}, a sweet: leave it alone through January to keep your resolution`;
     if (g.isSweet(i)) return `${name}, a sweet, fair game now`;
     const spark = g.sparklerOf(i);
@@ -677,6 +739,7 @@ export class Board {
       el.classList.toggle('bitten', g.openChocolate >= 0 && g.chocolateOf(i) === g.openChocolate); // on the box of chocolates: the chocolate bitten into
       el.classList.toggle('xo-next', free && g.wantsLetter !== null && g.xoLetter(i) === g.wantsLetter); // on hugs and kisses: the letter the run wants next
       el.classList.toggle('in-way', g.inGlassesWay(i)); // on New Year's 2: in the glasses' way
+      el.classList.toggle('rain-way', g.inRainWay(i)); // on April Showers' umbrella: in a raindrop's way down
       // On New Year's Day, a sweet carries its treat, and through January,
       // while the resolution holds, it is a tempting pink.
       el.classList.toggle('sweet', g.isSweet(i));
@@ -686,7 +749,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

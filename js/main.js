@@ -353,6 +353,28 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     toast(kiss ? `Two ${kiss === 'X' ? 'kisses' : 'hugs'} together: the XOXO starts again.` : 'A pair with a tile in each letter: the XOXO starts again.');
   });
+  // On April Showers' umbrella: a pair with the tile a raindrop is on
+  // catches it, drops run past the rim and drip off, and every so many
+  // matches another lands on the peak.
+  game.on('rain', ({ catches, drips, newDrop }) => {
+    const words = [];
+    if (catches.length) {
+      const pts = catches.length * POINTS.raindrop;
+      sound.catchDrop();
+      for (const t of catches) board.float('💧', t);
+      setTimeout(() => board.float(`+${pts}`, catches[0]), 500); // after the pair's own points
+      words.push(`${catches.length > 1 ? 'Two raindrops' : 'A raindrop'} caught! ${pts} points.`);
+    }
+    if (drips) {
+      setTimeout(() => sound.drip(), catches.length ? 400 : 0);
+      words.push(drips > 1 ? 'Two raindrops dripped off the rim.' : 'A raindrop dripped off the rim.');
+    }
+    if (newDrop) {
+      setTimeout(() => sound.raindrop(), catches.length || drips ? 700 : 0);
+      words.push("A raindrop lands on the umbrella's peak.");
+    }
+    toast(words.join(' '));
+  });
   // On Valentine's box of chocolates: a top taken bites into its chocolate,
   // the chocolate eaten whole is savoured, and one bitten into before it is
   // finished is just eaten.
@@ -1499,6 +1521,10 @@ function update() {
   // burn, the matches until their glow sinks.
   $('candles').hidden = !g.candles;
   if (g.candles) $('candles').innerHTML = `🕯️ <b>${g.candlelitPairs}</b>${g.glowTop >= 0 ? ` · ⏳ <b>${g.untilSink}</b>` : ''}`;
+  // On April Showers' umbrella, the raindrops caught, and the matches until
+  // the next lands, while one still can.
+  $('raindrops').hidden = !g.rain;
+  if (g.rain) $('raindrops').innerHTML = `💧 <b>${g.dropsCaught}</b>${g.untilRain !== Infinity ? ` · ⏳ <b>${g.untilRain}</b>` : ''}`;
   // The lovebirds taken, on a board of turtle doves.
   $('lovebirds').hidden = !g.rules.lovebirds;
   if (g.rules.lovebirds) $('lovebirds').innerHTML = `🕊️ <b>${g.lovebirds}</b>`;
