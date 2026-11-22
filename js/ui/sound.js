@@ -1294,6 +1294,34 @@ export class Sound {
     this.rustle(this.now + 0.12, 0.1, 3000, 1500, 0.05);
   }
 
+  // On April Showers' seed tray, a seedling watered: a little trickle of
+  // water from a can, and the soil taking it in.
+  water() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.3, 2500, 1800, 0.06);
+    [0, 0.07, 0.15].forEach((t, k) => this.plip(this.now + t, 900 + k * 150, 1700 + k * 200, 0.04));
+  }
+
+  // A seedling bloomed: a rising run on the glockenspiel, as it opens.
+  blossom() {
+    if (!this.on) return;
+    [1319, 1568, 1760, 2093].forEach((f, k) => this.bell(f, this.now + k * 0.08, 0.035, 1.2));
+  }
+
+  // A bloom picked: a soft snip, and a chord on the glockenspiel.
+  picked() {
+    if (!this.on) return;
+    this.ping(3200, this.now, { gain: 0.05, attack: 0.001, fall: 0.04, into: this.master });
+    [1047, 1319, 1568].forEach((f) => this.bell(f, this.now + 0.1, 0.035, 1.6));
+  }
+
+  // A seedling pulled up before it bloomed: the soil giving, and a low note.
+  pulled() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.2, 700, 300, 0.1);
+    this.ping(220, this.now + 0.12, { type: 'triangle', gain: 0.06, fall: 0.35 });
+  }
+
   // On April Showers' rainbow, a colour caught: a glockenspiel's note for
   // its band, from red's, the lowest, up the pentatonic scale to violet's,
   // so that colours caught in turn ring up the scale, with a shimmer.

@@ -1,4 +1,4 @@
-import { CLOUD, UMBRELLA, BOOTS, RAINBOW } from './engine/layouts.js';
+import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY } from './engine/layouts.js';
 
 // April Showers: from showers to flowers, eight boards from the first
 // shower to May Day, the sky clearing as they go, to be reached in turn as
@@ -11,8 +11,10 @@ import { CLOUD, UMBRELLA, BOOTS, RAINBOW } from './engine/layouts.js';
 // splash in a puddle, pairs from it taken one after another splashing
 // higher (engine/splash.js); on the fourth, the rainbow, its bands light
 // up in turn, a pair from the band lit catching its colour
-// (engine/colours.js); the eighth is to be May Day, when April turns to
-// May halfway and every tile turns over. Each chapter is as
+// (engine/colours.js); on the fifth, seedlings, the first of May's, a seed
+// tray's seedlings are watered by pairs taken beside them, to bloom and be
+// picked (engine/watering.js); the eighth is to be May Day, when April
+// turns to May halfway and every tile turns over. Each chapter is as
 // Thanksgiving's days are (thanksgiving.js says what each part is for), and
 // PLAN.md has the season's boards and twists. Until April Showers' own
 // tiles are drawn, its boards wear Halloween's.
@@ -26,6 +28,19 @@ const RIBS = [
   [[4, 0], [4, 1], [4, 2], [4, 3], [4, 4], [4, 5]],
   [[4, 0], [5, 1], [5, 2], [6, 3], [6, 4], [6, 5]],
   [[4, 0], [6, 1], [7, 2], [8, 3], [8, 4], [8, 5]],
+];
+
+// The seed tray's seedlings, each [column, row, layer]: the middles of its
+// sprouts' crosses, three across the top, two in the middle and three below.
+const SEEDLINGS = [
+  [1, 1, 1],
+  [4, 1, 1],
+  [7, 1, 1],
+  [2, 4, 1],
+  [5, 4, 1],
+  [1, 6, 1],
+  [4, 6, 1],
+  [7, 6, 1],
 ];
 
 export const SHOWERS = [
@@ -60,6 +75,14 @@ export const SHOWERS = [
     rules: { treats: false, ghostsFloat: false, colours: { clouds: 16 } },
     sky: ['#5f7584', '#182128'],
     text: "The sun comes out while it rains, and a rainbow arches from cloud to cloud. One band of it is lit at a time, red, orange, yellow, green, blue, violet, and round again, moving on a band with every match. Take a pair from the band that's lit, both tiles in it, and you catch its colour: 15 points. The band lit next is ringed, so you can get a pair ready for it.",
+  },
+  {
+    name: 'The fifth chapter',
+    title: 'Seedlings',
+    layout: TRAY,
+    rules: { treats: false, ghostsFloat: false, watering: { seedlings: SEEDLINGS, drinks: 3 } },
+    sky: ['#61798a', '#1a242c'],
+    text: "May comes in, and the seeds sown in April are up. Eight seedlings 🌱 stand in the tray, each with its first leaves round it. A pair taken beside a seedling, touching its tile, waters it 💧; watered three times, it blooms 🌷, and a bloom taken, with any tile of its kind, is picked: 30 points. A seedling taken before it blooms is pulled up, just a tile, so water it first.",
   },
 ];
 

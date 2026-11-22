@@ -44,6 +44,7 @@ import './showers.test.js';
 import './raindrops.test.js';
 import './splash.test.js';
 import './colours.test.js';
+import './watering.test.js';
 import './faces.test.js';
 import './site.test.js';
 import './score.test.js';

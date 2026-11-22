@@ -35,8 +35,9 @@
 // April Showers' umbrella each raindrop caught, the tile it was on taken as
 // it ran down the canopy; and on its rain boots each splash, a pair from
 // the puddle, worth the more the higher it splashed, its place in a run of
-// splashes taken one straight after another; and on its rainbow each
-// colour caught, a pair from the band lit as it was taken.
+// splashes taken one straight after another; on its rainbow each colour
+// caught, a pair from the band lit as it was taken; and on its seed tray
+// each seedling picked in bloom, watered by pairs taken beside it.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -81,6 +82,7 @@ export const POINTS = {
   raindrop: 20, // each raindrop caught on the umbrella: the tile it was on taken as it ran down
   splash: 10, // each splash, a pair from the puddle, times how high it splashed: its place in a run of them
   colour: 15, // each colour caught on the rainbow: a pair from the band lit as it was taken
+  bloom: 30, // each seedling picked in bloom, watered three times by pairs taken beside it
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -171,6 +173,10 @@ export function scoreOf(game, seconds, words = TURN) {
     rows.push(['Splashes', n ? `${n} ${n === 1 ? 'splash' : 'splashes'}, ${game.splashBest} in a row at the most` : 'none yet', game.splashHeights * POINTS.splash]);
   }
   if (typeof game.colourClouds === 'number') rows.push(['Colours caught', times(game.coloursCaught, POINTS.colour), game.coloursCaught * POINTS.colour]);
+  if (game.garden) {
+    const [n, pulled] = [game.seedlingsIn('picked'), game.seedlingsIn('pulled')];
+    rows.push(['Blooms', [`${n} of ${game.garden.seedlings.length} picked`, pulled && `${pulled} pulled up`].filter(Boolean).join(', '), n * POINTS.bloom]);
+  }
   if (game.chocolates) {
     const n = game.chocolatesIn('savoured');
     const eaten = game.chocolatesIn('eaten');

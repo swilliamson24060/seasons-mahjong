@@ -2,6 +2,7 @@ import { LOST } from '../engine/tiles.js';
 import { symbolId, faceName, EGG } from './faces.js';
 import { COLOURS } from '../engine/confetti.js';
 import { BANDS, bandOf } from '../engine/colours.js';
+import { plotOf } from '../engine/watering.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const LIFT = 0.11; // how far each layer sits up and to the right, in tile widths
@@ -165,6 +166,9 @@ export class Board {
         const band = bandOf(L, i, this.game.colourClouds);
         button.dataset.band = band >= 0 ? BANDS[band] : 'cloud';
       }
+      // On its seed tray, the soil brown, and the sprouts green, each
+      // seedling deeper than the leaves round it.
+      if (this.game.garden) button.dataset.plot = plotOf(L, i, this.game.garden.seedlings);
       const svg = document.createElementNS(SVG, 'svg');
       svg.setAttribute('viewBox', '0 0 60 80');
       svg.setAttribute('aria-hidden', 'true');
@@ -559,6 +563,12 @@ export class Board {
     }
   }
 
+  // On April Showers' seed tray, seedlings watered: each drinks, and one
+  // that blooms opens.
+  wateredSeedlings(watered, blossomed) {
+    for (const i of watered) this.restart(this.tiles[i].el, blossomed.includes(i) ? 'opening' : 'drinking');
+  }
+
   // A colour caught on April Showers' rainbow: the tiles left in its band
   // shimmer, outward from where the pair was taken.
   caughtColour(band, from) {
@@ -636,6 +646,11 @@ export class Board {
     if (g.dropOn(i)) return `${name}, with a raindrop on it: take it with a tile of its kind to catch the drop`;
     if (g.inRainWay(i)) return `${name}, in a raindrop's way down the umbrella`;
     if (g.inSplashZone(i)) return `${name}, in the puddle: a pair from it splashes${g.splashRun ? `, ${g.nextSplash} in a row` : ''}`;
+    const k = g.seedlingOf(i);
+    if (k >= 0) {
+      const thirst = g.thirst(k);
+      return g.bloomed(k) ? `${name}, a seedling in bloom: take it with a tile of its kind to pick it` : `${name}, a seedling: water it ${thirst} more ${thirst === 1 ? 'time' : 'times'}, with pairs taken beside it, and it blooms`;
+    }
     const band = g.colourOf(i);
     if (band >= 0) return `${name}, in the rainbow's ${BANDS[band]} band${band === g.bandLit ? ', lit now: take it with a tile of its kind from the same band to catch its colour' : band === g.bandNext ? ', lit next' : ''}`;
     if (g.tempting(i)) return `${name}, a sweet: leave it alone through January to keep your resolution`;
@@ -780,6 +795,13 @@ export class Board {
       const band = g.colourOf(i);
       el.classList.toggle('shining', band >= 0 && band === g.bandLit);
       el.classList.toggle('next-band', band >= 0 && band === g.bandNext);
+      // On its seed tray, a seedling carries a sprout and the waterings it
+      // still needs, and once it blooms, a tulip.
+      const seedling = g.seedlingOf(i);
+      el.classList.toggle('sprouting', seedling >= 0 && !g.bloomed(seedling));
+      el.classList.toggle('blossom', seedling >= 0 && g.bloomed(seedling));
+      if (seedling >= 0) el.dataset.thirst = g.thirst(seedling);
+      else delete el.dataset.thirst;
       // On New Year's Day, a sweet carries its treat, and through January,
       // while the resolution holds, it is a tempting pink.
       el.classList.toggle('sweet', g.isSweet(i));
@@ -789,7 +811,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

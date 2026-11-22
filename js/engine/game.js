@@ -32,6 +32,7 @@ import { letterOf, pairLetter, runOn, byTurns } from './xoxo.js';
 import { ribsOf, topOf, wet, running, rainOn, firstRain, catching } from './raindrops.js';
 import { inPuddle, isSplash, runAfter, dryFirst, runsIn } from './splash.js';
 import { bandOf, litBand, inColour, chasing } from './colours.js';
+import { seedlingsOf, waters, tending, bloomsIn } from './watering.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -44,15 +45,15 @@ export const TREATS = ['candle', 'key', 'cat'];
 // fireworks, the disco ball, the balloon drop, the lucky coin, sparklers,
 // confetti, shooting stars, a toast for two, Cupid's arrows, sweethearts,
 // roses in bloom, candlelight, a box of chocolates, hugs and kisses,
-// raindrops, the splash zone and chasing colours. Nothing here touches the
-// page; the board
+// raindrops, the splash zone, chasing colours and watering. Nothing here
+// touches the page; the board
 // listens with on() for what happens: 'match', 'thaw', 'list', 'checkout',
 // 'bought', 'grab', 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold',
 // 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe', 'firework',
 // 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti', 'star', 'toast',
 // 'arrow', 'message', 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain',
-// 'splash', 'colour', 'save', 'turn', 'treat', 'key', 'shuffle', 'undo',
-// 'win' and 'stuck'.
+// 'splash', 'colour', 'garden', 'save', 'turn', 'treat', 'key', 'shuffle',
+// 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
@@ -141,7 +142,10 @@ export const TREATS = ['candle', 'key', 'cat'];
 // and colours, for April Showers' rainbow: { clouds }, the half tiles down
 // where the clouds at its feet begin, each band of the arch a layer, red on
 // top, one band lit at a time, moving on a band with every match
-// (colours.js).
+// (colours.js); and watering, for April Showers' seed tray: { seedlings,
+// drinks }, where its seedlings sit, each [column, row, layer], and how many
+// waterings, pairs taken touching one, make one bloom, to be picked
+// (watering.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -149,7 +153,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -218,6 +222,9 @@ export class Game {
     // On April Showers' rainbow, where the clouds at its feet begin, half
     // tiles down, or null on a board without one (colours.js).
     this.colourClouds = colours ? colours.clouds : null;
+    // On April Showers' seed tray, its seedlings' tiles and the waterings
+    // that make one bloom (watering.js).
+    this.garden = watering && { seedlings: seedlingsOf(table, watering.seedlings), drinks: watering.drinks };
     // The board of gold rings is dealt, and shuffled, a ring at a time, in
     // an order of its own; the board of the swan with its swans, a tile and
     // its reflection, coming free at different times; the milk pail with
@@ -230,7 +237,9 @@ export class Game {
     // taking a kiss and a hug in turn (xoxo.js); April Showers' umbrella
     // catching the raindrops it can (raindrops.js); and its rain boots
     // keeping the puddle till last, to take it in one run of splashes
-    // (splash.js); and its rainbow catching the colours it can (colours.js).
+    // (splash.js); its rainbow catching the colours it can (colours.js); and
+    // its seed tray watering every seedling and picking it in bloom
+    // (watering.js).
     this.prefer = this.rings
       ? ringByRing(layout, this.rings.map((r) => r.tiles), seeded(seed ^ 0x68e31da4).shuffle(this.rings.map((_, k) => k)))
       : swans
@@ -253,7 +262,9 @@ export class Game {
                         ? dryFirst(table, splash.edge)
                         : colours
                           ? chasing(table, colours.clouds)
-                          : null;
+                          : this.garden
+                            ? tending(table, this.garden.seedlings, this.garden.drinks)
+                            : null;
     // On New Year's 9, the rockets, 1 for a tile that is one, chosen by
     // where they lie, before the deal, so that it can be made with them.
     this.rockets = null;
@@ -293,8 +304,10 @@ export class Game {
       // bloom; on the first date until its own order takes so many
       // candlelit pairs; on the box of chocolates until its own order
       // savours every chocolate; on hugs and kisses until its own order
-      // takes every pair from one letter; and on April Showers' rain boots
-      // until its own order takes the whole puddle in one run of splashes.
+      // takes every pair from one letter; on April Showers' rain boots
+      // until its own order takes the whole puddle in one run of splashes;
+      // and on its seed tray until its own order picks every seedling in
+      // bloom.
       const puddlePairs = splash ? [...table.x.keys()].filter((i) => inPuddle(table, i, splash.edge)).length / 2 : 0;
       const swansAsWanted = (faces, order) => {
         const found = swansIn(layout, this.mirror, faces, onTable);
@@ -316,7 +329,8 @@ export class Game {
         (!candles || candlelitIn(layout, order, candles) >= candles.pairs) &&
         (!this.chocolates || savoursAll(order, this.chocolates)) &&
         (!xoxo || order.every(([a, b]) => pairLetter(layout, a, b, xoxo.split) !== null)) &&
-        (!splash || runsIn(layout, order, splash.edge).includes(puddlePairs));
+        (!splash || runsIn(layout, order, splash.edge).includes(puddlePairs)) &&
+        (!this.garden || bloomsIn(layout, order, this.garden.seedlings, this.garden.drinks) === this.garden.seedlings.length);
       let dealt = null;
       for (let tries = 0; ; tries++) {
         dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { present: onTable, turnAt, ice: this.ice, prefer: this.prefer });
@@ -511,6 +525,11 @@ export class Game {
     // On April Showers' rainbow, the colours caught: pairs taken from the
     // band lit as they were taken.
     this.coloursCaught = 0;
+    // On April Showers' seed tray, each seedling's water so far, and how it
+    // was taken, 'picked' in bloom or 'pulled' before, or null while it's
+    // still in the tray.
+    this.water = this.garden ? this.garden.seedlings.map(() => 0) : null;
+    this.seedlingsTaken = this.garden ? this.garden.seedlings.map(() => null) : null;
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -815,6 +834,51 @@ export class Game {
     let n = 0;
     if (this.puddleEdge !== null) for (let i = 0; i < this.layout.count; i++) if (this.inSplashZone(i)) n++;
     return n;
+  }
+
+  // On April Showers' seed tray, which seedling a tile still on the board
+  // is, or -1; whether seedling k has bloomed; the waterings it still needs;
+  // and how many seedlings were taken each way, 'picked' or 'pulled'.
+  seedlingOf(i) {
+    return this.garden && this.present[i] === 1 ? this.garden.seedlings.indexOf(i) : -1;
+  }
+
+  bloomed(k) {
+    return this.water[k] >= this.garden.drinks;
+  }
+
+  thirst(k) {
+    return Math.max(0, this.garden.drinks - this.water[k]);
+  }
+
+  seedlingsIn(how) {
+    return this.seedlingsTaken ? this.seedlingsTaken.filter((h) => h === how).length : 0;
+  }
+
+  // On April Showers' seed tray, the hints' way picking a bloom when one can
+  // be picked, and leaving a seedling still to bloom while anything else can
+  // go first: a pair of the way that picks one moved to the front, if it can
+  // be taken now and the board still won; or else, with a seedling in bud
+  // first, the first pair that can be taken now without one moved there; or
+  // the way given.
+  tend(way) {
+    if (!way.length) return way;
+    const kOf = (t) => this.garden.seedlings.indexOf(t);
+    const waiting = (t) => kOf(t) >= 0 && !this.seedlingsTaken[kOf(t)];
+    const bloom = (t) => waiting(t) && this.bloomed(kOf(t));
+    const bud = (t) => waiting(t) && !this.bloomed(kOf(t));
+    const first = (want) => {
+      const k = way.findIndex((p) => want(p) && this.isFree(p[0]) && this.isFree(p[1]));
+      if (k <= 0) return null;
+      const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+      return this.holds(tried) ? tried : null;
+    };
+    if (!way[0].some(bloom)) {
+      const picking = first((p) => p.some(bloom));
+      if (picking) return picking;
+    }
+    if (way[0].some(bud)) return first((p) => !p.some(bud)) || way;
+    return way;
   }
 
   // On April Showers' rainbow, the band a tile still on the board is in, 0
@@ -1441,9 +1505,10 @@ export class Game {
   // April Showers' umbrella, the tiles the raindrops it caught were on, how
   // many drops dripped off the rim after it, and the drop that landed after
   // it, or null; on its rain boots, how high it splashed, its place in the
-  // run, or 0 for no splash, and the run it let settle, or 0; and on its
-  // rainbow, the band whose colour it caught, or -1. Null if the pair
-  // cannot be taken.
+  // run, or 0 for no splash, and the run it let settle, or 0; on its
+  // rainbow, the band whose colour it caught, or -1; and on its seed tray,
+  // the seedlings it watered and those that bloomed, and those it picked in
+  // bloom or pulled up before. Null if the pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -1577,6 +1642,27 @@ export class Game {
     if (colour >= 0) {
       this.coloursCaught++;
       entry.colour = true;
+    }
+    // On April Showers' seed tray, a pair with a tile touching a seedling
+    // waters it, and one watered enough blooms; a seedling taken in bloom is
+    // picked, and one taken before is pulled up.
+    const watered = [];
+    const blossomed = [];
+    const picked = [];
+    const pulled = [];
+    if (this.garden) {
+      entry.garden = { water: this.water.slice(), taken: this.seedlingsTaken.slice() }; // as they were, for an undo
+      this.garden.seedlings.forEach((s, k) => {
+        if (this.seedlingsTaken[k]) return;
+        if (s === a || s === b) {
+          this.seedlingsTaken[k] = this.bloomed(k) ? 'picked' : 'pulled';
+          (this.bloomed(k) ? picked : pulled).push(s);
+        } else if (waters(this.layout, s, a, b)) {
+          this.water[k]++;
+          watered.push(s);
+          if (this.water[k] === this.garden.drinks) blossomed.push(s);
+        }
+      });
     }
     // On Valentine's first date, a pair with a tile in each candle's glow,
     // one by his candle and one by hers, is a candlelit pair.
@@ -1861,6 +1947,10 @@ export class Game {
       splashed,
       settled,
       colour,
+      watered,
+      blossomed,
+      picked,
+      pulled,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -1896,6 +1986,7 @@ export class Game {
     if (rain && (rain.caught.length || rain.dripped.length || rain.landed)) this.emit('rain', result);
     if (splashed || settled) this.emit('splash', result);
     if (colour >= 0) this.emit('colour', result);
+    if (watered.length || picked.length || pulled.length) this.emit('garden', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -1972,6 +2063,7 @@ export class Game {
       if (last.raindrops) this.raindrops = last.raindrops;
       if (last.splash) Object.assign(this, { splashRun: last.splash.run, splashCount: last.splash.count, splashHeights: last.splash.heights, splashBest: last.splash.best });
       if (last.colour) this.coloursCaught--;
+      if (last.garden) Object.assign(this, { water: last.garden.water, seedlingsTaken: last.garden.taken });
       if (last.litBefore) {
         this.lit = last.litBefore;
         this.bursts -= last.rockets;
@@ -2016,8 +2108,9 @@ export class Game {
   // hugs and kisses to one that carries the run of kisses and hugs on; on
   // April Showers' umbrella to one that catches a raindrop whenever it can;
   // on its rain boots to one that keeps the puddle till last, to splash
-  // through it in one run; and on its rainbow to one that catches the
-  // colour lit whenever it can.
+  // through it in one run; on its rainbow to one that catches the colour
+  // lit whenever it can; and on its seed tray to one that picks each
+  // seedling in bloom.
   wayAhead() {
     if (!this.line && this.outlook !== 'lost') {
       const { result, line } = solve(this.layout, this.position(), { budget: 20000 });
@@ -2037,6 +2130,7 @@ export class Game {
     if (this.line && this.rain) this.line = this.byRaindrops(this.line);
     if (this.line && this.puddleEdge !== null) this.line = this.savePuddle(this.line);
     if (this.line && this.colourClouds !== null) this.line = this.byColour(this.line);
+    if (this.line && this.garden) this.line = this.tend(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
@@ -2086,8 +2180,9 @@ export class Game {
     // that each chocolate still to eat can be savoured; on April Showers'
     // umbrella, so that the raindrops are caught where they can be; on its
     // rain boots, so that what is left of the puddle goes last, in a run;
-    // and on its rainbow, so that the colours lit are caught where they can
-    // be.
+    // on its rainbow, so that the colours lit are caught where they can be;
+    // and on its seed tray, so that the seedlings still in it are watered and
+    // picked in bloom.
     const january = this.resolving ? this.january - this.matches : 0;
     for (let tries = 0; ; tries++) {
       const prefer = this.mirror
@@ -2108,7 +2203,9 @@ export class Game {
                     ? dryFirst(this.layout, this.puddleEdge)
                     : this.colourClouds !== null
                       ? chasing(this.layout, this.colourClouds, this.matches)
-                      : this.prefer;
+                      : this.garden
+                        ? tending(this.layout, this.garden.seedlings, this.garden.drinks, this.water, this.seedlingsTaken)
+                        : this.prefer;
       dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead(), prefer);
       const fine = (d) =>
         (!this.mirror || swansIn(this.layout, this.mirror, d.sides[this.side], this.present).length === swans) &&

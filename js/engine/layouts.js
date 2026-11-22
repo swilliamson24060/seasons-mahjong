@@ -2669,6 +2669,34 @@ export const RAINBOW = parseLayout('Rainbow', [
   `,
 ]);
 
+// April Showers' fifth board: seedlings, a seed tray seen from above. Its
+// soil fills the tray, nine across and eight down, and on it stand eight
+// sprouts, each a seedling with its first leaves raised round it in a
+// cross, staggered so that they fit nine across: three, then two, then
+// three (showers.js). 112 tiles on two layers, nine across and eight down.
+export const TRAY = parseLayout('Seed tray', [
+  `
+  #########
+  #########
+  #########
+  #########
+  #########
+  #########
+  #########
+  #########
+  `,
+  `
+  .#..#..#.
+  #########
+  .#..#..#.
+  ..#..#...
+  .######..
+  .##.##.#.
+  #########
+  .#..#..#.
+  `,
+]);
+
 // The classic turtle: the full set of 144 on five layers, with one tile at
 // the left end and two at the right sitting between the middle rows.
 export const TURTLE = parseLayout('Turtle', [

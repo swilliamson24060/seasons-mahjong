@@ -730,6 +730,78 @@ body.covered #board {
   }
 }
 
+/* On April Showers' seed tray, the soil is a pale brown inside the tray's
+   clay rim, and the sprouts a pale green, each seedling deeper than its
+   leaves. A seedling carries a
+   sprout at its top left, where badges go, with the waterings it still
+   needs; it drinks as it is watered, and once it blooms, it carries a
+   tulip, opening as it blooms. */
+.tile[data-plot='soil'] {
+  --face-1: #fbf5ec;
+  --face-2: #e9d8c0;
+  --edge: #c9ad8a;
+  --edge-deep: #a2825d;
+}
+
+.tile[data-plot='rim'] {
+  --face-1: #fbeee6;
+  --face-2: #e8b99e;
+  --edge: #c98a68;
+  --edge-deep: #a2603f;
+}
+
+.tile[data-plot='leaf'] {
+  --face-1: #f2fbec;
+  --face-2: #d2ecc4;
+  --edge: #9fca8b;
+  --edge-deep: #77a663;
+}
+
+.tile[data-plot='seedling'] {
+  --face-1: #e6f7da;
+  --face-2: #b4e19b;
+  --edge: #84bb69;
+  --edge-deep: #5e9645;
+}
+
+.tile.sprouting::after,
+.tile.blossom::after {
+  position: absolute;
+  top: -12%;
+  left: 6%;
+  padding: 0.1em 0.24em 0.1em 0.08em;
+  border-radius: 9px;
+  background: #fff;
+  font: 800 max(10px, calc(var(--tile-w) * 0.28)) / 1 system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tile.sprouting::after {
+  content: '🌱' attr(data-thirst);
+  box-shadow:
+    0 0 5px rgba(70, 150, 60, 0.75),
+    inset 0 0 0 1px #8fc77a;
+  color: #2f6b21;
+}
+
+.tile.blossom::after {
+  content: '🌷';
+  box-shadow:
+    0 0 6px rgba(230, 80, 130, 0.85),
+    inset 0 0 0 1px #e98fb0;
+}
+
+.tile.drinking::after {
+  animation: drink 0.5s ease-out;
+}
+
+@keyframes drink {
+  40% {
+    transform: scale(1.25) translateY(-8%);
+  }
+}
+
 /* On April Showers' rainbow, each tile is tinted its band's colour, pale,
    and the clouds' tiles a cool white. The band lit shines, its colour
    deeper, and the band lit next is ringed in its colour, not filled with
@@ -2108,7 +2180,8 @@ body.covered #board {
   .glass.clinking svg,
   .raindrop svg,
   .tile.ripple,
-  .tile.shimmer {
+  .tile.shimmer,
+  .tile.drinking::after {
     animation: none;
   }
   .tile.hint {

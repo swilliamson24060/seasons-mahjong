@@ -395,6 +395,31 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     toast(`The puddle settles${settled > 1 ? ` after ${settled} splashes in a row` : ''}: the next splash starts again at ${POINTS.splash}.`);
   });
+  // On April Showers' seed tray: a pair taken beside a seedling waters it,
+  // one watered enough blooms, and a bloom taken is picked, while a seedling
+  // taken before it blooms is pulled up.
+  game.on('garden', ({ b, watered, blossomed, picked, pulled }) => {
+    const words = [];
+    if (picked.length) {
+      const pts = picked.length * POINTS.bloom;
+      sound.picked();
+      for (const t of picked) board.float('🌷', t);
+      setTimeout(() => board.float(`+${pts}`, b), 500); // after the pair's own points
+      words.push(`${picked.length > 1 ? 'Two blooms' : 'A bloom'} picked! ${pts} points.`);
+    }
+    if (pulled.length) {
+      sound.pulled();
+      words.push(pulled.length > 1 ? 'Two seedlings pulled up before they bloomed.' : 'A seedling pulled up before it bloomed: just a tile.');
+    }
+    if (watered.length) {
+      setTimeout(() => (blossomed.length ? sound.blossom() : sound.water()), picked.length || pulled.length ? 450 : 0);
+      board.wateredSeedlings(watered, blossomed);
+      for (const t of watered) board.float('💧', t);
+      if (blossomed.length) words.push(`${blossomed.length > 1 ? 'Two seedlings bloom' : 'A seedling blooms'} 🌷: pick ${blossomed.length > 1 ? 'them' : 'it'} with a tile of its kind for ${POINTS.bloom} points.`);
+      else if (!words.length) words.push(watered.length > 1 ? 'Two seedlings watered.' : `Watered: ${game.thirst(game.garden.seedlings.indexOf(watered[0]))} more and it blooms.`);
+    }
+    toast(words.join(' '));
+  });
   // On April Showers' rainbow: a pair from the band lit catches its colour.
   game.on('colour', ({ b, colour }) => {
     sound.colour(colour);
@@ -1555,6 +1580,9 @@ function update() {
   if (g.rain) $('raindrops').innerHTML = `💧 <b>${g.dropsCaught}</b>${g.untilRain !== Infinity ? ` · ⏳ <b>${g.untilRain}</b>` : ''}`;
   // On its rain boots, the splashes in a row now, and while the puddle has a
   // splash left in it, what the next would score.
+  // On its seed tray, the blooms picked, of the seedlings.
+  $('blooms').hidden = !g.garden;
+  if (g.garden) $('blooms').innerHTML = `🌷 <b>${g.seedlingsIn('picked')}</b>/${g.garden.seedlings.length}`;
   // On its rainbow, the colours caught, and the bands lit now and next.
   $('colours').hidden = g.colourClouds === null;
   if (g.colourClouds !== null) $('colours').innerHTML = `🌈 <b>${g.coloursCaught}</b> · ${DOTS[g.bandLit]} → ${DOTS[g.bandNext]}`;
