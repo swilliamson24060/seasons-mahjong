@@ -7,6 +7,7 @@ import { NEW_YEAR, newYearOf } from './newyear.js';
 import { GROUNDHOG_DAY, groundhogOf, dayKey, daySeed, streakOf, weekTo } from './groundhog.js';
 import { LOVE_STORY, chapterOf } from './valentines.js';
 import { showerOf } from './showers.js';
+import { BANDS } from './engine/colours.js';
 import { GIFTS, TURNS, wordsOf } from './words.js';
 import { ballDrop } from './ui/ball.js';
 import { KINDS, MATCH } from './engine/tiles.js';
@@ -27,6 +28,9 @@ let turnWords = TURNS.midnight;
 
 // On New Year's 7, how close a pair came to the lucky coin, as a sign.
 const HEAT = { hot: '🔥', warm: '🌡️', cold: '🧊' };
+
+// On April Showers' rainbow, each band's colour, as a sign, red to violet.
+const DOTS = ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'];
 
 // The set of faces the board in play's tiles wear, and are named by
 // (faces.js): Halloween's on the night's boards, Thanksgiving's on the
@@ -390,6 +394,14 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       return;
     }
     toast(`The puddle settles${settled > 1 ? ` after ${settled} splashes in a row` : ''}: the next splash starts again at ${POINTS.splash}.`);
+  });
+  // On April Showers' rainbow: a pair from the band lit catches its colour.
+  game.on('colour', ({ b, colour }) => {
+    sound.colour(colour);
+    board.caughtColour(colour, b);
+    board.float(DOTS[colour], b);
+    setTimeout(() => board.float(`+${POINTS.colour}`, b), 500); // after the pair's own points
+    toast(`${BANDS[colour][0].toUpperCase()}${BANDS[colour].slice(1)} caught! ${POINTS.colour} points. Next, ${BANDS[game.bandLit]}.`);
   });
   // On Valentine's box of chocolates: a top taken bites into its chocolate,
   // the chocolate eaten whole is savoured, and one bitten into before it is
@@ -1543,6 +1555,9 @@ function update() {
   if (g.rain) $('raindrops').innerHTML = `💧 <b>${g.dropsCaught}</b>${g.untilRain !== Infinity ? ` · ⏳ <b>${g.untilRain}</b>` : ''}`;
   // On its rain boots, the splashes in a row now, and while the puddle has a
   // splash left in it, what the next would score.
+  // On its rainbow, the colours caught, and the bands lit now and next.
+  $('colours').hidden = g.colourClouds === null;
+  if (g.colourClouds !== null) $('colours').innerHTML = `🌈 <b>${g.coloursCaught}</b> · ${DOTS[g.bandLit]} → ${DOTS[g.bandNext]}`;
   $('splashes').hidden = g.puddleEdge === null;
   if (g.puddleEdge !== null) $('splashes').innerHTML = `💦 <b>${g.splashRun}</b>${g.puddleLeft >= 2 ? ` · <b>+${g.nextSplash * POINTS.splash}</b>` : ''}`;
   // The lovebirds taken, on a board of turtle doves.

@@ -1294,6 +1294,17 @@ export class Sound {
     this.rustle(this.now + 0.12, 0.1, 3000, 1500, 0.05);
   }
 
+  // On April Showers' rainbow, a colour caught: a glockenspiel's note for
+  // its band, from red's, the lowest, up the pentatonic scale to violet's,
+  // so that colours caught in turn ring up the scale, with a shimmer.
+  colour(band = 0) {
+    if (!this.on) return;
+    const f = [1047, 1175, 1319, 1568, 1760, 2093][band] || 1047;
+    this.bell(f, this.now, 0.05, 1.4);
+    this.bell(f * 2, this.now + 0.01, 0.015, 0.8);
+    this.rustle(this.now + 0.05, 0.4, 6000, 9000, 0.02);
+  }
+
   // On April Showers' rain boots, a splash in the puddle, the `height`-th in
   // a run: a boot stamping into the water, the spray flying up, and the
   // drops pattering back down, each splash a little higher in pitch than

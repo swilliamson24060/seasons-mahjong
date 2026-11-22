@@ -1,6 +1,7 @@
 import { LOST } from '../engine/tiles.js';
 import { symbolId, faceName, EGG } from './faces.js';
 import { COLOURS } from '../engine/confetti.js';
+import { BANDS, bandOf } from '../engine/colours.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const LIFT = 0.11; // how far each layer sits up and to the right, in tile widths
@@ -158,6 +159,12 @@ export class Board {
       // on the lake, the swan's reflection lies in the water.
       if (this.game.zones && this.game.zones[i]) button.classList.add(this.game.zones[i] < 0 ? 'zone-top' : 'zone-bottom');
       if (this.game.inLake(i)) button.classList.add('lake');
+      // On April Showers' rainbow, each tile is tinted its band's colour,
+      // or a cloud's white.
+      if (this.game.colourClouds !== null) {
+        const band = bandOf(L, i, this.game.colourClouds);
+        button.dataset.band = band >= 0 ? BANDS[band] : 'cloud';
+      }
       const svg = document.createElementNS(SVG, 'svg');
       svg.setAttribute('viewBox', '0 0 60 80');
       svg.setAttribute('aria-hidden', 'true');
@@ -552,6 +559,18 @@ export class Board {
     }
   }
 
+  // A colour caught on April Showers' rainbow: the tiles left in its band
+  // shimmer, outward from where the pair was taken.
+  caughtColour(band, from) {
+    const L = this.game.layout;
+    for (let i = 0; i < this.tableCount; i++) {
+      if (this.game.colourOf(i) !== band) continue;
+      const el = this.tiles[i].el;
+      el.style.animationDelay = `${Math.round(Math.hypot(L.x[i] - L.x[from], L.y[i] - L.y[from]) * 30)}ms`;
+      this.restart(el, 'shimmer');
+    }
+  }
+
   // Cupid's arrow strikes: its couple's hearts beat as they're smitten.
   struck(tiles) {
     this.refresh();
@@ -617,6 +636,8 @@ export class Board {
     if (g.dropOn(i)) return `${name}, with a raindrop on it: take it with a tile of its kind to catch the drop`;
     if (g.inRainWay(i)) return `${name}, in a raindrop's way down the umbrella`;
     if (g.inSplashZone(i)) return `${name}, in the puddle: a pair from it splashes${g.splashRun ? `, ${g.nextSplash} in a row` : ''}`;
+    const band = g.colourOf(i);
+    if (band >= 0) return `${name}, in the rainbow's ${BANDS[band]} band${band === g.bandLit ? ', lit now: take it with a tile of its kind from the same band to catch its colour' : band === g.bandNext ? ', lit next' : ''}`;
     if (g.tempting(i)) return `${name}, a sweet: leave it alone through January to keep your resolution`;
     if (g.isSweet(i)) return `${name}, a sweet, fair game now`;
     const spark = g.sparklerOf(i);
@@ -754,6 +775,11 @@ export class Board {
       el.classList.toggle('in-way', g.inGlassesWay(i)); // on New Year's 2: in the glasses' way
       el.classList.toggle('rain-way', g.inRainWay(i)); // on April Showers' umbrella: in a raindrop's way down
       el.classList.toggle('puddle', g.inSplashZone(i)); // on its rain boots: in the puddle, the splash zone
+      // On its rainbow, the band lit now shines, and the band lit next is
+      // ringed in its colour.
+      const band = g.colourOf(i);
+      el.classList.toggle('shining', band >= 0 && band === g.bandLit);
+      el.classList.toggle('next-band', band >= 0 && band === g.bandNext);
       // On New Year's Day, a sweet carries its treat, and through January,
       // while the resolution holds, it is a tempting pink.
       el.classList.toggle('sweet', g.isSweet(i));
@@ -763,7 +789,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

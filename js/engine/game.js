@@ -31,6 +31,7 @@ import { chocolatesOf, eat, oneAtATime, savoursAll, savour } from './chocolates.
 import { letterOf, pairLetter, runOn, byTurns } from './xoxo.js';
 import { ribsOf, topOf, wet, running, rainOn, firstRain, catching } from './raindrops.js';
 import { inPuddle, isSplash, runAfter, dryFirst, runsIn } from './splash.js';
+import { bandOf, litBand, inColour, chasing } from './colours.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -43,14 +44,15 @@ export const TREATS = ['candle', 'key', 'cat'];
 // fireworks, the disco ball, the balloon drop, the lucky coin, sparklers,
 // confetti, shooting stars, a toast for two, Cupid's arrows, sweethearts,
 // roses in bloom, candlelight, a box of chocolates, hugs and kisses,
-// raindrops and the splash zone. Nothing here touches the page; the board
+// raindrops, the splash zone and chasing colours. Nothing here touches the
+// page; the board
 // listens with on() for what happens: 'match', 'thaw', 'list', 'checkout',
 // 'bought', 'grab', 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold',
 // 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe', 'firework',
 // 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti', 'star', 'toast',
 // 'arrow', 'message', 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain',
-// 'splash', 'save', 'turn', 'treat', 'key', 'shuffle', 'undo', 'win' and
-// 'stuck'.
+// 'splash', 'colour', 'save', 'turn', 'treat', 'key', 'shuffle', 'undo',
+// 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
@@ -135,7 +137,11 @@ export const TREATS = ['candle', 'key', 'cat'];
 // peak to the rim: a pair taken with the tile a drop is on catches it
 // (raindrops.js); and splash, for April Showers' rain boots: { edge }, the
 // half tiles down where the puddle begins, a pair from it a splash, and
-// splashes taken one straight after another splashing higher (splash.js).
+// splashes taken one straight after another splashing higher (splash.js);
+// and colours, for April Showers' rainbow: { clouds }, the half tiles down
+// where the clouds at its feet begin, each band of the arch a layer, red on
+// top, one band lit at a time, moving on a band with every match
+// (colours.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -143,7 +149,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -209,6 +215,9 @@ export class Game {
     // On April Showers' rain boots, where the puddle begins, half tiles down,
     // or null on a board without one (splash.js).
     this.puddleEdge = splash ? splash.edge : null;
+    // On April Showers' rainbow, where the clouds at its feet begin, half
+    // tiles down, or null on a board without one (colours.js).
+    this.colourClouds = colours ? colours.clouds : null;
     // The board of gold rings is dealt, and shuffled, a ring at a time, in
     // an order of its own; the board of the swan with its swans, a tile and
     // its reflection, coming free at different times; the milk pail with
@@ -221,7 +230,7 @@ export class Game {
     // taking a kiss and a hug in turn (xoxo.js); April Showers' umbrella
     // catching the raindrops it can (raindrops.js); and its rain boots
     // keeping the puddle till last, to take it in one run of splashes
-    // (splash.js).
+    // (splash.js); and its rainbow catching the colours it can (colours.js).
     this.prefer = this.rings
       ? ringByRing(layout, this.rings.map((r) => r.tiles), seeded(seed ^ 0x68e31da4).shuffle(this.rings.map((_, k) => k)))
       : swans
@@ -242,7 +251,9 @@ export class Game {
                       ? catching(this.rain.ribs, this.rain.every, seed)
                       : splash
                         ? dryFirst(table, splash.edge)
-                        : null;
+                        : colours
+                          ? chasing(table, colours.clouds)
+                          : null;
     // On New Year's 9, the rockets, 1 for a tile that is one, chosen by
     // where they lie, before the deal, so that it can be made with them.
     this.rockets = null;
@@ -497,6 +508,9 @@ export class Game {
     this.splashCount = 0;
     this.splashHeights = 0;
     this.splashBest = 0;
+    // On April Showers' rainbow, the colours caught: pairs taken from the
+    // band lit as they were taken.
+    this.coloursCaught = 0;
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -801,6 +815,47 @@ export class Game {
     let n = 0;
     if (this.puddleEdge !== null) for (let i = 0; i < this.layout.count; i++) if (this.inSplashZone(i)) n++;
     return n;
+  }
+
+  // On April Showers' rainbow, the band a tile still on the board is in, 0
+  // for red to 5 for violet, or -1, a cloud's or on a board without one;
+  // and the band lit now and the band lit next, or -1 (colours.js).
+  colourOf(i) {
+    return this.colourClouds !== null && this.present[i] === 1 ? bandOf(this.layout, i, this.colourClouds) : -1;
+  }
+
+  get bandLit() {
+    return this.colourClouds !== null ? litBand(this.matches) : -1;
+  }
+
+  get bandNext() {
+    return this.colourClouds !== null ? litBand(this.matches + 1) : -1;
+  }
+
+  // On April Showers' rainbow, the hints' way catching the colour lit now,
+  // if a pair from its band can be taken and the board still won after it:
+  // the way given, if its first pair does already; or else made to take
+  // one first, as Cupid's couples are (cupid.js), or else a way found from
+  // where that leaves the tiles; or, with none, the way given.
+  byColour(way) {
+    const band = this.bandLit;
+    const L = this.layout;
+    const caught = (a, b) => MATCH[this.faces[a]] === MATCH[this.faces[b]] && inColour(L, a, b, this.colourClouds, band);
+    if (way[0] && inColour(L, way[0][0], way[0][1], this.colourClouds, band)) return way;
+    const free = this.freeTiles().filter((t) => this.colourOf(t) === band);
+    for (let i = 0; i < free.length; i++) {
+      for (let j = i + 1; j < free.length; j++) {
+        const [a, b] = [free[i], free[j]];
+        if (!caught(a, b)) continue;
+        const made = wayWith(way, [a, b], 1, (l) => this.holds(l));
+        if (made) return made;
+        const present = Uint8Array.from(this.present);
+        present[a] = present[b] = 0;
+        const { result, line } = solve(this.layout, { ...this.position(), present }, { budget: 20000 });
+        if (result === 'win') return [[a, b], ...line];
+      }
+    }
+    return way;
   }
 
   // On April Showers' rain boots, the hints' way keeping out of the puddle
@@ -1385,9 +1440,10 @@ export class Game {
   // strike, and the couple still smitten before it, who got over it; on
   // April Showers' umbrella, the tiles the raindrops it caught were on, how
   // many drops dripped off the rim after it, and the drop that landed after
-  // it, or null; and on its rain boots, how high it splashed, its place in
-  // the run, or 0 for no splash, and the run it let settle, or 0. Null if
-  // the pair cannot be taken.
+  // it, or null; on its rain boots, how high it splashed, its place in the
+  // run, or 0 for no splash, and the run it let settle, or 0; and on its
+  // rainbow, the band whose colour it caught, or -1. Null if the pair
+  // cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -1515,6 +1571,12 @@ export class Game {
         this.splashBest = Math.max(this.splashBest, run);
       } else settled = this.splashRun;
       this.splashRun = run;
+    }
+    // On April Showers' rainbow, a pair from the band lit catches its colour.
+    const colour = this.colourClouds !== null && inColour(this.layout, a, b, this.colourClouds, litBand(this.matches)) ? litBand(this.matches) : -1;
+    if (colour >= 0) {
+      this.coloursCaught++;
+      entry.colour = true;
     }
     // On Valentine's first date, a pair with a tile in each candle's glow,
     // one by his candle and one by hers, is a candlelit pair.
@@ -1798,6 +1860,7 @@ export class Game {
       newDrop: rain ? rain.landed : null,
       splashed,
       settled,
+      colour,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -1832,6 +1895,7 @@ export class Game {
     if (xoxoMade || runBroke) this.emit('xoxo', result);
     if (rain && (rain.caught.length || rain.dripped.length || rain.landed)) this.emit('rain', result);
     if (splashed || settled) this.emit('splash', result);
+    if (colour >= 0) this.emit('colour', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -1907,6 +1971,7 @@ export class Game {
       if (last.gaveIn) this.brokenAt = 0;
       if (last.raindrops) this.raindrops = last.raindrops;
       if (last.splash) Object.assign(this, { splashRun: last.splash.run, splashCount: last.splash.count, splashHeights: last.splash.heights, splashBest: last.splash.best });
+      if (last.colour) this.coloursCaught--;
       if (last.litBefore) {
         this.lit = last.litBefore;
         this.bursts -= last.rockets;
@@ -1950,8 +2015,9 @@ export class Game {
   // box of chocolates to one that savours the chocolates still to eat; on
   // hugs and kisses to one that carries the run of kisses and hugs on; on
   // April Showers' umbrella to one that catches a raindrop whenever it can;
-  // and on its rain boots to one that keeps the puddle till last, to splash
-  // through it in one run.
+  // on its rain boots to one that keeps the puddle till last, to splash
+  // through it in one run; and on its rainbow to one that catches the
+  // colour lit whenever it can.
   wayAhead() {
     if (!this.line && this.outlook !== 'lost') {
       const { result, line } = solve(this.layout, this.position(), { budget: 20000 });
@@ -1970,6 +2036,7 @@ export class Game {
     if (this.line && this.candles) this.line = this.byCandlelight(this.line);
     if (this.line && this.rain) this.line = this.byRaindrops(this.line);
     if (this.line && this.puddleEdge !== null) this.line = this.savePuddle(this.line);
+    if (this.line && this.colourClouds !== null) this.line = this.byColour(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
@@ -2017,8 +2084,10 @@ export class Game {
     // of January; on Valentine's vase of roses, so that each rose still to
     // gather can be taken while it's in bloom; on the box of chocolates, so
     // that each chocolate still to eat can be savoured; on April Showers'
-    // umbrella, so that the raindrops are caught where they can be; and on
-    // its rain boots, so that what is left of the puddle goes last, in a run.
+    // umbrella, so that the raindrops are caught where they can be; on its
+    // rain boots, so that what is left of the puddle goes last, in a run;
+    // and on its rainbow, so that the colours lit are caught where they can
+    // be.
     const january = this.resolving ? this.january - this.matches : 0;
     for (let tries = 0; ; tries++) {
       const prefer = this.mirror
@@ -2037,7 +2106,9 @@ export class Game {
                   ? catching(this.rain.ribs, this.rain.every, this.seed, this.matches, this.raindrops)
                   : this.puddleEdge !== null
                     ? dryFirst(this.layout, this.puddleEdge)
-                    : this.prefer;
+                    : this.colourClouds !== null
+                      ? chasing(this.layout, this.colourClouds, this.matches)
+                      : this.prefer;
       dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead(), prefer);
       const fine = (d) =>
         (!this.mirror || swansIn(this.layout, this.mirror, d.sides[this.side], this.present).length === swans) &&

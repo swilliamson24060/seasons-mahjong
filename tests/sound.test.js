@@ -268,7 +268,7 @@ test("Thanksgiving's sounds are all heard, and none too loud", async () => {
   return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
-test("April Showers' rain is heard, and not too loud: a raindrop landing, one caught and one dripping off the rim, and splashes in the puddle, from the first to the tenth in a row", async () => {
+test("April Showers' rain is heard, and not too loud: a raindrop landing, one caught and one dripping off the rim, splashes in the puddle, from the first to the tenth in a row, and the rainbow's colours caught", async () => {
   const sounds = {
     'a raindrop landing': [0.6, (s) => s.raindrop()],
     'a raindrop caught': [1.2, (s) => s.catchDrop()],
@@ -276,6 +276,8 @@ test("April Showers' rain is heard, and not too loud: a raindrop landing, one ca
     'a splash': [0.8, (s) => s.splash(1)],
     'a fourth splash in a row': [1, (s) => s.splash(4)],
     'a tenth splash in a row': [1, (s) => s.splash(10)],
+    'red caught': [1.6, (s) => s.colour(0)],
+    'violet caught': [1.6, (s) => s.colour(5)],
   };
   const peaks = [];
   for (const [name, [seconds, play]] of Object.entries(sounds)) {

@@ -730,6 +730,103 @@ body.covered #board {
   }
 }
 
+/* On April Showers' rainbow, each tile is tinted its band's colour, pale,
+   and the clouds' tiles a cool white. The band lit shines, its colour
+   deeper, and the band lit next is ringed in its colour, not filled with
+   it, so as not to look chosen. A colour caught makes the rest of its band
+   shimmer. The colours are told apart by more than colour: the top bar
+   names the band lit, and a screen reader says each tile's. */
+.tile[data-band='red'] {
+  --face-1: #ffebe8;
+  --face-2: #f7c6bf;
+  --band: #e0533f;
+}
+
+.tile[data-band='orange'] {
+  --face-1: #fff2e4;
+  --face-2: #f9d4ab;
+  --band: #ec8a23;
+}
+
+.tile[data-band='yellow'] {
+  --face-1: #fffbe2;
+  --face-2: #f3e49e;
+  --band: #d9b40f;
+}
+
+.tile[data-band='green'] {
+  --face-1: #effbe9;
+  --face-2: #c9e9b8;
+  --band: #4ea53a;
+}
+
+.tile[data-band='blue'] {
+  --face-1: #eaf3ff;
+  --face-2: #bfd7f5;
+  --band: #3a7fd6;
+}
+
+.tile[data-band='violet'] {
+  --face-1: #f5eeff;
+  --face-2: #d9c8f3;
+  --band: #8a5cd1;
+}
+
+.tile[data-band='cloud'] {
+  --face-1: #fcfdff;
+  --face-2: #e3e8ee;
+}
+
+.tile[data-band='red'].shining {
+  --face-1: #ffd8d1;
+  --face-2: #f19c8f;
+}
+
+.tile[data-band='orange'].shining {
+  --face-1: #ffe4c6;
+  --face-2: #f6bb7a;
+}
+
+.tile[data-band='yellow'].shining {
+  --face-1: #fff6c2;
+  --face-2: #edd45f;
+}
+
+.tile[data-band='green'].shining {
+  --face-1: #ddf6d0;
+  --face-2: #a8db8d;
+}
+
+.tile[data-band='blue'].shining {
+  --face-1: #d8e9ff;
+  --face-2: #97bcef;
+}
+
+.tile[data-band='violet'].shining {
+  --face-1: #ecdeff;
+  --face-2: #c1a6ec;
+}
+
+.tile.next-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 calc(var(--tile-w) * 0.05) var(--band);
+  pointer-events: none;
+}
+
+.tile.shimmer {
+  animation: shimmer 0.6s ease-out;
+}
+
+@keyframes shimmer {
+  35% {
+    filter: brightness(1.18) saturate(1.3);
+    transform: translateY(calc(var(--tile-w) * -0.04));
+  }
+}
+
 .tile.rain-way::before {
   content: '';
   position: absolute;
@@ -2010,7 +2107,8 @@ body.covered #board {
   .star-band.streak::before,
   .glass.clinking svg,
   .raindrop svg,
-  .tile.ripple {
+  .tile.ripple,
+  .tile.shimmer {
     animation: none;
   }
   .tile.hint {
