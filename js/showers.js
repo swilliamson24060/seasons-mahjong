@@ -1,4 +1,4 @@
-import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY } from './engine/layouts.js';
+import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY, CAN } from './engine/layouts.js';
 
 // April Showers: from showers to flowers, eight boards from the first
 // shower to May Day, the sky clearing as they go, to be reached in turn as
@@ -13,8 +13,9 @@ import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY } from './engine/layouts.js';
 // up in turn, a pair from the band lit catching its colour
 // (engine/colours.js); on the fifth, seedlings, the first of May's, a seed
 // tray's seedlings are watered by pairs taken beside them, to bloom and be
-// picked (engine/watering.js); the eighth is to be May Day, when April
-// turns to May halfway and every tile turns over. Each chapter is as
+// picked (engine/watering.js); on the sixth, the watering can, its body
+// fills it and its drops pour it (engine/pour.js); the eighth is to be May
+// Day, when April turns to May halfway and every tile turns over. Each chapter is as
 // Thanksgiving's days are (thanksgiving.js says what each part is for), and
 // PLAN.md has the season's boards and twists. Until April Showers' own
 // tiles are drawn, its boards wear Halloween's.
@@ -41,6 +42,26 @@ const SEEDLINGS = [
   [1, 6, 1],
   [4, 6, 1],
   [7, 6, 1],
+];
+
+// The watering can's body, a box, [x0, y0, x1, y1], and its drops, falling
+// from its rose, [x, y] each, all in half tiles, as positions are.
+const CAN_BODY = [0, 6, 8, 18];
+const CAN_DROPS = [
+  [16, 6],
+  [16, 8],
+  [16, 10],
+  [16, 12],
+  [16, 14],
+  [16, 16],
+  [16, 18],
+  [14, 9],
+  [14, 11],
+  [14, 13],
+  [14, 15],
+  [14, 17],
+  [12, 16],
+  [12, 18],
 ];
 
 export const SHOWERS = [
@@ -83,6 +104,14 @@ export const SHOWERS = [
     rules: { treats: false, ghostsFloat: false, watering: { seedlings: SEEDLINGS, drinks: 3 } },
     sky: ['#61798a', '#1a242c'],
     text: "May comes in, and the seeds sown in April are up. Eight seedlings 🌱 stand in the tray, each with its first leaves round it. A pair taken beside a seedling, touching its tile, waters it 💧; watered three times, it blooms 🌷, and a bloom taken, with any tile of its kind, is picked: 30 points. A seedling taken before it blooms is pulled up, just a tile, so water it first.",
+  },
+  {
+    name: 'The sixth chapter',
+    title: 'The watering can',
+    layout: CAN,
+    rules: { treats: false, ghostsFloat: false, pour: { body: CAN_BODY, drops: CAN_DROPS, most: 5 } },
+    sky: ['#63809a', '#1b2733'],
+    text: "Sunshine, and the garden wants watering. The can starts empty. Take a pair from its body, both tiles in it, and it fills a measure 💧, up to five. Take a pair from the drops sprinkling from its rose, both tiles drops, and it pours one out onto the garden: 20 points. With the can empty a pair of drops waters nothing, and with it full a pair from its body fills nothing: so fill, pour, and fill again.",
   },
 ];
 

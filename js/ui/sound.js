@@ -1294,6 +1294,29 @@ export class Sound {
     this.rustle(this.now + 0.12, 0.1, 3000, 1500, 0.05);
   }
 
+  // On April Showers' watering can, a measure poured in: water glugging
+  // into the can, a little higher the fuller it is.
+  fill(level = 1) {
+    if (!this.on) return;
+    this.rustle(this.now, 0.35, 700, 1300, 0.08);
+    [0, 0.12, 0.22].forEach((t, k) => this.plip(this.now + t, 260 + level * 40 + k * 30, 520 + level * 70 + k * 40, 0.08, 0.1));
+  }
+
+  // The can poured: its rose sprinkling, drops pattering on the leaves, and
+  // a chime.
+  sprinkle() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.6, 4000, 2500, 0.06);
+    for (let k = 0; k < 7; k++) this.plip(this.now + 0.05 + k * 0.06 + Math.random() * 0.03, 1000 + Math.random() * 600, 1800 + Math.random() * 800, 0.035, 0.06);
+    [1568, 2093].forEach((f, k) => this.bell(f, this.now + 0.25 + k * 0.1, 0.03, 1.2));
+  }
+
+  // The can tipped with nothing in it: a hollow clank of tin.
+  clank() {
+    if (!this.on) return;
+    [310, 455, 690].forEach((f, k) => this.ping(f, this.now + k * 0.01, { type: 'triangle', gain: 0.05, attack: 0.002, fall: 0.25, into: this.master }));
+  }
+
   // On April Showers' seed tray, a seedling watered: a little trickle of
   // water from a can, and the soil taking it in.
   water() {

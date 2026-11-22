@@ -3,6 +3,7 @@ import { symbolId, faceName, EGG } from './faces.js';
 import { COLOURS } from '../engine/confetti.js';
 import { BANDS, bandOf } from '../engine/colours.js';
 import { plotOf } from '../engine/watering.js';
+import { partOf } from '../engine/pour.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const LIFT = 0.11; // how far each layer sits up and to the right, in tile widths
@@ -169,6 +170,9 @@ export class Board {
       // On its seed tray, the soil brown, and the sprouts green, each
       // seedling deeper than the leaves round it.
       if (this.game.garden) button.dataset.plot = plotOf(L, i, this.game.garden.seedlings);
+      // On its watering can, the body painted, the drops water blue, and
+      // the handle, spout and rose bare metal.
+      if (this.game.can) button.dataset.part = partOf(L, i, this.game.can) || 'metal';
       const svg = document.createElementNS(SVG, 'svg');
       svg.setAttribute('viewBox', '0 0 60 80');
       svg.setAttribute('aria-hidden', 'true');
@@ -646,6 +650,9 @@ export class Board {
     if (g.dropOn(i)) return `${name}, with a raindrop on it: take it with a tile of its kind to catch the drop`;
     if (g.inRainWay(i)) return `${name}, in a raindrop's way down the umbrella`;
     if (g.inSplashZone(i)) return `${name}, in the puddle: a pair from it splashes${g.splashRun ? `, ${g.nextSplash} in a row` : ''}`;
+    const part = g.canPart(i);
+    if (part === 'body') return `${name}, in the can's body: a pair from it fills the can${g.canLevel >= g.canMost ? ', but it is full' : ''}`;
+    if (part === 'drops') return `${name}, a drop from the can's rose: a pair of drops pours the can${g.canLevel ? '' : ', but it is empty'}`;
     const k = g.seedlingOf(i);
     if (k >= 0) {
       const thirst = g.thirst(k);
@@ -811,7 +818,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

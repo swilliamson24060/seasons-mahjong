@@ -420,6 +420,24 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     }
     toast(words.join(' '));
   });
+  // On April Showers' watering can: a pair from its body fills it, if
+  // there's room, and a pair of its drops pours it, if there's water in it.
+  game.on('can', ({ b, canDoes }) => {
+    if ((canDoes === 'fill' || canDoes === 'full') && game.dropsLeft < 2) return; // nothing left to pour
+    if (canDoes === 'fill') {
+      sound.fill(game.canLevel);
+      board.float('💧', b);
+      toast(`The can fills: ${game.canLevel} ${game.canLevel === 1 ? 'measure' : 'measures'} in it, of ${game.canMost}.`);
+    } else if (canDoes === 'pour') {
+      sound.sprinkle();
+      board.float('🌼', b);
+      setTimeout(() => board.float(`+${POINTS.pour}`, b), 500); // after the pair's own points
+      toast(`The garden's watered! ${POINTS.pour} points. ${game.canLevel ? `${game.canLevel} left in the can.` : 'The can is empty: fill it from its body.'}`);
+    } else if (canDoes === 'dry') {
+      sound.clank();
+      toast('The can was empty: those drops watered nothing. Fill it from its body first.');
+    } else toast('The can is full: pour some out before filling it again.');
+  });
   // On April Showers' rainbow: a pair from the band lit catches its colour.
   game.on('colour', ({ b, colour }) => {
     sound.colour(colour);
@@ -1580,6 +1598,9 @@ function update() {
   if (g.rain) $('raindrops').innerHTML = `💧 <b>${g.dropsCaught}</b>${g.untilRain !== Infinity ? ` · ⏳ <b>${g.untilRain}</b>` : ''}`;
   // On its rain boots, the splashes in a row now, and while the puddle has a
   // splash left in it, what the next would score.
+  // On its watering can, how full it is, and the pours made.
+  $('can').hidden = !g.can;
+  if (g.can) $('can').innerHTML = `💧 <b>${g.canLevel}</b>/${g.canMost} · 🌼 <b>${g.pours}</b>`;
   // On its seed tray, the blooms picked, of the seedlings.
   $('blooms').hidden = !g.garden;
   if (g.garden) $('blooms').innerHTML = `🌷 <b>${g.seedlingsIn('picked')}</b>/${g.garden.seedlings.length}`;

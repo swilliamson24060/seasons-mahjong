@@ -802,6 +802,30 @@ body.covered #board {
   }
 }
 
+/* On April Showers' watering can, its body is painted a garden green, its
+   drops the blue of water, and its handle, spout and rose are bare
+   galvanised metal. */
+.tile[data-part='body'] {
+  --face-1: #effaf0;
+  --face-2: #c3e3c6;
+  --edge: #8fc196;
+  --edge-deep: #659a6d;
+}
+
+.tile[data-part='drops'] {
+  --face-1: #ecf6ff;
+  --face-2: #bcdcf6;
+  --edge: #8bb8de;
+  --edge-deep: #5f8fb9;
+}
+
+.tile[data-part='metal'] {
+  --face-1: #f6f7f8;
+  --face-2: #d8dde2;
+  --edge: #aab3bc;
+  --edge-deep: #808b96;
+}
+
 /* On April Showers' rainbow, each tile is tinted its band's colour, pale,
    and the clouds' tiles a cool white. The band lit shines, its colour
    deeper, and the band lit next is ringed in its colour, not filled with

@@ -36,8 +36,9 @@
 // it ran down the canopy; and on its rain boots each splash, a pair from
 // the puddle, worth the more the higher it splashed, its place in a run of
 // splashes taken one straight after another; on its rainbow each colour
-// caught, a pair from the band lit as it was taken; and on its seed tray
-// each seedling picked in bloom, watered by pairs taken beside it.
+// caught, a pair from the band lit as it was taken; on its seed tray each
+// seedling picked in bloom, watered by pairs taken beside it; and on its
+// watering can each pour, a pair of its drops taken with water in the can.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -83,6 +84,7 @@ export const POINTS = {
   splash: 10, // each splash, a pair from the puddle, times how high it splashed: its place in a run of them
   colour: 15, // each colour caught on the rainbow: a pair from the band lit as it was taken
   bloom: 30, // each seedling picked in bloom, watered three times by pairs taken beside it
+  pour: 20, // each pour of the watering can: a pair of its drops taken with water in it
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -177,6 +179,7 @@ export function scoreOf(game, seconds, words = TURN) {
     const [n, pulled] = [game.seedlingsIn('picked'), game.seedlingsIn('pulled')];
     rows.push(['Blooms', [`${n} of ${game.garden.seedlings.length} picked`, pulled && `${pulled} pulled up`].filter(Boolean).join(', '), n * POINTS.bloom]);
   }
+  if (game.can) rows.push(['Pours', [`${game.pours} of ${game.dropPairs}`, game.dryPours && `${game.dryPours} dry`].filter(Boolean).join(', '), game.pours * POINTS.pour]);
   if (game.chocolates) {
     const n = game.chocolatesIn('savoured');
     const eaten = game.chocolatesIn('eaten');

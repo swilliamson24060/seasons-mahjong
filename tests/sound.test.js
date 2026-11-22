@@ -268,7 +268,7 @@ test("Thanksgiving's sounds are all heard, and none too loud", async () => {
   return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
-test("April Showers' rain is heard, and not too loud: a raindrop landing, one caught and one dripping off the rim, splashes in the puddle, from the first to the tenth in a row, the rainbow's colours caught, and the seedlings watered, blooming, picked and pulled up", async () => {
+test("April Showers' rain is heard, and not too loud: a raindrop landing, one caught and one dripping off the rim, splashes in the puddle, from the first to the tenth in a row, the rainbow's colours caught, the seedlings watered, blooming, picked and pulled up, and the watering can filled, poured and tipped empty", async () => {
   const sounds = {
     'a raindrop landing': [0.6, (s) => s.raindrop()],
     'a raindrop caught': [1.2, (s) => s.catchDrop()],
@@ -282,6 +282,9 @@ test("April Showers' rain is heard, and not too loud: a raindrop landing, one ca
     'a seedling blooming': [1.8, (s) => s.blossom()],
     'a bloom picked': [2, (s) => s.picked()],
     'a seedling pulled up': [0.8, (s) => s.pulled()],
+    'the can filled': [0.8, (s) => s.fill(3)],
+    'the can poured': [1.6, (s) => s.sprinkle()],
+    'the can tipped empty': [0.6, (s) => s.clank()],
   };
   const peaks = [];
   for (const [name, [seconds, play]] of Object.entries(sounds)) {
