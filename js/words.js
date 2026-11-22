@@ -19,8 +19,10 @@
 //   favours;
 // - Groundhog Day's sunshine, warm spell and gust of wind, the suns' change
 //   in the weather;
-// - and Valentine's matchmaker, key to your heart and speed dating, the
-//   boxes of chocolates' sweet surprises.
+// - Valentine's matchmaker, key to your heart and speed dating, the
+//   boxes of chocolates' sweet surprises;
+// - and April Showers' rainbow, seedling and spring shower, the splashes
+//   of luck that rain boots splash up.
 //
 // For each: its icon, which a tile freed by its key wears too; its name, as
 // a toast gives it when one comes; its button on the card when no pairs are
@@ -90,6 +92,16 @@ export const GIFTS = {
     from: () => 'Each pair of boxes of chocolates hides a sweet surprise.',
     used: { candle: 'The matchmaker shows you a match, for free.', cat: 'The bell rings, and everyone moves on to someone new: a free shuffle.', key: 'Choose a blocked tile for the key to your heart.' },
     keyName: 'key',
+  },
+  showers: {
+    icons: { candle: '🌈', key: '🌱', cat: '🌧️' },
+    names: { candle: 'a rainbow, to show you a match', key: 'a seedling, to push a blocked tile free', cat: 'a spring shower, for a free shuffle' },
+    buttons: { key: 'Seedling', cat: 'Spring shower' },
+    help: { candle: 'A rainbow shows you a match, for free.', key: 'A seedling pushes up one blocked tile, free.', cat: 'A spring shower washes the tiles about, for free.' },
+    came: (name) => `A splash of luck: ${name}.`,
+    from: () => 'Each pair of rain boots splashes up a treat.',
+    used: { candle: 'The rainbow points you to a match, for free.', cat: 'A spring shower washes the tiles about: a free shuffle.', key: 'Choose a blocked tile for the seedling to push free.' },
+    keyName: 'seedling',
   },
 };
 
@@ -207,7 +219,7 @@ export const TURNS = {
 
 // The turning over each holiday's tiles are told in, on a board outside
 // its own that turns over.
-const TURN_OF = { halloween: 'midnight', thanksgiving: 'sundown', christmas: 'twelfth', 'new-year': 'newyear', groundhog: 'forecast', valentines: 'question' };
+const TURN_OF = { halloween: 'midnight', thanksgiving: 'sundown', christmas: 'twelfth', 'new-year': 'newyear', groundhog: 'forecast', valentines: 'question', showers: 'may' };
 
 // The words a board outside the holidays' own is told in: those of the
 // tiles it wears, or Halloween's for tiles with none of their own.

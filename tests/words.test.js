@@ -74,5 +74,5 @@ test('a board outside the holidays\' own that turns over is told in its tiles\' 
   for (const [name, w] of Object.entries(TURNS)) {
     for (const night of [true, false]) check(typeof Sound.prototype[w.ring(night)] === 'function', `${name} rings ${w.ring(night)}, which isn't a sound`);
   }
-  equal(wordsOf('showers').treatSet, 'halloween', "April Showers' treats while its tiles are Halloween's");
+  equal(`${wordsOf('showers').treatSet} ${wordsOf('showers').turnSet}`, 'showers may', "April Showers' treats and turning over, in its own words");
 });

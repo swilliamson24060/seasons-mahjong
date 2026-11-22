@@ -6,7 +6,7 @@ import { TWELVE_DAYS, dayOfChristmas } from './christmas.js';
 import { NEW_YEAR, newYearOf } from './newyear.js';
 import { GROUNDHOG_DAY, groundhogOf, dayKey, daySeed, streakOf, weekTo } from './groundhog.js';
 import { LOVE_STORY, chapterOf } from './valentines.js';
-import { showerOf } from './showers.js';
+import { SHOWERS, showerOf } from './showers.js';
 import { BANDS } from './engine/colours.js';
 import { GIFTS, TURNS, wordsOf } from './words.js';
 import { ballDrop } from './ui/ball.js';
@@ -849,13 +849,13 @@ const named = (d) => d.called || d.name.replace(/^The /, 'the ');
 // What play() wants for a day's board: its options, the treats it gives or
 // none, in its own words or its holiday's, its nap, the words its turning
 // over is told in, its holiday's faces: Thanksgiving's, Christmas's, New
-// Year's, Groundhog Day's or Valentine's, and Halloween's for a holiday
-// whose own are still to come, April Showers'; and its look, the parts of
-// a board whose tiles are tinted by them, as May Day's basket is.
+// Year's, Groundhog Day's, Valentine's or April Showers'; and its look, the
+// parts of a board whose tiles are tinted by them, as May Day's basket
+// is.
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;
-  const faces = DAYS.includes(d) ? 'thanksgiving' : TWELVE_DAYS.includes(d) ? 'christmas' : NEW_YEAR.includes(d) ? 'new-year' : d === GROUNDHOG_DAY ? 'groundhog' : LOVE_STORY.includes(d) ? 'valentines' : 'halloween';
+  const faces = DAYS.includes(d) ? 'thanksgiving' : TWELVE_DAYS.includes(d) ? 'christmas' : NEW_YEAR.includes(d) ? 'new-year' : d === GROUNDHOG_DAY ? 'groundhog' : LOVE_STORY.includes(d) ? 'valentines' : SHOWERS.includes(d) ? 'showers' : 'halloween';
   return {
     options,
     treatSet: d.gifts || wordsOf(faces).treatSet,

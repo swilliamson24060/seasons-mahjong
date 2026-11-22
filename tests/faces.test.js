@@ -4,14 +4,15 @@ import { sprite, symbolId, faceName, kindName, FACE_SETS } from '../js/ui/faces.
 import { DAYS } from '../js/thanksgiving.js';
 import { TWELVE_DAYS } from '../js/christmas.js';
 import { COUNTDOWN } from '../js/newyear.js';
+import { SHOWERS } from '../js/showers.js';
 import { Game } from '../js/engine/game.js';
 import { TURTLE } from '../js/engine/layouts.js';
 import { Board } from '../js/ui/board.js';
 
 const INDEXED = ['eyes', 'bones', 'graves', 'monster', 'flower', 'moon'];
 
-test("there are Halloween's faces, Thanksgiving's, Christmas's, New Year's, Groundhog Day's and Valentine's, each a drawing of every face", () => {
-  equal(FACE_SETS.join(' '), 'halloween thanksgiving christmas new-year groundhog valentines', 'the sets');
+test("there are Halloween's faces, Thanksgiving's, Christmas's, New Year's, Groundhog Day's, Valentine's and April Showers', each a drawing of every face", () => {
+  equal(FACE_SETS.join(' '), 'halloween thanksgiving christmas new-year groundhog valentines showers', 'the sets');
   const svg = sprite();
   const ids = [...svg.querySelectorAll('symbol')].map((s) => s.id);
   equal(ids.length, FACES.length * FACE_SETS.length + 1, 'symbols, and the egg'); // the egg a tile hides in, on the hens' board
@@ -27,10 +28,10 @@ test("there are Halloween's faces, Thanksgiving's, Christmas's, New Year's, Grou
   return `${ids.length} faces`;
 });
 
-test("Halloween's faces keep their names, and Thanksgiving's, Christmas's, New Year's, Groundhog Day's and Valentine's have names of their own", () => {
+test("Halloween's faces keep their names, and Thanksgiving's, Christmas's, New Year's, Groundhog Day's, Valentine's and April Showers' have names of their own", () => {
   for (const f of FACES) equal(faceName(f.id), f.name, f.key);
   for (const k of KINDS) equal(kindName(k.id), k.name, k.key);
-  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'showers']) {
     const names = new Map();
     for (const f of FACES) {
       const name = faceName(f.id, set);
@@ -83,6 +84,15 @@ test("Halloween's faces keep their names, and Thanksgiving's, Christmas's, New Y
   equal(kindName(MATCH[FACE['full-moon']], 'valentines'), 'Candy heart', "Valentine's moons");
   equal(['new-moon', 'waxing-moon', 'full-moon', 'waning-moon'].map((k) => faceName(FACE[k], 'valentines')).join(', '), 'Be mine, XOXO, Love you, Hug me', "the candy hearts' words");
   equal(faceName(FACE['lost-soul'], 'valentines'), 'Broken heart', "Valentine's lost soul, a broken heart, for Be mine");
+  equal(faceName(FACE['eyes-3'], 'showers'), 'Three of Raindrops', "April Showers' three of eyes");
+  equal(faceName(FACE['bones-9'], 'showers'), 'Nine of Umbrellas', "April Showers' nine of bones");
+  equal(faceName(FACE['graves-1'], 'showers'), 'One of Seed packets', "April Showers' one of graves");
+  equal(['vampire', 'werewolf', 'mummy', 'zombie'].map((k) => faceName(FACE[k], 'showers')).join(', '), 'Duck, Frog, Snail, Worm', 'four who love the rain, for the monsters');
+  equal(['lantern', 'brew', 'ghost'].map((k) => faceName(FACE[k], 'showers')).join(', '), 'Rain boots, Watering can, Paper boat', 'the red, the green and the white');
+  equal(kindName(MATCH[FACE.nightshade], 'showers'), 'May flower', "April Showers' flowers");
+  equal(['nightshade', 'foxglove', 'hemlock', 'wolfsbane'].map((k) => faceName(FACE[k], 'showers')).join(', '), 'Lily of the valley, Lilac, Iris, Peony', "May's flowers");
+  equal(kindName(MATCH[FACE['full-moon']], 'showers'), 'Butterfly', "April Showers' moons");
+  equal(['new-moon', 'waxing-moon', 'full-moon', 'waning-moon'].map((k) => faceName(FACE[k], 'showers')).join(', '), 'Monarch, Swallowtail, Spring azure, Cabbage white', 'the butterflies out after the rain');
 });
 
 test("on Twelfth Night a tile left without a partner turns to coal, as Christmas's lost soul is drawn", () => {
@@ -95,9 +105,14 @@ test("at midnight on the 1 a tile left without a partner is a sleepyhead, as New
   check(COUNTDOWN.at(-1).text.includes('sleepyheads match each other'), "the 1's card says what a tile left without a partner becomes");
 });
 
+test("on May Day a tile left without a partner is a wilted flower, as April Showers' lost soul is drawn", () => {
+  equal(faceName(FACE['lost-soul'], 'showers'), 'Wilted flower', "April Showers' lost soul");
+  check(SHOWERS.at(-1).text.includes('a flower that wilted'), "May Day's card says what a tile left without a partner becomes");
+});
+
 test("each set's corner numbers have a colour by day and by night", async () => {
   const css = await (await fetch('css/game.css')).text();
-  for (const prefix of ['index', 'index-tg', 'index-xm', 'index-ny', 'index-gh', 'index-vl']) {
+  for (const prefix of ['index', 'index-tg', 'index-xm', 'index-ny', 'index-gh', 'index-vl', 'index-sh']) {
     for (const group of INDEXED) {
       const found = css.match(new RegExp(`--${prefix}-${group}:\\s*#[0-9a-f]{6};`, 'g')) || [];
       equal(found.length, 2, `--${prefix}-${group}, by day and by night`);
@@ -137,6 +152,8 @@ test("a board's tiles can change to another set's faces, each tile the same face
   wears('groundhog');
   board.setFaces('valentines');
   wears('valentines');
+  board.setFaces('showers');
+  wears('showers');
   board.setFaces('halloween');
   wears('halloween');
 });

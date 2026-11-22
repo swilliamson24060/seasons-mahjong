@@ -58,7 +58,7 @@ test("each holiday's music goes with its tiles, every one made having its own, a
     equal(s.set, set, set);
   }
   s.use('showers');
-  equal(s.set, 'halloween', 'a holiday whose boards are still to come');
+  equal(s.set, 'halloween', 'a holiday whose music is still to come');
 });
 
 test("Liszt's Liebestraum keeps time: an upbeat and twelve bars of 6/4, its harmony a chord to each half bar, ending on A flat", () => {

@@ -21,8 +21,8 @@ import { CLOUD, UMBRELLA, BOOTS, RAINBOW, TRAY, CAN, BED, BASKET } from './engin
 // turns over to May's side halfway, at dawn, a tile left without a partner
 // a wilted flower (words.js tells it). Each chapter is as
 // Thanksgiving's days are (thanksgiving.js says what each part is for), and
-// PLAN.md has the season's boards and twists. Until April Showers' own
-// tiles are drawn, its boards wear Halloween's.
+// PLAN.md has the season's boards and twists. Its boards wear April
+// Showers' own tiles (ui/showers-faces.js), wherever they are played.
 
 // The umbrella's ribs, fanning out from its peak to the five points of its
 // rim, each as its places, [column, row]: the outer two along the canopy's

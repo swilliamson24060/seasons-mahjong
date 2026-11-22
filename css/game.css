@@ -372,6 +372,13 @@ body.covered #board {
   --index-vl-monster: #7a4a1e;
   --index-vl-flower: #2e8a3e;
   --index-vl-moon: #1d7f8c;
+  /* April Showers': the raindrops' blue, the umbrellas' teal, the seed packets' ink, the frog's green, the lilac's purple and the monarch's orange. */
+  --index-sh-eyes: #1f63b5;
+  --index-sh-bones: #0c7a6f;
+  --index-sh-graves: #8a4f16;
+  --index-sh-monster: #3b7d2a;
+  --index-sh-flower: #7a3fb0;
+  --index-sh-moon: #c2500e;
   position: absolute;
   width: calc(var(--tile-w) - var(--gap));
   height: calc(var(--tile-h) - var(--gap));
@@ -1440,6 +1447,12 @@ body.covered #board {
   --index-vl-monster: #f0c08a;
   --index-vl-flower: #93e6a8;
   --index-vl-moon: #8fe3f0;
+  --index-sh-eyes: #8cc4ff;
+  --index-sh-bones: #7fe0d4;
+  --index-sh-graves: #f0b27a;
+  --index-sh-monster: #a6e08a;
+  --index-sh-flower: #d6a6ff;
+  --index-sh-moon: #ffb27a;
 }
 
 .tile.night svg {
@@ -1452,8 +1465,9 @@ body.covered #board {
 
 /* Christmas's lost soul is a lump of coal, glowing as an ember does; New
    Year's is a sleepyhead, glowing a dreamy lilac; Groundhog Day's is the
-   groundhog's shadow, glowing the pale blue of snow at dusk; and
-   Valentine's is a broken heart, glowing a tender pink. */
+   groundhog's shadow, glowing the pale blue of snow at dusk;
+   Valentine's is a broken heart, glowing a tender pink; and April
+   Showers' is a wilted flower, glowing a faded rose. */
 [data-faces='christmas'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(255, 128, 48, 0.9));
 }
@@ -1468,6 +1482,10 @@ body.covered #board {
 
 [data-faces='valentines'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(255, 120, 160, 0.95));
+}
+
+[data-faces='showers'] .tile.soul svg {
+  filter: drop-shadow(0 0 4px rgba(222, 178, 200, 0.95));
 }
 
 .tile.selected {
