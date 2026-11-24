@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER, LIEBESTRAUM, SECOND_TIME, DREAM_LINE, DREAM_HARMONY } from '../js/ui/sound.js';
+import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER, LIEBESTRAUM, SECOND_TIME, DREAM_LINE, DREAM_HARMONY, PRELUDE, PRELUDE_LEFT, SECOND_PHRASE, RAINDROP } from '../js/ui/sound.js';
 
 // A Sound playing into an offline context, `seconds` long, for Thanksgiving
 // or another holiday: what it plays is rendered, to be measured as numbers.
@@ -53,12 +53,46 @@ test("We Gather Together's four voices keep time together, sixteen bars of 3/4 f
 
 test("each holiday's music goes with its tiles, every one made having its own, and Halloween's the rest until theirs come", () => {
   const s = new Sound();
-  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'halloween']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'showers', 'halloween']) {
     s.use(set);
     equal(s.set, set, set);
   }
-  s.use('showers');
+  s.use('spring');
   equal(s.set, 'halloween', 'a holiday whose music is still to come');
+});
+
+test("Chopin's Raindrop keeps time: eight bars of 4/4, the theme and the theme again, the A flat falling through it, ending on D flat", () => {
+  const beats = (notes) => notes.reduce((n, [, b]) => n + b, 0);
+  check(Math.abs(beats(PRELUDE) - 8 * 4) < 1e-9, `${beats(PRELUDE)} beats, not eight bars`);
+  check(Math.abs(beats(PRELUDE.slice(0, SECOND_PHRASE)) - 4 * 4) < 1e-9, 'the theme again not from the fifth bar');
+  equal(PRELUDE.slice(0, 10).join(' '), PRELUDE.slice(SECOND_PHRASE, SECOND_PHRASE + 10).join(' '), 'the theme the second time opening as the first does');
+  equal(PRELUDE_LEFT.length, 8, "the left hand's bars");
+  check(PRELUDE_LEFT.flat().every(([eighth]) => eighth >= 0 && eighth < 8), 'a note of the left hand outside its bar');
+  const drops = PRELUDE_LEFT.flat().filter(([, notes]) => notes.includes(RAINDROP)).length;
+  check(drops >= 24, `the A flat falling only ${drops} times`);
+  equal(RAINDROP % 12, 8, 'the raindrop an A flat');
+  equal(PRELUDE.at(-1)[0] % 12, 1, 'ending on D flat');
+  check(PRELUDE.every(([note]) => [1, 3, 5, 6, 8, 10, 0, 2].includes(note % 12)), "a note outside D flat's scale, but for the run's D");
+});
+
+test("April Showers' music is all heard, and none too loud", async () => {
+  const sounds = {
+    'a match': [2.4, (s) => s.match()],
+    'a chapter cleared': [16, (s) => s.win({ day: 0 })],
+    'the season seen through': [27, (s) => s.win({ day: 7, last: true })],
+    'a spring shower, for a shuffle': [1.2, (s) => s.shuffle()],
+    'a raindrop on the window, for a hint': [1, (s) => s.hint()],
+    'a rainbow, for a treat': [2.4, (s) => s.treat()],
+    'thunder far off, with no pairs left': [2.8, (s) => s.stuck()],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('showers', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
 test("Liszt's Liebestraum keeps time: an upbeat and twelve bars of 6/4, its harmony a chord to each half bar, ending on A flat", () => {

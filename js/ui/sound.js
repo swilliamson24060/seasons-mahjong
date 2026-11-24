@@ -23,8 +23,11 @@
 // groundhog seeing his shadow for no pairs left; Valentine's Day's a harp
 // in a drawing room playing Liszt's Liebestraum, his dream of love, with
 // love letters shuffled for a shuffle, a kiss blown for a hint, a box of
-// chocolates opened for a treat and a heart breaking for no pairs left.
-// The others play Halloween's until theirs come.
+// chocolates opened for a treat and a heart breaking for no pairs left;
+// April Showers' a piano in a sunroom playing Chopin's Raindrop Prelude,
+// with a spring shower pattering on the glass for a shuffle, a raindrop on
+// the window for a hint, a rainbow shimmering for a treat and thunder far
+// off for no pairs left. The others play Halloween's until theirs come.
 
 // The opening, a note for each match: the mordent on A and its run down to
 // D, three times, an octave lower each time.
@@ -225,6 +228,40 @@ for (let k = 0, beat = 0; k < LIEBESTRAUM.length; beat += LIEBESTRAUM[k++][1]) {
   if (note) DREAM_NOTES.push([note, DREAM_HARMONY[Math.max(0, Math.floor((beat - 1) / 3))][0]]);
 }
 
+// April Showers' music, Chopin's Prelude in D flat, Op. 28 No. 15, the
+// Raindrop, of 1839, in 4/4, Sostenuto, as the Mutopia Project's edition
+// gives it: its first eight bars, the theme and the theme again, to its
+// close on D flat. The tune, as [note, beats], the run in the fourth bar
+// seven notes to a beat; a note of it for each match, over the A flat that
+// falls through it all like rain. For a chapter cleared, the theme the
+// second time, from the fifth bar; and for April Showers seen through, on
+// May Day, all eight bars.
+const RUN = 1 / 7;
+export const PRELUDE = [
+  [77, 0.75], [73, 0.25], [68, 2], [70, 1],
+  [72, 3], [73, 1],
+  [75, 0.75], [77, 0.25], [78, 2], [77, 1],
+  [77, 1.5], [75, 0.5], [73, 1], [75, RUN], [77, RUN], [75, RUN], [74, RUN], [75, RUN], [77, RUN], [78, RUN],
+  [77, 0.75], [73, 0.25], [68, 2], [70, 1],
+  [72, 3], [73, 1],
+  [75, 0.75], [77, 0.25], [78, 2], [77, 1],
+  [77, 1.5], [75, 0.5], [73, 1], [72, 0.5], [73, 0.5],
+];
+export const SECOND_PHRASE = 20; // the fifth bar, where the theme begins again
+export const RAINDROP = 56; // the A flat that falls like rain
+
+// Its left hand, bar by bar, as [eighth, notes]: the A flat on most of the
+// eighths, the bass and the chords between, and the notes held under them
+// struck where they begin.
+const LEFT_HAND_BARS = {
+  tonic: [[0, [49]], [1, [RAINDROP]], [2, [61, 65]], [2, [49, 53]], [3, [RAINDROP]], [4, [RAINDROP]], [5, [RAINDROP]], [6, [61, 65]], [7, [RAINDROP]]],
+  dominant: [[0, [51, 54]], [0, [63, 66]], [1, [44]], [2, [44]], [3, [44]], [4, [46]], [5, [44]], [6, [49, 53]], [7, [44]]],
+  ninth: [[0, [66]], [0, [60]], [1, [RAINDROP]], [1.5, [68]], [2, [70]], [3, [RAINDROP]], [4, [RAINDROP]], [5, [RAINDROP]], [6, [61, 68]], [7, [RAINDROP]]],
+  turn: [[0, [68]], [0, [60]], [1, [RAINDROP]], [2, [66]], [3, [RAINDROP]], [4, [61, 65]], [5, [RAINDROP]], [6, [60, 66]], [7, [RAINDROP]]],
+  close: [[0, [68]], [0, [60]], [1, [RAINDROP]], [2, [63]], [3, [RAINDROP]], [4, [61, 65]], [5, [RAINDROP]], [6, [61, 65]], [7, [RAINDROP]]],
+};
+export const PRELUDE_LEFT = ['tonic', 'dominant', 'ninth', 'turn', 'tonic', 'dominant', 'ninth', 'close'].map((bar) => LEFT_HAND_BARS[bar]);
+
 // The harp swept up, two octaves of A flat's scale, for the question
 // answered.
 const GLISSANDO = [68, 70, 72, 73, 75, 77, 79, 80, 82, 84, 85, 87, 89, 91, 92];
@@ -238,13 +275,15 @@ const MUSIC = {
   'new-year': { room: 'ballroom' },
   groundhog: { room: 'salon' },
   valentines: { room: 'drawing' },
+  showers: { room: 'sunroom' },
 };
 
 // The rooms: a stone church's long echo for the organ and the bells, a
 // farmhouse parlour's, short and warm, for the banjo, a fireside's, a
 // little longer, for the music box, a ballroom's, wide, for the piano, a
-// music room's for the harpsichord, and a drawing room's, soft, for the
-// harp.
+// music room's for the harpsichord, a drawing room's, soft, for the harp,
+// and a sunroom's, bright, its glass ringing a little, for the piano by
+// the rain.
 const ROOMS = {
   stone: { seconds: 2.8, fall: 3.2, wet: 0.35 },
   farmhouse: { seconds: 0.8, fall: 3.6, wet: 0.22 },
@@ -252,6 +291,7 @@ const ROOMS = {
   ballroom: { seconds: 2, fall: 3, wet: 0.3 },
   salon: { seconds: 1.4, fall: 3.2, wet: 0.24 },
   drawing: { seconds: 1.8, fall: 3, wet: 0.28 },
+  sunroom: { seconds: 1.5, fall: 3.3, wet: 0.26 },
 };
 
 // The opening as it is played, for a cleared board: [note, beats], 0 a rest.
@@ -294,18 +334,9 @@ export class Sound {
     this.bus = ctx.createGain();
     this.bus.connect(this.master);
     // The rooms for the instruments to ring in, the bus sent to the one the
-    // holiday's music plays in.
+    // holiday's music plays in, each made when its music first plays.
     this.rooms = {};
-    for (const [name, { seconds, fall, wet }] of Object.entries(ROOMS)) {
-      const room = ctx.createConvolver();
-      room.buffer = this.echo(seconds, fall);
-      const send = ctx.createGain();
-      send.gain.value = name === MUSIC[this.set].room ? 1 : 0;
-      const out = ctx.createGain();
-      out.gain.value = wet;
-      this.bus.connect(send).connect(room).connect(out).connect(this.master);
-      this.rooms[name] = send;
-    }
+    this.room(MUSIC[this.set].room).gain.value = 1;
     this.noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const d = this.noise.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -322,7 +353,24 @@ export class Sound {
     this.next = 0;
     this.plucks.clear(); // the last holiday's strings, not wanted again
     if (!this.ctx) return;
+    this.room(MUSIC[next].room);
     for (const [name, send] of Object.entries(this.rooms)) send.gain.setTargetAtTime(name === MUSIC[next].room ? 1 : 0, this.ctx.currentTime, 0.1);
+  }
+
+  // A room for the instruments to ring in, made the first time its music
+  // plays, so that only the rooms played in are listened through: its echo,
+  // and the bus's send to it, open while its music plays.
+  room(name) {
+    if (this.rooms[name]) return this.rooms[name];
+    const { seconds, fall, wet } = ROOMS[name];
+    const room = this.ctx.createConvolver();
+    room.buffer = this.echo(seconds, fall);
+    const send = this.ctx.createGain();
+    send.gain.value = 0;
+    const out = this.ctx.createGain();
+    out.gain.value = wet;
+    this.bus.connect(send).connect(room).connect(out).connect(this.master);
+    return (this.rooms[name] = send);
   }
 
   // A new board: the music still playing for the last one fades away.
@@ -669,6 +717,10 @@ export class Sound {
       const [note, bass] = DREAM_NOTES[this.next % DREAM_NOTES.length];
       this.harp(note, this.now, 0.2);
       this.harp(bass < 44 ? bass + 12 : bass, this.now, 0.09);
+    } else if (this.set === 'showers') {
+      // the tune's next note on the piano, over the A flat falling like rain
+      this.piano(PRELUDE[this.next % PRELUDE.length][0], this.now, 0.17);
+      this.piano(RAINDROP, this.now, 0.06);
     } else this.organ(TOCCATA[this.next % TOCCATA.length], this.now, 0.38);
     this.next++;
   }
@@ -693,6 +745,12 @@ export class Sound {
       // love letters shuffled: a riffle of envelopes, and the pile squared up
       for (let k = 0; k < 16; k++) this.rustle(this.now + k * 0.028 + Math.random() * 0.008, 0.035, 3200 + Math.random() * 1500, 2000, 0.24);
       return this.rustle(this.now + 0.52, 0.08, 900, 500, 0.26);
+    }
+    if (this.set === 'showers') {
+      // a spring shower: rain pattering on the glass, and its hiss
+      this.rustle(this.now, 0.9, 3500, 6000, 0.06);
+      for (let k = 0; k < 18; k++) this.plip(this.now + Math.random() * 0.85, 1100 + Math.random() * 1500, 2300 + Math.random() * 1800, 0.05 + Math.random() * 0.04, 0.04);
+      return;
     }
     for (let k = 0; k < 3; k++) this.rustle(this.now + k * 0.09, 0.3, 600, 3200, 0.1);
   }
@@ -723,6 +781,11 @@ export class Sound {
       this.ping(1300, this.now + 0.004, { gain: 0.12, attack: 0.001, fall: 0.03, into: this.master });
       this.rustle(this.now + 0.05, 0.28, 1500, 600, 0.09);
       return this.harp(92, this.now + 0.14, 0.12, this.master);
+    }
+    if (this.set === 'showers') {
+      // a raindrop on the window: it lands, and runs down the glass
+      this.plip(this.now, 900, 2200, 0.13, 0.08);
+      return this.plip(this.now + 0.17, 1500, 3000, 0.07, 0.06);
     }
     this.ping(1318.5, this.now, { gain: 0.06, fall: 0.5 });
     this.ping(1975.5, this.now + 0.09, { gain: 0.05, fall: 0.6 });
@@ -755,6 +818,12 @@ export class Sound {
       // up A flat's chord
       this.rustle(this.now, 0.22, 700, 1600, 0.07);
       return [68, 72, 75, 80, 84, 87, 92].forEach((note, k) => this.harp(note, this.now + 0.24 + k * 0.045, 0.1));
+    }
+    if (this.set === 'showers') {
+      // a rainbow coming out: a shimmer up the glockenspiel, a note for each
+      // of its colours, and D flat's chord on the piano under it
+      [73, 75, 77, 80, 82, 85, 89].forEach((note, k) => this.bell(hz(note), this.now + k * 0.07, 0.04, 1.6));
+      return [49, 56, 61, 65].forEach((note, k) => this.piano(note, this.now + 0.5 + k * 0.03, 0.05));
     }
     [1318.5, 1661.2, 1975.5, 2637].forEach((f, k) => this.ping(f, this.now + k * 0.07, { gain: 0.08, fall: 0.5 }));
   }
@@ -1090,6 +1159,12 @@ export class Sound {
       return this.ping(80, this.now + 0.85, { gain: 0.12, attack: 0.002, fall: 0.1, into: this.master });
     }
     if (this.set === 'valentines') return this.breakHeart();
+    if (this.set === 'showers') {
+      // thunder far off: a low rumble rolling in and dying away
+      this.rustle(this.now, 2.2, 170, 60, 0.4);
+      this.rustle(this.now + 0.3, 1.6, 130, 50, 0.32);
+      return this.ping(52, this.now + 0.1, { gain: 0.14, attack: 0.3, fall: 1.6, into: this.master });
+    }
     this.organ(38, this.now, 1.2, 0.1);
     this.organ(45, this.now, 1.2, 0.08);
   }
@@ -1448,7 +1523,9 @@ export class Sound {
   // the groundhog forecasts: an early spring (`spring`), Spring's opening,
   // and six more weeks of winter, Winter's. Valentine's, the last line of
   // Liszt's dream of love, and with the question popped on the last board
-  // and answered, its whole second time and the harp swept up.
+  // and answered, its whole second time and the harp swept up. April
+  // Showers', the Raindrop's theme the second time, and with the season
+  // seen through on May Day, its first eight bars.
   win({ day = -1, last = false, spring = false } = {}) {
     if (!this.on) return;
     const into = this.newSong();
@@ -1458,6 +1535,7 @@ export class Sound {
     else if (this.set === 'new-year') this.auld(last ? CHORUS : LAST_TOAST, last, into);
     else if (this.set === 'groundhog') this.season(spring, into);
     else if (this.set === 'valentines') this.dream(last ? SECOND_TIME : DREAM_LINE, last, into);
+    else if (this.set === 'showers') this.prelude(last ? 0 : SECOND_PHRASE, into);
     else {
       const beat = 0.32;
       let at = this.now + 0.1;
@@ -1591,6 +1669,26 @@ export class Sound {
       end += 0.9;
     }
     [44, 51, 56, 60, 63, 68, 72].forEach((note, k) => this.harp(note, end + k * 0.06, k ? 0.08 : 0.11, into));
+  }
+
+  // The Raindrop on the piano, from the tune's note `from`, the start of its
+  // first bar or its fifth, to its close on D flat: the tune over its left
+  // hand, the A flat falling through it, the tune the loudest; and D flat's
+  // chord spread up the piano to end on.
+  prelude(from, into) {
+    const beat = 0.7;
+    const start = this.now + 0.1;
+    const firstBar = Math.round(PRELUDE.slice(0, from).reduce((n, [, b]) => n + b, 0) / 4);
+    let t = 0;
+    for (const [note, beats] of PRELUDE.slice(from)) {
+      this.piano(note, start + t * beat, 0.16, into);
+      t += beats;
+    }
+    PRELUDE_LEFT.slice(firstBar).forEach((bar, k) => {
+      for (const [eighth, notes] of bar) notes.forEach((note) => this.piano(note, start + (k * 4 + eighth / 2) * beat, note === RAINDROP || note === 44 ? 0.045 : 0.06, into));
+    });
+    const end = start + t * beat + 0.15;
+    [37, 44, 49, 53, 56, 61, 65, 73].forEach((note, k) => this.piano(note, end + k * 0.05, k ? 0.06 : 0.09, into));
   }
 
   // We Gather Together on the reed organ, its four voices, for the week seen
