@@ -51,7 +51,7 @@ let game = null;
 let board = null;
 let hour = -1; // the hour of the Long Night being played, or -1
 let runDay = -1; // the day being played of a run of days, Thanksgiving week, Christmas's twelve or New Year's boards, or -1; with hour, both -1 for free play
-let runId = null; // the run that day is of: 'thanksgiving', 'christmas', 'new-year', 'groundhog' or 'valentines' (RUNS)
+let runId = null; // the run that day is of: 'thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines' or 'showers' (RUNS)
 let boardDate = null; // on Groundhog Day, the day the board in play is the board of, as its key
 let moves = []; // what has been done on this board, to play it back after a reload
 let elapsed = 0; // seconds played before the clock last started
@@ -85,6 +85,7 @@ let saved = {
   twelve: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   newyear: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   valentines: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
+  showers: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   groundhog: { reached: 0, best: {}, scores: {}, times: {}, playing: null, days: {} },
   free: null,
   name: '',
@@ -759,9 +760,9 @@ const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(
 
 // The holidays played as runs of days, reached in turn, as the Long Night's
 // hours are: Thanksgiving week, Christmas's twelve days, New Year's boards,
-// the countdown from the 10 to the 1 and then New Year's Day, and
-// Valentine's love story, a chapter a board, from Cupid's bow to the ring. For
-// each: its days; where its progress is kept in saved, as the night's is;
+// the countdown from the 10 to the 1 and then New Year's Day, Valentine's
+// love story, a chapter a board, from Cupid's bow to the ring, and April
+// Showers, from the first shower to May Day. For each: its days; where its progress is kept in saved, as the night's is;
 // and the words its card and its end are told in. New Year's also has the
 // ball on its card, dropping a notch with each board of the countdown
 // cleared, and words for each one cleared.
@@ -815,6 +816,17 @@ const RUNS = {
     meanwhile: "Valentine's love story",
     score: "Your Valentine's score",
     over: ['Yes!', 'The question is answered: you have seen the love story through, from Cupid taking aim to the ring.'],
+  },
+  showers: {
+    days: SHOWERS,
+    progress: () => saved.showers,
+    title: 'April Showers: from showers to flowers',
+    intro: "Eight boards, from the first shower to May Day, the sky clearing as they go: April's rain, then May's flowers. Each chapter you reach can be played again.",
+    begin: 'Begin with the first shower',
+    back: 'Back to April Showers',
+    meanwhile: "April Showers' chapters",
+    score: 'Your April Showers score',
+    over: ['May Day!', 'April showers bring May flowers: you have seen the season through, from the first shower to the May basket.'],
   },
   // Groundhog Day: one board, dealt afresh each day from the date, the
   // same for everyone, and played again as often as one likes (daily).

@@ -16,14 +16,14 @@ const across = (L, y) => [...L.x.keys()].filter((i) => L.z[i] === 0 && L.y[i] ==
 // eleven half tiles down.
 const drops = () => [...CLOUD.x.keys()].filter((i) => CLOUD.y[i] > 11);
 
-test('April Showers is told in chapters, each its own board, none more than nine tiles across, and not ready while they are being made', () => {
+test('April Showers is told in eight chapters, each its own board, none more than nine tiles across, and ready to play, all eight made', () => {
   for (const d of SHOWERS) {
     check(d.layout && d.title && d.text && d.sky, `${d.name} is not made`);
     check(d.layout.width / 2 <= 9, `${d.name}'s board is ${d.layout.width / 2} tiles across`);
   }
   equal(new Set(SHOWERS.map((d) => d.layout)).size, SHOWERS.length, 'boards, one a chapter');
-  check(SHOWERS.length <= 8, `${SHOWERS.length} chapters, more than eight`);
-  check(!theme('showers').ready, 'April Showers ready, with its boards still being made');
+  equal(SHOWERS.length, 8, 'chapters');
+  check(theme('showers').ready, 'April Showers not ready, with all eight of its boards made');
 });
 
 test('the first chapter is the first shower, a rain cloud, the gentle start: 84 tiles on four layers, nine across, and no twist', () => {
