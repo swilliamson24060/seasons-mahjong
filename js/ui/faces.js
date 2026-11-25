@@ -6,6 +6,7 @@ import { NEW_YEAR_FACES } from './newyear-faces.js';
 import { GROUNDHOG_FACES } from './groundhog-faces.js';
 import { VALENTINE_FACES } from './valentine-faces.js';
 import { SHOWERS_FACES } from './showers-faces.js';
+import { TURTLE_FACES } from './turtle-faces.js';
 
 // The faces, drawn in code as SVG symbols on a 60 by 80 tile and gathered in
 // one hidden sprite that every tile points into. Outlines and small dark
@@ -18,8 +19,9 @@ import { SHOWERS_FACES } from './showers-faces.js';
 // own, here, whose names are tiles.js's, Thanksgiving's
 // (thanksgiving-faces.js), Christmas's (christmas-faces.js), New Year's
 // (newyear-faces.js), Groundhog Day's (groundhog-faces.js), Valentine's
-// Day's (valentine-faces.js) and April Showers' (showers-faces.js). A board
-// says which set its tiles wear.
+// Day's (valentine-faces.js) and April Showers' (showers-faces.js); and the
+// turtle's own, a turtle's pond (turtle-faces.js), which it wears whatever
+// holiday is chosen. A board says which set its tiles wear.
 const SETS = {
   halloween: { prefix: 'face-', draw: (f) => draw(f), index: 'index' },
   thanksgiving: { prefix: 'face-tg-', index: 'index-tg', ...THANKSGIVING },
@@ -28,6 +30,7 @@ const SETS = {
   groundhog: { prefix: 'face-gh-', index: 'index-gh', ...GROUNDHOG_FACES },
   valentines: { prefix: 'face-vl-', index: 'index-vl', ...VALENTINE_FACES },
   showers: { prefix: 'face-sh-', index: 'index-sh', ...SHOWERS_FACES },
+  turtle: { prefix: 'face-tt-', index: 'index-tt', ...TURTLE_FACES },
 };
 
 // The groups with an index in a corner, in the group's colour, which the tile
@@ -103,8 +106,8 @@ function draw(f) {
 // The index, in its group's colour in this set: --index-eyes and so on for
 // Halloween's, --index-tg-eyes for Thanksgiving's, --index-xm-eyes for
 // Christmas's, --index-ny-eyes for New Year's, --index-gh-eyes for
-// Groundhog Day's, --index-vl-eyes for Valentine's and --index-sh-eyes for
-// April Showers'.
+// Groundhog Day's, --index-vl-eyes for Valentine's, --index-sh-eyes for
+// April Showers' and --index-tt-eyes for the turtle's.
 function index(f, set) {
   if (!indexed(f)) return '';
   const ring = 'stroke:var(--face-1);stroke-width:4;stroke-linejoin:round;paint-order:stroke';

@@ -11,8 +11,8 @@ import { Board } from '../js/ui/board.js';
 
 const INDEXED = ['eyes', 'bones', 'graves', 'monster', 'flower', 'moon'];
 
-test("there are Halloween's faces, Thanksgiving's, Christmas's, New Year's, Groundhog Day's, Valentine's and April Showers', each a drawing of every face", () => {
-  equal(FACE_SETS.join(' '), 'halloween thanksgiving christmas new-year groundhog valentines showers', 'the sets');
+test("there are Halloween's faces, Thanksgiving's, Christmas's, New Year's, Groundhog Day's, Valentine's, April Showers' and the turtle's own, each a drawing of every face", () => {
+  equal(FACE_SETS.join(' '), 'halloween thanksgiving christmas new-year groundhog valentines showers turtle', 'the sets');
   const svg = sprite();
   const ids = [...svg.querySelectorAll('symbol')].map((s) => s.id);
   equal(ids.length, FACES.length * FACE_SETS.length + 1, 'symbols, and the egg'); // the egg a tile hides in, on the hens' board
@@ -28,10 +28,10 @@ test("there are Halloween's faces, Thanksgiving's, Christmas's, New Year's, Grou
   return `${ids.length} faces`;
 });
 
-test("Halloween's faces keep their names, and Thanksgiving's, Christmas's, New Year's, Groundhog Day's, Valentine's and April Showers' have names of their own", () => {
+test("Halloween's faces keep their names, and Thanksgiving's, Christmas's, New Year's, Groundhog Day's, Valentine's, April Showers' and the turtle's have names of their own", () => {
   for (const f of FACES) equal(faceName(f.id), f.name, f.key);
   for (const k of KINDS) equal(kindName(k.id), k.name, k.key);
-  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'showers']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'showers', 'turtle']) {
     const names = new Map();
     for (const f of FACES) {
       const name = faceName(f.id, set);
@@ -93,6 +93,14 @@ test("Halloween's faces keep their names, and Thanksgiving's, Christmas's, New Y
   equal(['nightshade', 'foxglove', 'hemlock', 'wolfsbane'].map((k) => faceName(FACE[k], 'showers')).join(', '), 'Lily of the valley, Lilac, Iris, Peony', "May's flowers");
   equal(kindName(MATCH[FACE['full-moon']], 'showers'), 'Butterfly', "April Showers' moons");
   equal(['new-moon', 'waxing-moon', 'full-moon', 'waning-moon'].map((k) => faceName(FACE[k], 'showers')).join(', '), 'Monarch, Swallowtail, Spring azure, Cabbage white', 'the butterflies out after the rain');
+  equal(faceName(FACE['eyes-3'], 'turtle'), 'Three of Lily pads', "the turtle's three of eyes");
+  equal(faceName(FACE['bones-9'], 'turtle'), 'Nine of Reeds', "the turtle's nine of bones");
+  equal(faceName(FACE['graves-1'], 'turtle'), 'One of Shells', "the turtle's one of graves");
+  equal(['vampire', 'werewolf', 'mummy', 'zombie'].map((k) => faceName(FACE[k], 'turtle')).join(', '), 'Sea turtle, Box turtle, Snapping turtle, Tortoise', 'four turtles, for the monsters');
+  equal(['lantern', 'brew', 'ghost'].map((k) => faceName(FACE[k], 'turtle')).join(', '), 'Koi, Frog, Egret', 'the red, the green and the white');
+  equal(kindName(MATCH[FACE.nightshade], 'turtle'), 'Pond flower', "the turtle's flowers");
+  equal(kindName(MATCH[FACE['full-moon']], 'turtle'), 'Pond shell', "the turtle's moons");
+  equal(faceName(FACE['lost-soul'], 'turtle'), 'Shy turtle', "the turtle's lost soul, tucked into his shell");
 });
 
 test("on Twelfth Night a tile left without a partner turns to coal, as Christmas's lost soul is drawn", () => {
@@ -112,7 +120,7 @@ test("on May Day a tile left without a partner is a wilted flower, as April Show
 
 test("each set's corner numbers have a colour by day and by night", async () => {
   const css = await (await fetch('css/game.css')).text();
-  for (const prefix of ['index', 'index-tg', 'index-xm', 'index-ny', 'index-gh', 'index-vl', 'index-sh']) {
+  for (const prefix of ['index', 'index-tg', 'index-xm', 'index-ny', 'index-gh', 'index-vl', 'index-sh', 'index-tt']) {
     for (const group of INDEXED) {
       const found = css.match(new RegExp(`--${prefix}-${group}:\\s*#[0-9a-f]{6};`, 'g')) || [];
       equal(found.length, 2, `--${prefix}-${group}, by day and by night`);
@@ -154,6 +162,8 @@ test("a board's tiles can change to another set's faces, each tile the same face
   wears('valentines');
   board.setFaces('showers');
   wears('showers');
+  board.setFaces('turtle');
+  wears('turtle');
   board.setFaces('halloween');
   wears('halloween');
 });

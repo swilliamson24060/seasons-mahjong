@@ -27,7 +27,11 @@
 // April Showers' a piano in a sunroom playing Chopin's Raindrop Prelude,
 // with a spring shower pattering on the glass for a shuffle, a raindrop on
 // the window for a hint, a rainbow shimmering for a treat and thunder far
-// off for no pairs left. The others play Halloween's until theirs come.
+// off for no pairs left; and the turtle's own, played any time, a piano by
+// a pond playing Satie's first Gymnopédie, slow and steady, with the pond
+// stirred for a shuffle, a frog's croak for a hint, a koi leaping for a
+// treat and the turtle knocking into his shell for no pairs left. The
+// others play Halloween's until theirs come.
 
 // The opening, a note for each match: the mordent on A and its run down to
 // D, three times, an octave lower each time.
@@ -262,6 +266,49 @@ const LEFT_HAND_BARS = {
 };
 export const PRELUDE_LEFT = ['tonic', 'dominant', 'ninth', 'turn', 'tonic', 'dominant', 'ninth', 'close'].map((bar) => LEFT_HAND_BARS[bar]);
 
+// The turtle's music, Satie's first Gymnopédie, of 1888, in 3/4, Lent et
+// douloureux, as the Mutopia Project's public-domain edition gives it: its
+// first twenty-one bars, four bars of its rocking chords before the tune
+// comes in, then the tune's two long phrases. The tune, as [note, beats], 0
+// a rest; a note of it for each match, over its bar's bass. For a board
+// cleared, its first phrase, from where the tune comes in to its long F
+// sharp, over the chord of G.
+export const GYMNOPEDIE = [
+  [0, 12],
+  [0, 1], [78, 1], [81, 1],
+  [79, 1], [78, 1], [73, 1],
+  [71, 1], [73, 1], [74, 1],
+  [69, 3],
+  [66, 12],
+  [0, 1], [78, 1], [81, 1],
+  [79, 1], [78, 1], [73, 1],
+  [71, 1], [73, 1], [74, 1],
+  [69, 3],
+  [73, 3],
+  [78, 3],
+  [64, 9],
+];
+
+// Its left hand, a bar each: the bass on the first beat, and the chord on
+// the second, held, rocking between G and D until the second phrase turns.
+const G_CHORD = [43, [59, 62, 66]];
+const D_CHORD = [38, [57, 61, 66]];
+export const GYMNOPEDIE_LEFT = [
+  ...Array.from({ length: 16 }, (_, k) => (k % 2 ? D_CHORD : G_CHORD)),
+  [42, [57, 61, 66]],
+  [35, [59, 62, 66]],
+  [40, [55, 59]],
+  [40, [59, 62, 67]],
+  [38, [53, 57, 62]],
+];
+
+// The tune's notes, each with its bar's bass, for the matches.
+const POND_NOTES = [];
+for (let k = 0, beat = 0; k < GYMNOPEDIE.length; beat += GYMNOPEDIE[k++][1]) {
+  const [note] = GYMNOPEDIE[k];
+  if (note) POND_NOTES.push([note, GYMNOPEDIE_LEFT[Math.floor(beat / 3)][0]]);
+}
+
 // The harp swept up, two octaves of A flat's scale, for the question
 // answered.
 const GLISSANDO = [68, 70, 72, 73, 75, 77, 79, 80, 82, 84, 85, 87, 89, 91, 92];
@@ -276,14 +323,16 @@ const MUSIC = {
   groundhog: { room: 'salon' },
   valentines: { room: 'drawing' },
   showers: { room: 'sunroom' },
+  turtle: { room: 'lakeside' },
 };
 
 // The rooms: a stone church's long echo for the organ and the bells, a
 // farmhouse parlour's, short and warm, for the banjo, a fireside's, a
 // little longer, for the music box, a ballroom's, wide, for the piano, a
 // music room's for the harpsichord, a drawing room's, soft, for the harp,
-// and a sunroom's, bright, its glass ringing a little, for the piano by
-// the rain.
+// a sunroom's, bright, its glass ringing a little, for the piano by the
+// rain, and a lakeside's, wide and soft, carrying over the water, for the
+// turtle's.
 const ROOMS = {
   stone: { seconds: 2.8, fall: 3.2, wet: 0.35 },
   farmhouse: { seconds: 0.8, fall: 3.6, wet: 0.22 },
@@ -292,6 +341,7 @@ const ROOMS = {
   salon: { seconds: 1.4, fall: 3.2, wet: 0.24 },
   drawing: { seconds: 1.8, fall: 3, wet: 0.28 },
   sunroom: { seconds: 1.5, fall: 3.3, wet: 0.26 },
+  lakeside: { seconds: 2.2, fall: 2.9, wet: 0.3 },
 };
 
 // The opening as it is played, for a cleared board: [note, beats], 0 a rest.
@@ -721,6 +771,11 @@ export class Sound {
       // the tune's next note on the piano, over the A flat falling like rain
       this.piano(PRELUDE[this.next % PRELUDE.length][0], this.now, 0.17);
       this.piano(RAINDROP, this.now, 0.06);
+    } else if (this.set === 'turtle') {
+      // the tune's next note on the piano, over its bar's bass
+      const [note, bass] = POND_NOTES[this.next % POND_NOTES.length];
+      this.piano(note, this.now, 0.17);
+      this.piano(bass, this.now, 0.08);
     } else this.organ(TOCCATA[this.next % TOCCATA.length], this.now, 0.38);
     this.next++;
   }
@@ -750,6 +805,12 @@ export class Sound {
       // a spring shower: rain pattering on the glass, and its hiss
       this.rustle(this.now, 0.9, 3500, 6000, 0.06);
       for (let k = 0; k < 18; k++) this.plip(this.now + Math.random() * 0.85, 1100 + Math.random() * 1500, 2300 + Math.random() * 1800, 0.05 + Math.random() * 0.04, 0.04);
+      return;
+    }
+    if (this.set === 'turtle') {
+      // the pond stirred: the water swirled round, and its ripples
+      this.rustle(this.now, 0.6, 500, 1500, 0.1);
+      for (let k = 0; k < 6; k++) this.plip(this.now + 0.1 + k * 0.09 + Math.random() * 0.03, 300 + k * 40, 700 + k * 60, 0.07, 0.08);
       return;
     }
     for (let k = 0; k < 3; k++) this.rustle(this.now + k * 0.09, 0.3, 600, 3200, 0.1);
@@ -787,6 +848,7 @@ export class Sound {
       this.plip(this.now, 900, 2200, 0.13, 0.08);
       return this.plip(this.now + 0.17, 1500, 3000, 0.07, 0.06);
     }
+    if (this.set === 'turtle') return this.croak(this.now); // a frog by the pond: ribbit
     this.ping(1318.5, this.now, { gain: 0.06, fall: 0.5 });
     this.ping(1975.5, this.now + 0.09, { gain: 0.05, fall: 0.6 });
   }
@@ -824,6 +886,13 @@ export class Sound {
       // of its colours, and D flat's chord on the piano under it
       [73, 75, 77, 80, 82, 85, 89].forEach((note, k) => this.bell(hz(note), this.now + k * 0.07, 0.04, 1.6));
       return [49, 56, 61, 65].forEach((note, k) => this.piano(note, this.now + 0.5 + k * 0.03, 0.05));
+    }
+    if (this.set === 'turtle') {
+      // a koi leaping: it breaks the water and splashes back, and the piano
+      // spreads D's chord
+      this.rustle(this.now, 0.12, 1800, 3800, 0.1);
+      this.rustle(this.now + 0.32, 0.3, 2600, 800, 0.12);
+      return [62, 66, 69, 74, 78].forEach((note, k) => this.piano(note, this.now + 0.5 + k * 0.05, 0.06));
     }
     [1318.5, 1661.2, 1975.5, 2637].forEach((f, k) => this.ping(f, this.now + k * 0.07, { gain: 0.08, fall: 0.5 }));
   }
@@ -1164,6 +1233,14 @@ export class Sound {
       this.rustle(this.now, 2.2, 170, 60, 0.4);
       this.rustle(this.now + 0.3, 1.6, 130, 50, 0.32);
       return this.ping(52, this.now + 0.1, { gain: 0.14, attack: 0.3, fall: 1.6, into: this.master });
+    }
+    if (this.set === 'turtle') {
+      // the turtle tucks into his shell: a hollow knock, and another
+      [0, 0.18].forEach((t, k) => {
+        this.ping(k ? 120 : 150, this.now + t, { gain: 0.2, attack: 0.002, fall: 0.12, into: this.master });
+        this.ping(k ? 410 : 520, this.now + t, { gain: 0.05, attack: 0.001, fall: 0.05, into: this.master });
+      });
+      return;
     }
     this.organ(38, this.now, 1.2, 0.1);
     this.organ(45, this.now, 1.2, 0.08);
@@ -1525,7 +1602,8 @@ export class Sound {
   // Liszt's dream of love, and with the question popped on the last board
   // and answered, its whole second time and the harp swept up. April
   // Showers', the Raindrop's theme the second time, and with the season
-  // seen through on May Day, its first eight bars.
+  // seen through on May Day, its first eight bars. The turtle's, the
+  // Gymnopédie's first phrase.
   win({ day = -1, last = false, spring = false } = {}) {
     if (!this.on) return;
     const into = this.newSong();
@@ -1536,6 +1614,7 @@ export class Sound {
     else if (this.set === 'groundhog') this.season(spring, into);
     else if (this.set === 'valentines') this.dream(last ? SECOND_TIME : DREAM_LINE, last, into);
     else if (this.set === 'showers') this.prelude(last ? 0 : SECOND_PHRASE, into);
+    else if (this.set === 'turtle') this.gymnopedie(into);
     else {
       const beat = 0.32;
       let at = this.now + 0.1;
@@ -1689,6 +1768,42 @@ export class Sound {
     });
     const end = start + t * beat + 0.15;
     [37, 44, 49, 53, 56, 61, 65, 73].forEach((note, k) => this.piano(note, end + k * 0.05, k ? 0.06 : 0.09, into));
+  }
+
+  // The Gymnopédie on the piano, its first phrase, from the fifth bar, where
+  // the tune comes in, to the ninth, where it comes to rest on its long F
+  // sharp over the chord of G: each bar's bass, its chord on the second
+  // beat, and the tune over them, the loudest.
+  gymnopedie(into) {
+    const beat = 0.85;
+    const start = this.now + 0.1;
+    const [from, to] = [4 * 3, 9 * 3]; // the fifth bar's first beat, and the ninth's last
+    let t = 0;
+    for (const [note, beats] of GYMNOPEDIE) {
+      if (note && t >= from && t < to) this.piano(note, start + (t - from) * beat, 0.16, into);
+      t += beats;
+    }
+    GYMNOPEDIE_LEFT.slice(4, 9).forEach(([bass, chord], k) => {
+      const at = start + k * 3 * beat;
+      this.piano(bass, at, 0.11, into);
+      chord.forEach((note, j) => this.piano(note, at + beat + j * 0.012, 0.05, into));
+    });
+  }
+
+  // A frog's croak, ribbit: two quick, rough notes, the second a little
+  // higher. The turtle's hint, and at dusk on its pond, the frogs.
+  croak(at, gain = 0.06) {
+    [0, 0.13].forEach((t, k) => {
+      for (let p = 0; p < 4; p++) this.ping(k ? 200 : 170, at + t + p * 0.022, { type: 'square', gain: gain * (1 - p / 6), attack: 0.003, fall: 0.025, into: this.master });
+    });
+  }
+
+  // Dusk on the turtle's pond, as its tiles turn over: the frogs croaking,
+  // one and then another, and a low bell across the water.
+  dusk() {
+    if (!this.on) return;
+    [0, 0.5, 0.85].forEach((t, k) => this.croak(this.now + t, 0.06 - k * 0.012));
+    this.bell(196, this.now + 1.3, 0.08, 2.4);
   }
 
   // We Gather Together on the reed organ, its four voices, for the week seen

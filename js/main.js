@@ -37,8 +37,8 @@ const DOTS = ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'];
 // (faces.js): Halloween's on the night's boards, Thanksgiving's on the
 // week's, Christmas's on the twelve days', New Year's on its countdown and
 // New Year's Day, Groundhog Day's on its board of the day, Valentine's on
-// its love story, and on the turtle and the rest outside them, the holiday
-// chosen's (holidayFaces).
+// its love story, April Showers' on its chapters, the turtle's own on the
+// turtle, and on the rest outside them, the holiday chosen's (freeFaces).
 let faceSet = 'halloween';
 
 // Every layout by the name an address can give it, for free play: #play/raven/12345.
@@ -703,9 +703,10 @@ function turtleKey() {
 
 // A board outside the night, as often as you like: the turtle that fits the
 // screen, or any of the night's boards by name, with or without a midnight.
-// It wears the faces of the holiday chosen, as the page wears its look, and
-// speaks its words, its treats and its turning over; a day's board wears
-// and speaks its holiday's. Like the night's, the board in play is kept,
+// The turtle, played any time, wears its own faces, a turtle's pond, and
+// speaks its own words, its treats and its turning over; any other wears
+// the faces of the holiday chosen, as the page wears its look, and speaks
+// its words; a day's board wears and speaks its holiday's. Like the night's, the board in play is kept,
 // to go on with after a reload or a visit to the night: `keep` is that
 // board.
 let freeKey = 'turtle'; // the board free play deals,
@@ -722,7 +723,7 @@ function freePlay(key = turtleKey(), seed = newSeed(), turnAt = 0, keep = null) 
   // A holiday's day's board plays by its day's rules, and gives its own
   // treats or none; any other is told in the words of the tiles it wears.
   const today = dayFor(FREE[key]);
-  const { options, ...rest } = today ? dayPlay(today) : { options: {}, faces: holidayFaces(), ...wordsOf(holidayFaces()) };
+  const { options, ...rest } = today ? dayPlay(today) : { options: {}, faces: freeFaces(key), ...wordsOf(freeFaces(key)) };
   if (turnAt) options.turnAt = turnAt;
   play({ layout: FREE[key], options, seed, replay: keep ? keep.moves : [], playedFor: keep ? keep.elapsed : 0, ...rest });
   saved.free = { key, seed, turnAt, moves, elapsed };
@@ -1264,14 +1265,15 @@ function askToLose({ which, then, go, back, keep = 'Keep playing' }) {
 // The holiday whose look the page wears: Halloween's while the Long Night
 // is on the table, Thanksgiving's or Christmas's while a day of theirs is,
 // and otherwise the one chosen last, whose faces the board then wears too,
-// unless it is one of a holiday's days played freely. Another holiday
-// chosen with the turtle on the table changes its tiles with its colours,
-// and its music and words with them.
+// unless it is one of a holiday's days played freely, or the turtle, which
+// keeps its own. Another holiday chosen with a board played freely on the
+// table changes its tiles with its colours, and its music and words with
+// them; with the turtle on the table, only its colours.
 function applyTheme() {
   wear(theme(hour >= 0 ? 'halloween' : runDay >= 0 ? runId : saved.theme) || theme('halloween'));
   // The day is found by the key free play dealt: a board with a fridge
   // plays on a layout of its own, with the containers added.
-  const faces = hour < 0 && runDay < 0 && !dayFor(FREE[freeKey]) ? holidayFaces() : faceSet;
+  const faces = hour < 0 && runDay < 0 && !dayFor(FREE[freeKey]) ? freeFaces(freeKey) : faceSet;
   if (faces !== faceSet) {
     board.setFaces((faceSet = faces));
     sound.use(faceSet); // and its music
@@ -1282,6 +1284,10 @@ function applyTheme() {
 // The faces of the holiday chosen last, for a board outside the night and the
 // week: Halloween's while that holiday's own are still to come.
 const holidayFaces = () => (FACE_SETS.includes(saved.theme) ? saved.theme : 'halloween');
+
+// The faces a board played freely wears: the turtle's own, a turtle's pond,
+// on the turtle, whatever holiday is chosen; on any other, the holiday's.
+const freeFaces = (key) => (TURTLES.includes(key) ? 'turtle' : holidayFaces());
 
 // A holiday's look: its colour as the accent, and Halloween its own
 // lettering. With no holiday, Seasons' own, for choosing them.

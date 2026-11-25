@@ -1,8 +1,8 @@
 // The words a board is told in, in its holiday's own: its treats, and its
 // turning over. A holiday's own boards speak its words wherever they are
-// played; a board outside them all, the turtle or one of the night's played
-// by its address, speaks those of the tiles it wears, the holiday chosen's:
-// no black cats at Christmas.
+// played; a board outside them all speaks those of the tiles it wears: the
+// turtle its own pond's, and one of the night's played by its address the
+// holiday chosen's: no black cats at Christmas.
 
 // The treats a board gives, in its own words. The game knows them as
 // candle, key and cat: a free hint, a blocked tile freed, and a free
@@ -21,8 +21,10 @@
 //   in the weather;
 // - Valentine's matchmaker, key to your heart and speed dating, the
 //   boxes of chocolates' sweet surprises;
-// - and April Showers' rainbow, seedling and spring shower, the splashes
-//   of luck that rain boots splash up.
+// - April Showers' rainbow, seedling and spring shower, the splashes of
+//   luck that rain boots splash up;
+// - and the turtle's own, from its pond: a firefly, a frog and a ripple,
+//   brought by the koi.
 //
 // For each: its icon, which a tile freed by its key wears too; its name, as
 // a toast gives it when one comes; its button on the card when no pairs are
@@ -103,6 +105,16 @@ export const GIFTS = {
     used: { candle: 'The rainbow points you to a match, for free.', cat: 'A spring shower washes the tiles about: a free shuffle.', key: 'Choose a blocked tile for the seedling to push free.' },
     keyName: 'seedling',
   },
+  turtle: {
+    icons: { candle: '✨', key: '🐸', cat: '🌊' },
+    names: { candle: 'a firefly, to show you a match', key: 'a frog, to hop a blocked tile free', cat: 'a ripple, for a free shuffle' },
+    buttons: { key: 'Frog', cat: 'Ripple' },
+    help: { candle: 'A firefly lights up a match, for free.', key: 'A frog hops one blocked tile free.', cat: 'A ripple across the pond shuffles the tiles, for free.' },
+    came: (name) => `From the pond: ${name}.`,
+    from: () => 'Each pair of koi brings something from the pond.',
+    used: { candle: 'The firefly lights up a match, for free.', cat: 'A ripple runs across the pond: a free shuffle.', key: 'Choose a blocked tile for the frog to hop free.' },
+    keyName: 'frog',
+  },
 };
 
 // How a board's turning over is told: Halloween's midnight, or its sunrise
@@ -113,7 +125,9 @@ export const GIFTS = {
 // Year's midnight, on the 1, when the ball lands, the clock strikes twelve
 // and the new year comes in, its lost souls sleepyheads who missed it;
 // Valentine's question, on Be mine, when the ring comes out and the
-// question is popped, its lost souls broken hearts; April Showers' May
+// question is popped, its lost souls broken hearts; the turtle's dusk, on
+// its pond, its lost souls shy turtles, tucked into their shells; April
+// Showers' May
 // morning, on May Day, when dawn breaks and April turns to May, its lost
 // souls flowers that wilted; and Groundhog Day's
 // forecast, on a board in its tiles turning over outside its own, when the
@@ -202,6 +216,19 @@ export const TURNS = {
     score: { night: 'May Day', day: 'May Day', souls: 'Wilted flowers', none: 'no wilted flowers' },
     ring: () => 'mayDay',
   },
+  dusk: {
+    ahead: (n) => `🌅 <b>${n}</b> to dusk`,
+    after: () => '🌙 dusk on the pond',
+    soul: '🐢',
+    soulsAhead: 'Shy turtles if the tiles turned over now',
+    soulsWoke: 'Shy turtles on the board',
+    turned: () => 'Dusk falls on the pond, and the tiles turn over.',
+    woke: (n) => (n ? `${n} ${n === 1 ? 'turtle tucks into his shell' : 'turtles tuck into their shells'}: shy turtles match each other.` : 'Not one shy turtle.'),
+    prompt: "Three matches to dusk. Hold the moon to see dusk's side coming, and take pairs that match on both sides.",
+    moon: "Hold to see dusk's side (or hold Space)",
+    score: { night: 'Dusk', day: 'Dawn', souls: 'Shy turtles', none: 'no shy turtles' },
+    ring: () => 'dusk',
+  },
   forecast: {
     ahead: (n) => `⛅ <b>${n}</b> to the forecast`,
     after: () => '⛅ the forecast',
@@ -219,7 +246,7 @@ export const TURNS = {
 
 // The turning over each holiday's tiles are told in, on a board outside
 // its own that turns over.
-const TURN_OF = { halloween: 'midnight', thanksgiving: 'sundown', christmas: 'twelfth', 'new-year': 'newyear', groundhog: 'forecast', valentines: 'question', showers: 'may' };
+const TURN_OF = { halloween: 'midnight', thanksgiving: 'sundown', christmas: 'twelfth', 'new-year': 'newyear', groundhog: 'forecast', valentines: 'question', showers: 'may', turtle: 'dusk' };
 
 // The words a board outside the holidays' own is told in: those of the
 // tiles it wears, or Halloween's for tiles with none of their own.

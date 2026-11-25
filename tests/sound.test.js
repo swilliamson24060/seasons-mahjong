@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER, LIEBESTRAUM, SECOND_TIME, DREAM_LINE, DREAM_HARMONY, PRELUDE, PRELUDE_LEFT, SECOND_PHRASE, RAINDROP } from '../js/ui/sound.js';
+import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER, LIEBESTRAUM, SECOND_TIME, DREAM_LINE, DREAM_HARMONY, PRELUDE, PRELUDE_LEFT, SECOND_PHRASE, RAINDROP, GYMNOPEDIE, GYMNOPEDIE_LEFT } from '../js/ui/sound.js';
 
 // A Sound playing into an offline context, `seconds` long, for Thanksgiving
 // or another holiday: what it plays is rendered, to be measured as numbers.
@@ -53,7 +53,7 @@ test("We Gather Together's four voices keep time together, sixteen bars of 3/4 f
 
 test("each holiday's music goes with its tiles, every one made having its own, and Halloween's the rest until theirs come", () => {
   const s = new Sound();
-  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'showers', 'halloween']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'showers', 'turtle', 'halloween']) {
     s.use(set);
     equal(s.set, set, set);
   }
@@ -73,6 +73,39 @@ test("Chopin's Raindrop keeps time: eight bars of 4/4, the theme and the theme a
   equal(RAINDROP % 12, 8, 'the raindrop an A flat');
   equal(PRELUDE.at(-1)[0] % 12, 1, 'ending on D flat');
   check(PRELUDE.every(([note]) => [1, 3, 5, 6, 8, 10, 0, 2].includes(note % 12)), "a note outside D flat's scale, but for the run's D");
+});
+
+test("Satie's first Gymnopédie keeps time: four bars of chords, then the tune's two phrases, twenty-one bars of 3/4, a bass and a chord to each", () => {
+  const beats = (notes) => notes.reduce((n, [, b]) => n + b, 0);
+  equal(beats(GYMNOPEDIE), 21 * 3, 'beats: twenty-one bars');
+  equal(GYMNOPEDIE_LEFT.length, 21, "the left hand's bars");
+  equal(GYMNOPEDIE[0].join(), '0,12', 'four bars of chords before the tune');
+  const tune = GYMNOPEDIE.filter(([note]) => note).map(([note]) => note);
+  equal(tune.slice(0, 10).join(' '), '78 81 79 78 73 71 73 74 69 66', 'the first phrase, F sharp, A, G, F sharp, C sharp, B, C sharp, D, A, and the long F sharp');
+  equal(tune.slice(10, 19).join(' '), tune.slice(0, 9).join(' '), 'the second phrase opening as the first does');
+  equal(GYMNOPEDIE.at(-1).join(), '64,9', 'the second phrase coming to rest on E');
+  check(GYMNOPEDIE_LEFT.slice(0, 16).every(([bass], k) => bass === (k % 2 ? 38 : 43)), 'the bass not rocking between G and D');
+  check(GYMNOPEDIE_LEFT.every(([, chord]) => chord.length >= 2), 'a bar without its chord');
+});
+
+test("the turtle's music is all heard, and none too loud", async () => {
+  const sounds = {
+    'a match': [2.4, (s) => s.match()],
+    'a board cleared': [16, (s) => s.win()],
+    'the pond stirred, for a shuffle': [1, (s) => s.shuffle()],
+    "a frog's croak, for a hint": [0.6, (s) => s.hint()],
+    'a koi leaping, for a treat': [2.4, (s) => s.treat()],
+    'the turtle tucking into his shell, with no pairs left': [0.8, (s) => s.stuck()],
+    'dusk on the pond': [3.6, (s) => s.dusk()],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('turtle', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
 test("April Showers' music is all heard, and none too loud", async () => {
