@@ -44,6 +44,7 @@ import './showers.test.js';
 import './spring.test.js';
 import './snowballs.test.js';
 import './song.test.js';
+import './wind.test.js';
 import './raindrops.test.js';
 import './splash.test.js';
 import './colours.test.js';

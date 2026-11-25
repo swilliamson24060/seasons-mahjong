@@ -2,6 +2,7 @@ import { isFree, keyOf } from './layout.js';
 import { KINDS, MATCH, GHOST, LOST } from './tiles.js';
 import { soulsAt } from './midnight.js';
 import { seeded } from './rng.js';
+import { WINDS, windAt, inWind, acrossOf } from './wind.js';
 
 // Tuned on a few thousand turtle deals: how much more a pair counts for when
 // it frees a tile whose match is already free, how widely ties are broken,
@@ -32,14 +33,19 @@ const BOTH = 3;
 // opened with a skeleton key; ghostsFloat; soulsFloat, lost souls free
 // wherever they lie, as on April Showers' May Day; turn, while the tiles
 // have still to turn over: { after, faces }, the matches until they do and
-// the faces they turn over to; and ice, on a board with frozen tiles, the
+// the faces they turn over to; ice, on a board with frozen tiles, the
 // matches each tile still needs to thaw, which the pairs taken in the
-// search count down.
+// search count down; and wind, on the Start of Spring's kite, the March
+// wind: { every, at, upwind }, how often it turns, the matches made so far,
+// and each tile's upwind tiles (wind.js), the tiles on the edge it blows on
+// loose as the pairs taken in the search turn it. With the wind blowing,
+// nothing is taken without searching: a kind's tiles all free now may not
+// all be once the wind turns.
 //
 // Returns { result, line, steps }, where result is 'win', 'lost', or
 // 'unknown' when the budget of steps ran out first.
 export function solve(L, position, { budget = 200000 } = {}) {
-  const { faces, unlocked = null, ghostsFloat = false, soulsFloat = false, turn = null, ice = null } = position;
+  const { faces, unlocked = null, ghostsFloat = false, soulsFloat = false, turn = null, ice = null, wind = null } = position;
   const n = L.count;
   const K = KINDS.length;
   const present = Uint8Array.from(position.present);
@@ -49,8 +55,9 @@ export function solve(L, position, { budget = 200000 } = {}) {
   let souls = ''; // which tiles woke as lost souls: part of every position after midnight
   const kindOf = (i) => MATCH[cur[i]];
   const loose = (i) => (unlocked !== null && unlocked[i] === 1) || (ghostsFloat && cur[i] === GHOST) || (soulsFloat && cur[i] === LOST);
-  let taken = 0; // the pairs taken so far at this point of the search, which thaw the ice
-  const free = (i) => (ice === null || ice[i] <= taken) && (loose(i) || isFree(L, present, i));
+  let taken = 0; // the pairs taken so far at this point of the search, which thaw the ice and turn the wind
+  const windy = (i) => wind !== null && inWind(wind.upwind, windAt(wind.at + taken, wind.every), present, i);
+  const free = (i) => (ice === null || ice[i] <= taken) && (loose(i) || windy(i) || isFree(L, present, i));
   const r = seeded(7);
   const line = [];
   const dead = new Set();
@@ -87,10 +94,11 @@ export function solve(L, position, { budget = 200000 } = {}) {
   };
 
   // Plays on as if a kind with more than two tiles left could be taken a tile
-  // at a time, and a kind down to its last two only as a pair, and as if any
-  // ice had thawed. If even that cannot clear the board, nothing can. Taking
-  // tiles only ever frees others, so the order this plays in makes no
-  // difference.
+  // at a time, and a kind down to its last two only as a pair, as if any
+  // ice had thawed, and as if the wind blew from every side at once. If even
+  // that cannot clear the board, nothing can. Taking tiles only ever frees
+  // others, so the order this plays in makes no difference.
+  const across = wind ? acrossOf(L) : null; // the tiles a tile's going may put in the wind
   const hopeless = (tiles, left) => {
     rest.set(present);
     const queue = [];
@@ -99,8 +107,9 @@ export function solve(L, position, { budget = 200000 } = {}) {
       rest[t] = 0;
       left--;
       for (const near of [L.below[t], L.left[t], L.right[t]]) for (const u of near) if (rest[u]) queue.push(u);
+      if (across) for (const u of across[t]) if (rest[u]) queue.push(u);
     };
-    const freeRest = (t) => loose(t) || isFree(L, rest, t);
+    const freeRest = (t) => loose(t) || isFree(L, rest, t) || (wind !== null && WINDS.some((_, w) => inWind(wind.upwind, w, rest, t)));
     while (queue.length && left > 0) {
       const t = queue.pop();
       if (!rest[t] || !freeRest(t)) continue;
@@ -163,7 +172,7 @@ export function solve(L, position, { budget = 200000 } = {}) {
 
     if (settled) {
       if (hopeless(tiles, left)) return lost(key);
-      const forced = open.findIndex((o, k) => o.length > 0 && o.length === tiles[k].length);
+      const forced = wind ? -1 : open.findIndex((o, k) => o.length > 0 && o.length === tiles[k].length);
       if (forced >= 0) {
         const o = open[forced];
         for (const i of o) present[i] = 0;

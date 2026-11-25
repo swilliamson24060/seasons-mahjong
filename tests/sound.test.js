@@ -335,7 +335,7 @@ test("Thanksgiving's sounds are all heard, and none too loud", async () => {
   return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
-test("the Start of Spring is heard, and not too loud: a snowball landing and snow knocked off on the thaw, and on the first robin each note of her song sung back, a new song sung, a song sung back and one broken", async () => {
+test("the Start of Spring is heard, and not too loud: a snowball landing and snow knocked off on the thaw, on the first robin each note of her song sung back, a new song sung, a song sung back and one broken, and on the kite the wind turning and a pair catching it", async () => {
   const sounds = {
     'a snowball landing': [0.6, (s) => s.snowball()],
     'snow knocked off': [1.6, (s) => s.knockOff()],
@@ -344,6 +344,8 @@ test("the Start of Spring is heard, and not too loud: a snowball landing and sno
     'a new song': [1.8, (s) => s.robinSings()],
     'a song sung back': [2.6, (s) => s.songSungBack()],
     'a song broken': [0.5, (s) => s.tutTut()],
+    'the wind turning': [1.4, (s) => s.gust()],
+    'a pair catching the wind': [0.5, (s) => s.catchWind()],
   };
   const peaks = [];
   for (const [name, [seconds, play]] of Object.entries(sounds)) {

@@ -37,6 +37,7 @@ import { partOf, pairDoes, pourIn, pouring } from './pour.js';
 import { tulipsOf, firstFlight, flyOn, makesHoney, honeyIn, foraging } from './bees.js';
 import { landingSpots, landingOf, knocks } from './snowballs.js';
 import { kindsLeft, firstSong, hear, songsIn, compose } from './song.js';
+import { windAt, upwindOf, inWind, windswept, catches } from './wind.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -50,14 +51,14 @@ export const TREATS = ['candle', 'key', 'cat'];
 // confetti, shooting stars, a toast for two, Cupid's arrows, sweethearts,
 // roses in bloom, candlelight, a box of chocolates, hugs and kisses,
 // raindrops, the splash zone, chasing colours, watering, the watering can,
-// busy bees, snowballs and the robin's song. Nothing here touches the page;
-// the board
+// busy bees, snowballs, the robin's song and the March wind. Nothing here
+// touches the page; the board
 // listens with on() for what happens: 'match', 'thaw', 'list', 'checkout',
 // 'bought', 'grab', 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold',
 // 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe', 'firework',
 // 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti', 'star', 'toast',
 // 'arrow', 'message', 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain',
-// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'song', 'save', 'turn', 'treat',
+// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'song', 'wind', 'save', 'turn', 'treat',
 // 'key', 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
@@ -162,7 +163,10 @@ export const TREATS = ['candle', 'key', 'cat'];
 // many matches on a free tile and snowing it in, frozen until a pair is
 // taken beside it or it melts, `melt` matches on (snowballs.js); and on its
 // first robin, song: whether the robin sings songs of three kinds, sung
-// back by pairs of each taken in her order (song.js).
+// back by pairs of each taken in her order (song.js); and on its kite, wind:
+// { every }, the March wind blowing from the east, the south, the west and
+// the north, turning every so many matches, the tiles on the edge it blows
+// on loose, and a pair with one of them catching the wind (wind.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -170,7 +174,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -595,6 +599,11 @@ export class Game {
     // notes of it sung back so far; the songs she has sung, and those sung
     // back to her (song.js).
     this.robin = song ? firstSong(seed, this.kindsLeft()) : null;
+    // On its kite, how often the March wind turns, each tile's upwind tiles
+    // in each wind, and the pairs that caught the wind (wind.js).
+    this.windEvery = wind ? wind.every : 0;
+    this.upwind = wind ? upwindOf(layout) : null;
+    this.windCaught = 0;
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -1064,6 +1073,54 @@ export class Game {
       if (k > 0) {
         const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
         if (this.holds(tried)) return tried;
+      }
+    }
+    return way;
+  }
+
+  // On the Start of Spring's kite, where the wind blows from, by its place
+  // in wind.js's WINDS, or -1 with no wind; the matches until it turns;
+  // whether a tile still on the board is in it, on the edge it blows on,
+  // and loose; and the tiles that are.
+  get windFrom() {
+    return this.windEvery ? windAt(this.matches, this.windEvery) : -1;
+  }
+
+  get untilWindTurns() {
+    return this.windEvery ? this.windEvery - (this.matches % this.windEvery) : Infinity;
+  }
+
+  inWind(i) {
+    return this.windEvery > 0 && inWind(this.upwind, this.windFrom, this.present, i);
+  }
+
+  windTiles() {
+    return this.windEvery ? windswept(this.upwind, this.windFrom, this.present) : [];
+  }
+
+  // On the kite, the hints' way catching the wind when it can: the way
+  // given, if its next pair does already; or else a pair of it further
+  // along, free now with a tile in the wind, taken first, if the way still
+  // holds then; or else two free tiles of a kind, one in the wind, made into
+  // a pair to take first, as Cupid's couples are (cupid.js); or the way
+  // given.
+  catchWind(way) {
+    if (!way.length) return way;
+    const w = this.windFrom;
+    const catching = ([x, y]) => catches(this.upwind, w, this.present, x, y);
+    if (catching(way[0])) return way;
+    for (let k = 1; k < way.length; k++) {
+      if (!catching(way[k]) || !this.isFree(way[k][0]) || !this.isFree(way[k][1])) continue;
+      const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+      if (this.holds(tried)) return tried;
+    }
+    const free = this.freeTiles();
+    for (const t of free) {
+      if (!this.inWind(t)) continue;
+      for (const u of free) {
+        if (u === t || MATCH[this.faces[u]] !== MATCH[this.faces[t]]) continue;
+        const made = wayWith(way, [t, u], 1, (l) => this.holds(l));
+        if (made) return made;
       }
     }
     return way;
@@ -1627,7 +1684,7 @@ export class Game {
 
   // Free as the tiles lie, ice aside: nothing on it, and a side open.
   open(i) {
-    return this.present[i] === 1 && (this.loose(i) || isFree(this.layout, this.present, i));
+    return this.present[i] === 1 && (this.loose(i) || this.inWind(i) || isFree(this.layout, this.present, i));
   }
 
   // Free to be taken: open, and not frozen.
@@ -1792,8 +1849,10 @@ export class Game {
   // of Spring's thaw, the tile a snowball landed on after it, or -1, and the
   // snowed tiles it knocked the snow off; and on its first robin, whether it
   // sang a note of the robin's song back, whether that sang the whole song,
-  // whether it broke a song begun, and whether she sang a new song after it.
-  // Null if the pair cannot be taken.
+  // whether it broke a song begun, and whether she sang a new song after it;
+  // and on its kite, whether it caught the wind, a tile of it on the edge the
+  // wind blows on, and where the wind blows from if it turned after it, or
+  // -1. Null if the pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -2078,6 +2137,13 @@ export class Game {
     const snowedBefore = this.snowEvery ? this.snowedTiles() : [];
     if (this.snowEvery) entry.snow = { ice: Int16Array.from(this.ice), landed: this.snowLanded, knocked: this.snowKnocked };
     if (this.robin) entry.robin = this.robin; // as she was, for an undo
+    // On the Start of Spring's kite, a pair with a tile on the edge the wind
+    // blows on catches the wind.
+    const caughtWind = this.windEvery > 0 && catches(this.upwind, this.windFrom, this.present, a, b);
+    if (caughtWind) {
+      this.windCaught++;
+      entry.caughtWind = true;
+    }
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
@@ -2086,6 +2152,8 @@ export class Game {
     // begun; and she sings a new song once one is sung back, or can't be.
     const heard = this.robin ? hear(this.robin, kind, this.kindsLeft(), this.seed) : null;
     if (heard) this.robin = heard.robin;
+    // And on its kite, every so many matches the wind turns.
+    const windTurned = this.windEvery > 0 && this.left > 0 && this.matches % this.windEvery === 0 ? this.windFrom : -1;
     // On its flower bed, the bee flies on to another tulip.
     const flew = this.bee ? this.bee.at : -1;
     if (this.bee) this.bee = flyOn(this.tulips, this.bee, this.present, this.seed);
@@ -2289,6 +2357,8 @@ export class Game {
       songSung: Boolean(heard && heard.sung),
       songBroke: Boolean(heard && heard.broke),
       newSong: Boolean(heard && heard.fresh),
+      caughtWind,
+      windTurned,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -2329,6 +2399,7 @@ export class Game {
     if (this.tulips && flew >= 0) this.emit('bee', result);
     if (snowball >= 0 || knocked.length) this.emit('snow', result);
     if (heard && (heard.note || heard.broke || heard.fresh)) this.emit('song', result);
+    if (caughtWind || windTurned >= 0) this.emit('wind', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -2412,6 +2483,7 @@ export class Game {
         Object.assign(this, { bee, honey });
       }
       if (last.robin) this.robin = last.robin;
+      if (last.caughtWind) this.windCaught--;
       if (last.snow) {
         this.ice.set(last.snow.ice);
         this.snowLanded = last.snow.landed;
@@ -2465,8 +2537,9 @@ export class Game {
   // lit whenever it can; on its seed tray to one that picks each seedling
   // in bloom; on its watering can to one that pours with water in it; on
   // its flower bed to one that makes honey whenever it can; on the Start of
-  // Spring's thaw to one that knocks snow off when it can; and on its first
-  // robin to one that sings her song back.
+  // Spring's thaw to one that knocks snow off when it can; on its first
+  // robin to one that sings her song back; and on its kite to one that
+  // catches the wind when it can.
   wayAhead() {
     if (!this.line && this.outlook !== 'lost') {
       const { result, line } = solve(this.layout, this.position(), { budget: 20000 });
@@ -2491,6 +2564,7 @@ export class Game {
     if (this.line && this.tulips) this.line = this.forage(this.line);
     if (this.line && this.snowEvery) this.line = this.knockFirst(this.line);
     if (this.line && this.robin) this.line = this.singAlong(this.line);
+    if (this.line && this.windEvery) this.line = this.catchWind(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
@@ -2644,6 +2718,7 @@ export class Game {
       soulsFloat: this.rules.soulsFloat,
       turn: this.turnAhead ? { after: this.turnAt - this.matches, faces: this.sides[1] } : null,
       ice: this.iceAhead(),
+      wind: this.windEvery ? { every: this.windEvery, at: this.matches, upwind: this.upwind } : null,
     };
   }
 
@@ -2672,7 +2747,8 @@ export class Game {
   }
 
   // Whether a line of pairs wins from here, the tiles turning over when they
-  // should, lost souls waking as they would, and ice thawing as it would.
+  // should, lost souls waking as they would, ice thawing as it would, and
+  // the March wind turning as it would.
   holds(line) {
     const p = Uint8Array.from(this.present);
     const sides = this.sides.map((s) => Int16Array.from(s));
@@ -2680,7 +2756,8 @@ export class Game {
     for (const [x, y] of line) {
       const faces = sides[matches >= this.turnAt ? 1 : 0];
       const thawed = (i) => !this.ice || this.ice[i] <= matches;
-      const free = (i) => p[i] === 1 && thawed(i) && (this.loose(i, faces) || isFree(this.layout, p, i));
+      const windy = (i) => this.windEvery > 0 && inWind(this.upwind, windAt(matches, this.windEvery), p, i);
+      const free = (i) => p[i] === 1 && thawed(i) && (this.loose(i, faces) || windy(i) || isFree(this.layout, p, i));
       if (!free(x) || !free(y) || MATCH[faces[x]] !== MATCH[faces[y]]) return false;
       p[x] = p[y] = 0;
       if (++matches === this.turnAt) for (const t of soulsAt(this.layout, sides[1], p)) sides[1][t] = LOST;

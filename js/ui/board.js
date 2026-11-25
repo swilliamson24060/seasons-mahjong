@@ -4,6 +4,7 @@ import { COLOURS } from '../engine/confetti.js';
 import { BANDS, bandOf } from '../engine/colours.js';
 import { plotOf } from '../engine/watering.js';
 import { partOf } from '../engine/pour.js';
+import { WINDS } from '../engine/wind.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const LIFT = 0.11; // how far each layer sits up and to the right, in tile widths
@@ -273,9 +274,9 @@ export class Board {
     }
 
     el.onclick = (e) => {
-      const t = e.target.closest('.tile');
-      if (!t || performance.now() < this.swallowUntil) return;
-      this.press(Number(t.dataset.i));
+      const i = this.tileAt(e);
+      if (i < 0 || performance.now() < this.swallowUntil) return;
+      this.press(i);
     };
     el.oncontextmenu = (e) => e.preventDefault();
     el.onpointerdown = (e) => {
@@ -692,6 +693,7 @@ export class Board {
       const melt = g.thawIn(i);
       return `${name}, snowed in: take a pair beside it to knock the snow off, or it melts in ${melt} ${melt === 1 ? 'match' : 'matches'}`;
     }
+    if (g.inWind(i)) return `${name}, on the edge the wind blows on, from the ${WINDS[g.windFrom]}: free to take, and a pair with it catches the wind`;
     if (g.isNextNote(i)) return `${name}, the robin's next note: take a pair of it to sing it back`;
     if (g.noteOf(i) >= 0) return `${name}, in the robin's song: taken out of turn, it breaks the song`;
     if (g.beeOn(i)) return `${name}, a tulip with the bee on it: take it with a tile of its kind to make honey`;
@@ -858,6 +860,12 @@ export class Board {
       // On its first robin, a tile of her next note carries a note, to be
       // sung back.
       el.classList.toggle('note-next', g.isNextNote(i));
+      // On its kite, a tile on the edge the wind blows on is loose, streaked
+      // with a gust on that side.
+      const windy = g.inWind(i);
+      el.classList.toggle('windswept', windy);
+      if (windy) el.dataset.wind = WINDS[g.windFrom];
+      else delete el.dataset.wind;
       // On its seed tray, a seedling carries a sprout and the waterings it
       // still needs, and once it blooms, a tulip.
       const seedling = g.seedlingOf(i);
@@ -874,11 +882,31 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips || g.snowEvery || g.robin) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips || g.snowEvery || g.robin || g.windEvery) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }
     this.placeBeam();
+  }
+
+  // The tile a tap is on: with a tile chosen, a tile under the tap that
+  // makes a pair with it, however deep; or else the topmost tile under it;
+  // or, where that one can't be taken, a tile under it that can. So a loose
+  // tile with something on it, as a floating ghost or, on the kite, a tile
+  // on the edge the wind blows on, can be taken by tapping it through what
+  // lies on it. A key pressed on a tile is on that tile.
+  tileAt(e) {
+    const top = e.target.closest('.tile');
+    if (!top || !this.el.contains(top)) return -1;
+    const i = Number(top.dataset.i);
+    if (e.detail === 0 || !document.elementsFromPoint) return i;
+    const g = this.game;
+    const under = [...new Set(document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.tile')))]
+      .filter((t) => t && this.el.contains(t))
+      .map((t) => Number(t.dataset.i));
+    const pairing = this.selected >= 0 ? under.find((t) => t !== this.selected && g.canMatch(this.selected, t)) : undefined;
+    if (pairing !== undefined) return pairing;
+    return g.isFree(i) ? i : (under.find((t) => g.isFree(t)) ?? i);
   }
 
   press(i) {

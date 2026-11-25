@@ -9,6 +9,7 @@ import { LOVE_STORY, chapterOf } from './valentines.js';
 import { SHOWERS, showerOf } from './showers.js';
 import { springOf } from './spring.js';
 import { BANDS } from './engine/colours.js';
+import { WINDS } from './engine/wind.js';
 import { GIFTS, TURNS, wordsOf } from './words.js';
 import { ballDrop } from './ui/ball.js';
 import { KINDS, MATCH } from './engine/tiles.js';
@@ -468,6 +469,20 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       sound.songNote(at - 1);
       board.float('🎵', b);
       if (sung === 0 && songs === 1 && at === 1) toast(`Her first note, sung back! Now a pair of ${kindName(song[1], faceSet)}, then ${kindName(song[2], faceSet)}.`);
+    }
+  });
+  // On the Start of Spring's kite: a pair with a tile on the edge the wind
+  // blows on catches the wind, and every four matches the wind turns.
+  game.on('wind', ({ b, caughtWind, windTurned }) => {
+    if (caughtWind) {
+      sound.catchWind();
+      setTimeout(() => board.float(`+${POINTS.wind} 🪁`, b), 450); // after the pair's own points
+      if (game.windCaught === 1) toast(`You caught the wind! A pair with a tile on the edge it blows on: ${POINTS.wind} points.`);
+    }
+    if (windTurned >= 0) {
+      const from = WINDS[windTurned];
+      setTimeout(() => sound.gust(), caughtWind ? 350 : 0);
+      toast(game.matches === game.windEvery ? `The wind turns: it blows from the ${from} now, and the tiles on the board's ${from} edge are loose.` : `The wind turns: from the ${from} now.`);
     }
   });
   // On April Showers' watering can: a pair from its body fills it, if
@@ -1677,6 +1692,14 @@ function update() {
   // until the next snowball.
   $('snow').hidden = !g.snowEvery;
   if (g.snowEvery) $('snow').innerHTML = `☃️ <b>${g.snowKnocked}</b> · ⏳ ${g.untilSnow}`;
+  // The pairs that caught the wind, on the kite; where the wind blows from,
+  // and the matches until it turns.
+  $('wind').hidden = !g.windEvery;
+  if (g.windEvery) {
+    const from = WINDS[g.windFrom];
+    $('wind').innerHTML = `🪁 <b>${g.windCaught}</b> · 🌬️ ${from[0].toUpperCase()} ⏳ ${g.untilWindTurns}`;
+    $('wind').setAttribute('aria-label', `The wind blows from the ${from}, and turns in ${matchWords(g.untilWindTurns)}; ${g.windCaught} ${g.windCaught === 1 ? 'pair has' : 'pairs have'} caught it`);
+  }
   // On its watering can, how full it is, and the pours made.
   $('can').hidden = !g.can;
   if (g.can) $('can').innerHTML = `💧 <b>${g.canLevel}</b>/${g.canMost} · 🌼 <b>${g.pours}</b>`;

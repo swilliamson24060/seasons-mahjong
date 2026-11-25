@@ -1534,6 +1534,23 @@ export class Sound {
     [0, 0.16].forEach((t) => this.whistle(this.now + t, 1900, 1300, 0.06, 0.08));
   }
 
+  // On the Start of Spring's kite, the March wind turning: a gust rising and
+  // falling away, and the kite's tail flapping in it.
+  gust() {
+    if (!this.on) return;
+    this.rustle(this.now, 1, 300, 1400, 0.14);
+    this.rustle(this.now + 0.35, 0.7, 1400, 500, 0.09);
+    for (let k = 0; k < 4; k++) this.rustle(this.now + 0.5 + k * 0.09, 0.06, 2600, 1800, 0.06);
+  }
+
+  // A pair catching the wind: the kite's sail snapping taut, and a bright
+  // note rising as it climbs.
+  catchWind() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.08, 3000, 1200, 0.12);
+    this.whistle(this.now + 0.05, 880, 1320, 0.25, 0.05);
+  }
+
   // Honey made: the bee's buzz, and a sweet run down the glockenspiel and
   // up again.
   honey() {

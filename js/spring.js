@@ -1,4 +1,4 @@
-import { LION, SNOWMAN, ROBIN } from './engine/layouts.js';
+import { LION, SNOWMAN, ROBIN, KITE } from './engine/layouts.js';
 
 // The Start of Spring: in like a lion, out like a lamb, eight boards
 // through March, from the last blustery days of winter to the first of
@@ -9,8 +9,10 @@ import { LION, SNOWMAN, ROBIN } from './engine/layouts.js';
 // snowman melting, snowballs land and snow tiles in, to be knocked off by
 // pairs taken beside them (engine/snowballs.js); on the third, the first
 // robin sings songs of three kinds of tile, to be sung back by pairs of
-// each taken in her order (engine/song.js); the eighth is to be out like a
-// lamb, when March goes out like a lamb halfway and every tile turns over.
+// each taken in her order (engine/song.js); on the fourth, a kite, the March
+// wind blows from each side in turn, loosening the tiles on the edge it
+// blows on (engine/wind.js); the eighth is to be out like a lamb, when
+// March goes out like a lamb halfway and every tile turns over.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), and PLAN.md has its boards and twists. Until the Start of
 // Spring's own tiles are drawn, its boards wear Halloween's.
@@ -59,6 +61,21 @@ export function robinPart(L, i) {
   return x <= 6 + z ? 'breast' : 'back';
 }
 
+// The kite's look, each tile's part by where it is, in half tiles: its four
+// sails, red at the top left, yellow at the top right, blue at the bottom
+// left and green at the bottom right, round where its spars cross; the
+// spars, raised on them; the string of its tail and the ribbons tied on it;
+// and its line.
+export function kitePart(L, i) {
+  const [x, y, z] = [L.x[i], L.y[i], L.z[i]];
+  if (z >= 2) return 'spar';
+  if (x <= 1 && y >= 12) return 'line';
+  if (x >= 10 && y >= 15) return z === 1 ? 'ribbon' : 'string';
+  const left = x <= 8;
+  if (y <= 6) return left ? 'sail-red' : 'sail-yellow';
+  return left ? 'sail-blue' : 'sail-green';
+}
+
 export const SPRING = [
   {
     name: 'The first chapter',
@@ -86,6 +103,15 @@ export const SPRING = [
     look: robinPart,
     sky: ['#5f7487', '#182029'],
     text: "The first robin of spring is back, singing on the fence post. She sings a song of three kinds of tile 🎶, shown at the top: take a pair of each, in her order, to sing it back to her, for 30 points, and she sings another. Pairs of other kinds in between don't matter, but one of hers out of turn breaks the song, and she starts it again.",
+  },
+  {
+    name: 'The fourth chapter',
+    title: 'Kites in the March wind',
+    layout: KITE,
+    rules: { treats: false, ghostsFloat: false, wind: { every: 4 } },
+    look: kitePart,
+    sky: ['#5c7d99', '#15202a'],
+    text: "The March wind is up, and so are the kites. It blows from the east 🌬️, then the south, the west and the north, turning every four matches, and the tiles on the edge of the board it blows on are loose, free to take even if something lies on them or beside them. Take a pair with one of them to catch the wind, for 5 points.",
   },
 ];
 

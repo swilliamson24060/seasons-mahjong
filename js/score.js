@@ -42,7 +42,8 @@
 // and on its flower bed each pot of honey, the tulip the bee is on taken;
 // and on the Start of Spring's thaw, the snow knocked off a tile; and on its
 // first robin, each of her songs sung back, pairs of its three kinds taken
-// in her order.
+// in her order; and on its kite, each pair that caught the wind, a tile of
+// it on the edge the wind blows on.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -92,6 +93,7 @@ export const POINTS = {
   honey: 20, // each pot of honey on the flower bed: the tulip the bee is on, taken
   snow: 15, // on the thaw, the snow knocked off a tile, a pair taken beside it
   song: 30, // on the first robin, each of her songs sung back: pairs of its three kinds, taken in her order
+  wind: 5, // on the kite, each pair that caught the wind: a tile of it on the edge the wind blows on
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -189,6 +191,7 @@ export function scoreOf(game, seconds, words = TURN) {
   if (game.tulips) rows.push(['Honey', `${game.honey} of ${game.tulips.length} tulips`, game.honey * POINTS.honey]);
   if (game.snowEvery) rows.push(['Snow knocked off', `${game.snowKnocked} of ${game.snowLanded}`, game.snowKnocked * POINTS.snow]);
   if (game.robin) rows.push(['Songs sung back', `${game.robin.sung} of ${game.robin.songs}`, game.robin.sung * POINTS.song]);
+  if (game.windEvery) rows.push(['Caught the wind', times(game.windCaught, POINTS.wind), game.windCaught * POINTS.wind]);
   if (game.can) rows.push(['Pours', [`${game.pours} of ${game.dropPairs}`, game.dryPours && `${game.dryPours} dry`].filter(Boolean).join(', '), game.pours * POINTS.pour]);
   if (game.chocolates) {
     const n = game.chocolatesIn('savoured');

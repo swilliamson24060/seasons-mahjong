@@ -1069,6 +1069,76 @@ body.covered #board {
   pointer-events: none;
 }
 
+/* On the Start of Spring's kite, its four sails are red, yellow, blue and
+   green, round its spars, which are a light wood; the string of its tail
+   and its line are white, and the ribbons tied on its tail pink. A tile on
+   the edge the March wind blows on is loose, the side the wind blows on
+   streaked with a gust of sky blue. */
+.tile[data-look='sail-red'] {
+  --face-1: #ffe6e2;
+  --face-2: #e2563f;
+}
+
+.tile[data-look='sail-yellow'] {
+  --face-1: #fffbdc;
+  --face-2: #ecc432;
+}
+
+.tile[data-look='sail-blue'] {
+  --face-1: #e6f0ff;
+  --face-2: #4d8bd8;
+}
+
+.tile[data-look='sail-green'] {
+  --face-1: #e9f9e8;
+  --face-2: #4cab5f;
+}
+
+.tile[data-look='spar'] {
+  --face-1: #f6e9d6;
+  --face-2: #a5784a;
+}
+
+.tile[data-look='string'] {
+  --face-1: #fcfcf9;
+  --face-2: #cdc9bf;
+}
+
+.tile[data-look='ribbon'] {
+  --face-1: #fff0f6;
+  --face-2: #e0609a;
+}
+
+.tile[data-look='line'] {
+  --face-1: #fcfcf9;
+  --face-2: #b9b5aa;
+}
+
+.tile.windswept::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 calc(var(--tile-w) * 0.035) rgba(110, 175, 240, 0.75);
+  pointer-events: none;
+}
+
+.tile.windswept[data-wind='east']::before {
+  background: linear-gradient(to left, rgba(165, 212, 255, 0.85), rgba(165, 212, 255, 0) 55%);
+}
+
+.tile.windswept[data-wind='west']::before {
+  background: linear-gradient(to right, rgba(165, 212, 255, 0.85), rgba(165, 212, 255, 0) 55%);
+}
+
+.tile.windswept[data-wind='north']::before {
+  background: linear-gradient(to bottom, rgba(165, 212, 255, 0.85), rgba(165, 212, 255, 0) 55%);
+}
+
+.tile.windswept[data-wind='south']::before {
+  background: linear-gradient(to top, rgba(165, 212, 255, 0.85), rgba(165, 212, 255, 0) 55%);
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers
