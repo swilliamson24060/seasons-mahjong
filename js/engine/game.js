@@ -35,6 +35,7 @@ import { bandOf, litBand, inColour, chasing } from './colours.js';
 import { seedlingsOf, waters, tending, bloomsIn } from './watering.js';
 import { partOf, pairDoes, pourIn, pouring } from './pour.js';
 import { tulipsOf, firstFlight, flyOn, makesHoney, honeyIn, foraging } from './bees.js';
+import { landingSpots, landingOf, knocks } from './snowballs.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -54,7 +55,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 // 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe', 'firework',
 // 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti', 'star', 'toast',
 // 'arrow', 'message', 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain',
-// 'splash', 'colour', 'garden', 'can', 'bee', 'save', 'turn', 'treat',
+// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'save', 'turn', 'treat',
 // 'key', 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
@@ -154,7 +155,10 @@ export const TREATS = ['candle', 'key', 'cat'];
 // filling it a measure, up to `most`, and a pair of drops pouring one out
 // (pour.js); and bees, for its flower bed: { tops }, the layer its tulips'
 // tops are on, a bee flying from tulip to tulip with every match, a pair
-// with the tulip she's on making honey (bees.js).
+// with the tulip she's on making honey (bees.js); and on the Start of
+// Spring's thaw, snowballs: { every, melt }, a snowball landing every so
+// many matches on a free tile and snowing it in, frozen until a pair is
+// taken beside it or it melts, `melt` matches on (snowballs.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -162,7 +166,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -183,7 +187,9 @@ export class Game {
     // What is given for the table's tiles, with nothing yet in the containers.
     const whole = (a, empty) => Int16Array.from({ length: layout.count }, (_, i) => (i < n ? a[i] : empty));
     if (ice && ice.length !== n) throw new Error(`${table.name} has ${n} tiles, not ${ice.length} under ice`);
-    this.ice = ice && whole(ice, 0);
+    // A board with snowballs has ice for the snow to freeze, none of it
+    // frozen to begin with.
+    this.ice = ice ? whole(ice, 0) : snowballs ? new Int16Array(layout.count) : null;
     const onTable = Uint8Array.from({ length: layout.count }, (_, i) => (i < n ? 1 : 0));
     // On a football board, the end zone each tile is in, and the
     // touchdowns scored so far.
@@ -567,6 +573,12 @@ export class Game {
     // once she's flown off; and the honey made.
     this.bee = this.tulips ? firstFlight(this.tulips, seed) : null;
     this.honey = 0;
+    // On the Start of Spring's thaw, how often a snowball lands and how long
+    // its snow takes to melt, and the snowballs landed and knocked off.
+    this.snowEvery = snowballs ? snowballs.every : 0;
+    this.snowMelt = snowballs ? snowballs.melt : 0;
+    this.snowLanded = 0;
+    this.snowKnocked = 0;
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -917,6 +929,56 @@ export class Game {
         const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
         if (this.holds(tried)) return tried;
       }
+    }
+    return way;
+  }
+
+  // On the Start of Spring's thaw, whether a tile still on the board is
+  // snowed in, all of the ice there being snow; the tiles that are; and the
+  // matches until the next snowball.
+  snowedIn(i) {
+    return this.snowEvery > 0 && this.present[i] === 1 && this.frozen(i);
+  }
+
+  snowedTiles() {
+    const out = [];
+    for (let i = 0; i < this.layout.count; i++) if (this.snowedIn(i)) out.push(i);
+    return out;
+  }
+
+  get untilSnow() {
+    return this.snowEvery ? this.snowEvery - (this.matches % this.snowEvery) : Infinity;
+  }
+
+  // A snowball lands, on the thaw: on a free tile that a way to clear the
+  // board, found afresh from the board as it stands, won't want before its
+  // snow would melt, beside a tile to knock it off with, and leaving a pair
+  // to take; chosen from the board's seed. The hints' way, if the snowball
+  // falls across it, is found again. Returns the tile, or -1.
+  snowOn() {
+    const { result, line } = solve(this.layout, this.position(), { budget: 20000 });
+    const pairs = this.pairs();
+    const spots = landingSpots(this.layout, this.freeTiles(), this.present, result === 'win' ? line : [], this.snowMelt).filter((t) => pairs.some(([x, y]) => x !== t && y !== t));
+    const t = landingOf(spots, this.seed, this.snowLanded);
+    if (t < 0) return -1;
+    this.ice[t] = this.matches + this.snowMelt;
+    this.snowLanded++;
+    if (this.line && !this.holds(this.line)) this.forget();
+    return t;
+  }
+
+  // On the thaw, the hints' way knocking snow off when it can: a pair
+  // further along it that is free now and beside a snowed tile, taken
+  // first, if the way still holds then; or the way given.
+  knockFirst(way) {
+    const snowed = this.snowedTiles();
+    if (!way.length || !snowed.length) return way;
+    const knocking = ([x, y]) => knocks(this.layout, snowed, x, y).length > 0;
+    if (knocking(way[0])) return way;
+    for (let k = 1; k < way.length; k++) {
+      if (!knocking(way[k]) || !this.isFree(way[k][0]) || !this.isFree(way[k][1])) continue;
+      const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+      if (this.holds(tried)) return tried;
     }
     return way;
   }
@@ -1922,6 +1984,9 @@ export class Game {
       entry.raindrops = this.raindrops; // as they were, for an undo
       this.raindrops = rain.drops;
     }
+    // On the thaw, the snow as it was, for an undo, and the tiles snowed in.
+    const snowedBefore = this.snowEvery ? this.snowedTiles() : [];
+    if (this.snowEvery) entry.snow = { ice: Int16Array.from(this.ice), landed: this.snowLanded, knocked: this.snowKnocked };
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
@@ -1938,6 +2003,16 @@ export class Game {
     if (this.matches === this.turnAt) entry.souls = this.wake();
     this.history.push(entry);
     this.follow(a, b);
+    // On the Start of Spring's thaw, a pair taken beside a snowed tile knocks
+    // its snow off, and every so many matches another snowball lands.
+    let knocked = [];
+    let snowball = -1;
+    if (this.snowEvery) {
+      knocked = knocks(this.layout, snowedBefore, a, b);
+      for (const t of knocked) this.ice[t] = this.matches;
+      this.snowKnocked += knocked.length;
+      if (this.left > 0 && this.matches % this.snowEvery === 0) snowball = this.snowOn();
+    }
     // On the bagpipes, a piper plays, and the rest of his kind follow him.
     const followers = this.pipe(a, b);
     if (followers.length) entry.followers = followers;
@@ -2026,8 +2101,11 @@ export class Game {
       }
     }
     const turned = Boolean(entry.souls);
+    // On the thaw, with nothing left to take but what the snow holds, the sun
+    // melts it at once, so that the board never sticks on the snow.
+    if (this.snowEvery && this.left > 0 && !this.pairs().length) for (const t of this.snowedTiles()) this.ice[t] = this.matches;
     const thawed = [];
-    if (this.ice) for (let i = 0; i < this.layout.count; i++) if (this.present[i] && this.ice[i] === this.matches) thawed.push(i);
+    if (this.ice) for (let i = 0; i < this.layout.count; i++) if (this.present[i] && this.ice[i] === this.matches && !knocked.includes(i)) thawed.push(i);
     const checkout = Boolean(this.list) && this.matches === this.list.checkout;
     const hatched = this.hatch();
     const result = {
@@ -2109,6 +2187,8 @@ export class Game {
       canDoes: poured,
       honey,
       beeFrom: flew >= 0 ? this.tulips[flew] : -1,
+      snowball,
+      knocked,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -2147,6 +2227,7 @@ export class Game {
     if (watered.length || picked.length || pulled.length) this.emit('garden', result);
     if (poured) this.emit('can', result);
     if (this.tulips && flew >= 0) this.emit('bee', result);
+    if (snowball >= 0 || knocked.length) this.emit('snow', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -2229,6 +2310,11 @@ export class Game {
         const { honey, ...bee } = last.bee;
         Object.assign(this, { bee, honey });
       }
+      if (last.snow) {
+        this.ice.set(last.snow.ice);
+        this.snowLanded = last.snow.landed;
+        this.snowKnocked = last.snow.knocked;
+      }
       if (last.litBefore) {
         this.lit = last.litBefore;
         this.bursts -= last.rockets;
@@ -2299,6 +2385,7 @@ export class Game {
     if (this.line && this.garden) this.line = this.tend(this.line);
     if (this.line && this.can) this.line = this.pourWell(this.line);
     if (this.line && this.tulips) this.line = this.forage(this.line);
+    if (this.line && this.snowEvery) this.line = this.knockFirst(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));

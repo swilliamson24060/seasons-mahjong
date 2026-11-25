@@ -1480,6 +1480,23 @@ export class Sound {
     [1046.5, 1318.5, 1568, 2093, 1568, 2093].forEach((f, k) => this.bell(f, this.now + 1.6 + k * 0.16, 0.06, 2));
   }
 
+  // On the Start of Spring's thaw, a snowball landing: a soft, powdery
+  // thump, and the snow settling.
+  snowball() {
+    if (!this.on) return;
+    this.ping(110, this.now, { gain: 0.22, attack: 0.004, fall: 0.12, into: this.master });
+    this.rustle(this.now, 0.3, 2600, 900, 0.12);
+  }
+
+  // The snow knocked off a tile: a crunch, the snow sliding off, and a
+  // bright note of the sun.
+  knockOff() {
+    if (!this.on) return;
+    for (let k = 0; k < 5; k++) this.rustle(this.now + k * 0.035, 0.05, 3200 - k * 200, 1800, 0.12);
+    this.rustle(this.now + 0.18, 0.35, 1800, 4200, 0.06);
+    this.bell(1568, this.now + 0.3, 0.05, 1.2);
+  }
+
   // Honey made: the bee's buzz, and a sweet run down the glockenspiel and
   // up again.
   honey() {

@@ -432,6 +432,20 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       toast(`Honey! ${POINTS.honey} points.${game.bee.at >= 0 ? ' The bee flies on to another tulip.' : ' The bee flies off: every tulip is picked.'}`);
     } else if (game.bee.at >= 0) sound.buzz();
   });
+  // On the Start of Spring's thaw: a pair taken beside a snowed tile knocks
+  // its snow off, and every so many matches a snowball lands.
+  game.on('snow', ({ snowball, knocked }) => {
+    if (knocked.length) {
+      sound.knockOff();
+      for (const t of knocked) board.float(`+${POINTS.snow}`, t);
+      toast(`You knocked the snow off${knocked.length > 1 ? ` ${knocked.length} tiles` : ''}: ${POINTS.snow * knocked.length} points.`);
+    }
+    if (snowball >= 0) {
+      setTimeout(() => sound.snowball(), knocked.length ? 450 : 0);
+      board.float('❄️', snowball);
+      if (game.snowLanded === 1 || !knocked.length) toast(game.snowLanded === 1 ? `A snowball! It snows a tile in, so it can't be taken: take a pair beside it to knock the snow off, for ${POINTS.snow} points, or it melts in ${game.snowMelt} matches.` : 'A snowball lands, and snows a tile in.');
+    }
+  });
   // On April Showers' watering can: a pair from its body fills it, if
   // there's room, and a pair of its drops pours it, if there's water in it.
   game.on('can', ({ b, canDoes }) => {
@@ -1634,6 +1648,10 @@ function update() {
   // On its flower bed, the honey made, of the tulips.
   $('honey').hidden = !g.tulips;
   if (g.tulips) $('honey').innerHTML = `🍯 <b>${g.honey}</b>/${g.tulips.length}`;
+  // On the Start of Spring's thaw, the snow knocked off, and the matches
+  // until the next snowball.
+  $('snow').hidden = !g.snowEvery;
+  if (g.snowEvery) $('snow').innerHTML = `☃️ <b>${g.snowKnocked}</b> · ⏳ ${g.untilSnow}`;
   // On its watering can, how full it is, and the pours made.
   $('can').hidden = !g.can;
   if (g.can) $('can').innerHTML = `💧 <b>${g.canLevel}</b>/${g.canMost} · 🌼 <b>${g.pours}</b>`;
