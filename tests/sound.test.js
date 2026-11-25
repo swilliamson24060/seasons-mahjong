@@ -335,6 +335,26 @@ test("Thanksgiving's sounds are all heard, and none too loud", async () => {
   return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
+test("the Start of Spring is heard, and not too loud: a snowball landing and snow knocked off on the thaw, and on the first robin each note of her song sung back, a new song sung, a song sung back and one broken", async () => {
+  const sounds = {
+    'a snowball landing': [0.6, (s) => s.snowball()],
+    'snow knocked off': [1.6, (s) => s.knockOff()],
+    'her first note sung back': [0.5, (s) => s.songNote(0)],
+    'her last note sung back': [0.5, (s) => s.songNote(2)],
+    'a new song': [1.8, (s) => s.robinSings()],
+    'a song sung back': [2.6, (s) => s.songSungBack()],
+    'a song broken': [0.5, (s) => s.tutTut()],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('spring', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
+});
+
 test("April Showers' rain is heard, and not too loud: a raindrop landing, one caught and one dripping off the rim, splashes in the puddle, from the first to the tenth in a row, the rainbow's colours caught, the seedlings watered, blooming, picked and pulled up, the watering can filled, poured and tipped empty, a bee buzzing and making honey, and May morning, as April turns to May", async () => {
   const sounds = {
     'a raindrop landing': [0.6, (s) => s.raindrop()],

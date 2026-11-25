@@ -1497,6 +1497,43 @@ export class Sound {
     this.bell(1568, this.now + 0.3, 0.05, 1.2);
   }
 
+  // On the Start of Spring's first robin, a phrase of her carol: a clear
+  // whistle slurred up and back down, as a robin's goes, pitched by which
+  // note of her song it is, her first the lowest.
+  robinCall(n, at = this.now, gain = 0.07) {
+    const f = [2350, 2750, 3150][n] ?? 2750;
+    this.whistle(at, f * 0.82, f * 1.12, 0.1, gain);
+    this.whistle(at + 0.11, f * 1.1, f * 0.88, 0.13, gain);
+  }
+
+  // A note of her song sung back: her phrase for it.
+  songNote(n) {
+    if (!this.on) return;
+    this.robinCall(n);
+  }
+
+  // She sings a new song: her three phrases, one after another, after a
+  // breath.
+  robinSings() {
+    if (!this.on) return;
+    [0, 1, 2].forEach((n) => this.robinCall(n, this.now + 0.4 + n * 0.32, 0.06));
+  }
+
+  // Her song sung back: her carol, cheerily, cheer-up, cheerio, quick and
+  // bright, and a chime.
+  songSungBack() {
+    if (!this.on) return;
+    [2, 0, 1, 2, 0, 2].forEach((n, k) => this.robinCall(n, this.now + k * 0.17, 0.06));
+    [1568, 2093, 2637].forEach((f, k) => this.bell(f, this.now + 1.1 + k * 0.08, 0.035, 1.4));
+  }
+
+  // A song broken, one of her kinds taken out of turn: her tut-tut, two
+  // short, low calls of alarm.
+  tutTut() {
+    if (!this.on) return;
+    [0, 0.16].forEach((t) => this.whistle(this.now + t, 1900, 1300, 0.06, 0.08));
+  }
+
   // Honey made: the bee's buzz, and a sweet run down the glockenspiel and
   // up again.
   honey() {

@@ -692,6 +692,8 @@ export class Board {
       const melt = g.thawIn(i);
       return `${name}, snowed in: take a pair beside it to knock the snow off, or it melts in ${melt} ${melt === 1 ? 'match' : 'matches'}`;
     }
+    if (g.isNextNote(i)) return `${name}, the robin's next note: take a pair of it to sing it back`;
+    if (g.noteOf(i) >= 0) return `${name}, in the robin's song: taken out of turn, it breaks the song`;
     if (g.beeOn(i)) return `${name}, a tulip with the bee on it: take it with a tile of its kind to make honey`;
     if (g.beeNext(i)) return `${name}, the tulip the bee flies to next`;
     if (g.tulips && g.tulips.includes(i)) return `${name}, a tulip`;
@@ -853,6 +855,9 @@ export class Board {
       el.classList.toggle('snowed', g.snowedIn(i));
       if (g.snowedIn(i)) el.dataset.melt = g.thawIn(i);
       else delete el.dataset.melt;
+      // On its first robin, a tile of her next note carries a note, to be
+      // sung back.
+      el.classList.toggle('note-next', g.isNextNote(i));
       // On its seed tray, a seedling carries a sprout and the waterings it
       // still needs, and once it blooms, a tulip.
       const seedling = g.seedlingOf(i);
@@ -869,7 +874,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips || g.snowEvery) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips || g.snowEvery || g.robin) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

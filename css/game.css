@@ -106,7 +106,8 @@ body.night {
    it, ticked as it is crossed off, and the matches left before checkout.
    Beside the score on a wide screen, in a row of its own on a phone. */
 #list,
-#deals {
+#deals,
+#song {
   --tile-w: 20px;
   --tile-h: 27px;
   --lift: 2px;
@@ -123,49 +124,58 @@ body.night {
 }
 
 #list[hidden],
-#deals[hidden] {
+#deals[hidden],
+#song[hidden] {
   display: none;
 }
 
 #list .icon,
-#deals .icon {
+#deals .icon,
+#song .icon {
   font-size: 18px;
 }
 
 #list .label,
 #deals .label,
+#song .label,
 #list .checkout,
-#deals .checkout {
+#deals .checkout,
+#song .checkout {
   color: var(--muted);
   font-size: 13px;
   font-weight: 500;
 }
 
 #list .things,
-#deals .things {
+#deals .things,
+#song .things {
   display: flex;
   gap: 5px;
 }
 
 #list:not([hidden]) ~ .status,
-#deals:not([hidden]) ~ .status {
+#deals:not([hidden]) ~ .status,
+#song:not([hidden]) ~ .status {
   margin-left: 0;
 }
 
 #list .tile,
-#deals .tile {
+#deals .tile,
+#song .tile {
   position: relative;
   flex: none;
   cursor: inherit;
 }
 
 #list .tile.done svg,
-#deals .tile.done svg {
+#deals .tile.done svg,
+#song .tile.done svg {
   opacity: 0.35;
 }
 
 #list .tile.done::after,
-#deals .tile.done::after {
+#deals .tile.done::after,
+#song .tile.done::after {
   content: '✓';
   position: absolute;
   inset: 0;
@@ -177,8 +187,20 @@ body.night {
 }
 
 #list .checkout,
-#deals .checkout {
+#deals .checkout,
+#song .checkout {
   font-variant-numeric: tabular-nums;
+}
+
+/* The robin's next note to sing back, on the first robin: ringed in her
+   red. */
+#song .tile.next::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 5px;
+  box-shadow: 0 0 0 2px #e2622f, 0 0 6px rgba(226, 98, 47, 0.7);
+  pointer-events: none;
 }
 
 /* A doorbuster another shopper grabbed: crossed out. */
@@ -951,6 +973,99 @@ body.covered #board {
   color: #2f5f8f;
   font: 800 max(10px, calc(var(--tile-w) * 0.28)) / 1 system-ui, -apple-system, sans-serif;
   white-space: nowrap;
+  pointer-events: none;
+}
+
+/* On the Start of Spring's first robin, the notes of her song are a sky
+   blue, her beak yellow, her head near black with a white eye, her breast a
+   brick red and her belly white, her back and wing grey-brown and her tail
+   darker, and the fence post and its rails weathered wood, in the new
+   grass. A tile of her next note is ringed in her red, and carries a note,
+   to be sung back. */
+.tile[data-look='notes'] {
+  --face-1: #eef6ff;
+  --face-2: #9cc2ea;
+}
+
+.tile[data-look='beak'] {
+  --face-1: #fff4cc;
+  --face-2: #e8ac22;
+}
+
+.tile[data-look='head'] {
+  --face-1: #e2ded9;
+  --face-2: #3f3834;
+}
+
+.tile[data-look='eye'] {
+  --face-1: #ffffff;
+  --face-2: #2b2522;
+}
+
+.tile[data-look='breast'] {
+  --face-1: #ffe2d0;
+  --face-2: #e05a2c;
+}
+
+.tile[data-look='belly'] {
+  --face-1: #fffdf9;
+  --face-2: #e9e1d8;
+}
+
+.tile[data-look='back'] {
+  --face-1: #efe7de;
+  --face-2: #8c7663;
+}
+
+.tile[data-look='wing'] {
+  --face-1: #ebe2d8;
+  --face-2: #735e4c;
+}
+
+.tile[data-look='tail'] {
+  --face-1: #dcd6d0;
+  --face-2: #4a413b;
+}
+
+.tile[data-look='post'] {
+  --face-1: #f4e7d6;
+  --face-2: #8f6a48;
+}
+
+.tile[data-look='rails'] {
+  --face-1: #f6ecdf;
+  --face-2: #b08a62;
+}
+
+.tile[data-look='grass'] {
+  --face-1: #eef8e0;
+  --face-2: #79ab47;
+}
+
+.tile.note-next::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 calc(var(--tile-w) * 0.05) #e2622f,
+    inset 0 0 calc(var(--tile-w) * 0.16) rgba(226, 98, 47, 0.55);
+  pointer-events: none;
+}
+
+.tile.note-next::after {
+  content: '♪';
+  position: absolute;
+  top: -12%;
+  left: 6%;
+  padding: 0.08em 0.3em;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow:
+    0 0 5px rgba(226, 98, 47, 0.7),
+    inset 0 0 0 1px #f0a27e;
+  color: #c8461c;
+  font: 800 max(10px, calc(var(--tile-w) * 0.3)) / 1 system-ui, -apple-system, sans-serif;
   pointer-events: none;
 }
 
@@ -2539,7 +2654,8 @@ body.covered #board {
     row-gap: 0;
   }
   #list,
-  #deals {
+  #deals,
+  #song {
     grid-area: list;
     justify-self: center;
     margin: 4px 0 0;
@@ -2610,7 +2726,8 @@ body.covered #board {
     font-size: 13px;
   }
   #list,
-  #deals {
+  #deals,
+  #song {
     margin: 2px 0;
     flex-wrap: wrap;
     justify-content: center;

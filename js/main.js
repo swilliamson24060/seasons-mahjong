@@ -446,6 +446,30 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       if (game.snowLanded === 1 || !knocked.length) toast(game.snowLanded === 1 ? `A snowball! It snows a tile in, so it can't be taken: take a pair beside it to knock the snow off, for ${POINTS.snow} points, or it melts in ${game.snowMelt} matches.` : 'A snowball lands, and snows a tile in.');
     }
   });
+  // On the Start of Spring's first robin: a pair of her next note sings it
+  // back, and her three in her order her song, for points; one of her kinds
+  // out of turn breaks a song begun; and she sings a new song once one is
+  // sung back, or can't be.
+  game.on('song', ({ b, songNote, songSung, songBroke, newSong }) => {
+    const { song, at, sung, songs } = game.robin;
+    if (songSung) {
+      sound.songSungBack();
+      board.float('🎶', b);
+      setTimeout(() => board.float(`+${POINTS.song}`, b), 500); // after the pair's own points
+      toast(`You sang her song back! ${POINTS.song} points.${song ? ` Her next song: ${songWords(song)}.` : ' She has sung herself out.'}`);
+    } else if (songBroke) {
+      sound.tutTut();
+      if (newSong) toast(song ? `Out of turn: that breaks her song, and she can't sing it again, so she sings a new one: ${songWords(song)}.` : 'Out of turn: that breaks her song, and she has sung herself out.');
+      else toast(`Out of turn: that breaks her song, and she starts it again${at ? ', with that pair as her first note' : ''}: ${songWords(song)}.`);
+    } else if (newSong) {
+      sound.robinSings();
+      toast(song ? `She can't finish that song now, with no pair of it left, so she sings a new one: ${songWords(song)}.` : 'The robin has sung herself out.');
+    } else if (songNote) {
+      sound.songNote(at - 1);
+      board.float('🎵', b);
+      if (sung === 0 && songs === 1 && at === 1) toast(`Her first note, sung back! Now a pair of ${kindName(song[1], faceSet)}, then ${kindName(song[2], faceSet)}.`);
+    }
+  });
   // On April Showers' watering can: a pair from its body fills it, if
   // there's room, and a pair of its drops pours it, if there's water in it.
   game.on('can', ({ b, canDoes }) => {
@@ -903,6 +927,7 @@ function dayCard(d) {
   let text = d.text;
   if (game.list) text += ` Today's list: ${listNames(game.list.kinds)}.`;
   if (game.busters) text += ` Today's doorbusters: ${listNames(game.busters.map((b) => MATCH[game.faces[b.tiles[0]]]))}.`;
+  if (game.robin && game.robin.song) text += ` Her first song: ${songWords(game.robin.song)}.`;
   showCard(`${d.name}: ${d.title}`, text, [['Play', () => (hideCard(), run())]]);
 }
 
@@ -1680,6 +1705,7 @@ function update() {
   $('key').classList.toggle('on', board.keying);
   showList();
   showDeals();
+  showSong();
   $('pause').disabled = finished;
   $('undo').disabled = !g.history.length;
   $('moon').disabled = !g.turnAhead;
@@ -1791,6 +1817,41 @@ function aboutDeals() {
   if (!open.length) toast(`The doorbusters are all gone, ${mine} of them yours.`);
   else toast(`Still to be had: ${listNames(open.map((d) => MATCH[g.faces[d.tiles[0]]]))}. Take a tagged pair before another shopper does: the next grab is in ${matchWords(g.untilGrab)}.`);
 }
+
+// The robin's song, on the first robin: a small tile for each kind she
+// sings, in her order, ticked as each is sung back and her next ringed, and
+// the songs sung back to her so far.
+function showSong() {
+  const g = game;
+  const el = $('song');
+  el.hidden = !g.robin;
+  if (!g.robin) return;
+  const { song, at, sung } = g.robin;
+  el.querySelector('.things').replaceChildren(
+    ...(song || []).map((k, n) => {
+      const tile = document.createElement('span');
+      tile.className = n < at ? 'tile done' : n === at ? 'tile next' : 'tile';
+      tile.innerHTML = `<svg viewBox="0 0 60 80" aria-hidden="true"><use href="#${symbolId(KINDS[k].faces[0], faceSet)}"/></svg>`;
+      return tile;
+    }),
+  );
+  el.querySelector('.checkout').textContent = song ? `${sung} sung` : `${sung} sung, sung out`;
+  const songsWord = `${sung} ${sung === 1 ? 'song' : 'songs'} sung back`;
+  el.setAttribute('aria-label', song ? `The robin's song: ${songWords(song)}, ${at} of its notes sung back; ${songsWord}` : `The robin has sung herself out: ${songsWord}`);
+}
+
+// What the song's row says when it is tapped.
+function aboutSong() {
+  const g = game;
+  if (!g || !g.robin) return;
+  const { song, at, sung } = g.robin;
+  const so = `${sung} ${sung === 1 ? 'song' : 'songs'} sung back so far.`;
+  if (!song) toast(`The robin has sung herself out, with fewer than three kinds left to sing: ${so}`);
+  else toast(`Her song: ${songWords(song)}. Take a pair of each in her order to sing it back, for ${POINTS.song} points${at ? `: ${kindName(song[at], faceSet)} next` : ''}. A pair of one of her kinds out of turn breaks it. ${so}`);
+}
+
+// A song in words, its kinds in her order: A, then B, then C.
+const songWords = (kinds) => kinds.map((k) => kindName(k, faceSet)).join(', then ');
 
 // The things on a list, in words: A, B, C and D.
 function listNames(kinds) {
@@ -1989,6 +2050,7 @@ $('new').onclick = newDeal;
 $('pause').onclick = pause;
 $('list').onclick = aboutList;
 $('deals').onclick = aboutDeals;
+$('song').onclick = aboutSong;
 
 $('magnify').onchange = (e) => {
   magnifying = e.target.checked;

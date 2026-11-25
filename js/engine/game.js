@@ -36,6 +36,7 @@ import { seedlingsOf, waters, tending, bloomsIn } from './watering.js';
 import { partOf, pairDoes, pourIn, pouring } from './pour.js';
 import { tulipsOf, firstFlight, flyOn, makesHoney, honeyIn, foraging } from './bees.js';
 import { landingSpots, landingOf, knocks } from './snowballs.js';
+import { kindsLeft, firstSong, hear, songsIn, compose } from './song.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -48,14 +49,15 @@ export const TREATS = ['candle', 'key', 'cat'];
 // fireworks, the disco ball, the balloon drop, the lucky coin, sparklers,
 // confetti, shooting stars, a toast for two, Cupid's arrows, sweethearts,
 // roses in bloom, candlelight, a box of chocolates, hugs and kisses,
-// raindrops, the splash zone, chasing colours, watering, the watering can
-// and busy bees. Nothing here touches the page; the board
+// raindrops, the splash zone, chasing colours, watering, the watering can,
+// busy bees, snowballs and the robin's song. Nothing here touches the page;
+// the board
 // listens with on() for what happens: 'match', 'thaw', 'list', 'checkout',
 // 'bought', 'grab', 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold',
 // 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe', 'firework',
 // 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti', 'star', 'toast',
 // 'arrow', 'message', 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain',
-// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'save', 'turn', 'treat',
+// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'song', 'save', 'turn', 'treat',
 // 'key', 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
@@ -158,7 +160,9 @@ export const TREATS = ['candle', 'key', 'cat'];
 // with the tulip she's on making honey (bees.js); and on the Start of
 // Spring's thaw, snowballs: { every, melt }, a snowball landing every so
 // many matches on a free tile and snowing it in, frozen until a pair is
-// taken beside it or it melts, `melt` matches on (snowballs.js).
+// taken beside it or it melts, `melt` matches on (snowballs.js); and on its
+// first robin, song: whether the robin sings songs of three kinds, sung
+// back by pairs of each taken in her order (song.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -166,7 +170,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -368,6 +372,13 @@ export class Game {
         dealt = deal(layout, (turns ? [0, 1] : [0]).map(() => dealPairs(this.r, pairs)), this.r, { present: onTable, turnAt, ice: this.ice, prefer: this.prefer });
         if (!dealt) throw new Error(`${table.name} cannot be dealt`);
         if (tries >= (swans ? 400 : 50) || wanted(dealt)) break;
+      }
+      // On the first robin, the faces are put on the deal's own order so
+      // that it sings back every song the robin sings, as she sings it
+      // (song.js).
+      if (song && !turns) {
+        const left = kindsLeft(onTable, (t) => MATCH[dealt.sides[0][t]]);
+        dealt.sides[0] = compose(dealt.order, dealt.sides[0], (f) => MATCH[f], firstSong(seed, left), seed, seeded(seed ^ 0x1b56c4e9));
       }
       this.sides = dealt.sides;
       this.plan = dealt.order; // the order the deal was made in, which wins
@@ -579,6 +590,11 @@ export class Game {
     this.snowMelt = snowballs ? snowballs.melt : 0;
     this.snowLanded = 0;
     this.snowKnocked = 0;
+    // On its first robin, the robin, { song, at, songs, sung }: the song
+    // she's singing, three kinds, or null once she's sung herself out; the
+    // notes of it sung back so far; the songs she has sung, and those sung
+    // back to her (song.js).
+    this.robin = song ? firstSong(seed, this.kindsLeft()) : null;
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -979,6 +995,76 @@ export class Game {
       if (!knocking(way[k]) || !this.isFree(way[k][0]) || !this.isFree(way[k][1])) continue;
       const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
       if (this.holds(tried)) return tried;
+    }
+    return way;
+  }
+
+  // On the Start of Spring's first robin, the kinds with a pair still to
+  // take; the kind of her next note, or -1 with no song; whether a tile
+  // still on the board is of it; and which note of her song a tile still on
+  // the board is of, counted from 0, or -1.
+  kindsLeft() {
+    return kindsLeft(this.present, (t) => MATCH[this.faces[t]]);
+  }
+
+  get nextNote() {
+    return this.robin && this.robin.song ? this.robin.song[this.robin.at] : -1;
+  }
+
+  isNextNote(i) {
+    return this.present[i] === 1 && this.nextNote >= 0 && MATCH[this.faces[i]] === this.nextNote;
+  }
+
+  noteOf(i) {
+    return this.robin && this.robin.song && this.present[i] === 1 ? this.robin.song.indexOf(MATCH[this.faces[i]]) : -1;
+  }
+
+  // On the first robin, the hints' way singing her songs back: the way
+  // given, if it sings her next note now; or else one made to, if it sings
+  // as many of her songs back as the way given does, or more, as a way
+  // dealt to sing them all, resting between them, does.
+  singAlong(way) {
+    const want = this.nextNote;
+    if (want < 0 || !way.length || MATCH[this.faces[way[0][0]]] === want) return way;
+    const mended = this.singNow(way);
+    if (mended === way) return way;
+    const sings = (w) => songsIn(w, this.present, (t) => MATCH[this.faces[t]], this.seed, this.robin).sung;
+    return sings(mended) >= sings(way) ? mended : way;
+  }
+
+  // The hints' way made to sing her next note now: a pair of it further
+  // along the way, free now, taken first, or two free tiles of its kind
+  // made into a pair to take first, as Cupid's couples are (cupid.js), or
+  // else a way found from where they leave the tiles, if the board is still
+  // won after it; or else, with a pair of another of her kinds first, out of
+  // turn, the first pair of the way that can be taken now without one moved
+  // there; or the way given.
+  singNow(way) {
+    const want = this.nextNote;
+    const kindOf = (p) => MATCH[this.faces[p[0]]];
+    for (let k = 1; k < way.length; k++) {
+      if (kindOf(way[k]) !== want || !this.isFree(way[k][0]) || !this.isFree(way[k][1])) continue;
+      const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+      if (this.holds(tried)) return tried;
+    }
+    const free = this.freeTiles().filter((t) => MATCH[this.faces[t]] === want);
+    for (let i = 0; i < free.length; i++) {
+      for (let j = i + 1; j < free.length; j++) {
+        const made = wayWith(way, [free[i], free[j]], 1, (l) => this.holds(l));
+        if (made) return made;
+        const present = Uint8Array.from(this.present);
+        present[free[i]] = present[free[j]] = 0;
+        const { result, line } = solve(this.layout, { ...this.position(), present }, { budget: 20000 });
+        if (result === 'win') return [[free[i], free[j]], ...line];
+      }
+    }
+    const { song } = this.robin;
+    if (song.includes(kindOf(way[0]))) {
+      const k = way.findIndex((p) => !song.includes(kindOf(p)) && this.isFree(p[0]) && this.isFree(p[1]));
+      if (k > 0) {
+        const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+        if (this.holds(tried)) return tried;
+      }
     }
     return way;
   }
@@ -1702,8 +1788,12 @@ export class Game {
   // seedlings it watered and those that bloomed, and those it picked in
   // bloom or pulled up before; on its watering can, what it did to the can:
   // 'fill', 'full', 'pour', 'dry', or null; and on its flower bed, whether it
-  // made honey, and the tulip the bee flew from after it, or -1. Null if the
-  // pair cannot be taken.
+  // made honey, and the tulip the bee flew from after it, or -1; on the Start
+  // of Spring's thaw, the tile a snowball landed on after it, or -1, and the
+  // snowed tiles it knocked the snow off; and on its first robin, whether it
+  // sang a note of the robin's song back, whether that sang the whole song,
+  // whether it broke a song begun, and whether she sang a new song after it.
+  // Null if the pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -1987,9 +2077,15 @@ export class Game {
     // On the thaw, the snow as it was, for an undo, and the tiles snowed in.
     const snowedBefore = this.snowEvery ? this.snowedTiles() : [];
     if (this.snowEvery) entry.snow = { ice: Int16Array.from(this.ice), landed: this.snowLanded, knocked: this.snowKnocked };
+    if (this.robin) entry.robin = this.robin; // as she was, for an undo
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
+    // On the Start of Spring's first robin, the robin hears the pair: her
+    // next note sung back, or one of her kinds out of turn, breaking a song
+    // begun; and she sings a new song once one is sung back, or can't be.
+    const heard = this.robin ? hear(this.robin, kind, this.kindsLeft(), this.seed) : null;
+    if (heard) this.robin = heard.robin;
     // On its flower bed, the bee flies on to another tulip.
     const flew = this.bee ? this.bee.at : -1;
     if (this.bee) this.bee = flyOn(this.tulips, this.bee, this.present, this.seed);
@@ -2189,6 +2285,10 @@ export class Game {
       beeFrom: flew >= 0 ? this.tulips[flew] : -1,
       snowball,
       knocked,
+      songNote: Boolean(heard && heard.note),
+      songSung: Boolean(heard && heard.sung),
+      songBroke: Boolean(heard && heard.broke),
+      newSong: Boolean(heard && heard.fresh),
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -2228,6 +2328,7 @@ export class Game {
     if (poured) this.emit('can', result);
     if (this.tulips && flew >= 0) this.emit('bee', result);
     if (snowball >= 0 || knocked.length) this.emit('snow', result);
+    if (heard && (heard.note || heard.broke || heard.fresh)) this.emit('song', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -2310,6 +2411,7 @@ export class Game {
         const { honey, ...bee } = last.bee;
         Object.assign(this, { bee, honey });
       }
+      if (last.robin) this.robin = last.robin;
       if (last.snow) {
         this.ice.set(last.snow.ice);
         this.snowLanded = last.snow.landed;
@@ -2361,8 +2463,10 @@ export class Game {
   // on its rain boots to one that keeps the puddle till last, to splash
   // through it in one run; on its rainbow to one that catches the colour
   // lit whenever it can; on its seed tray to one that picks each seedling
-  // in bloom; on its watering can to one that pours with water in it; and on
-  // its flower bed to one that makes honey whenever it can.
+  // in bloom; on its watering can to one that pours with water in it; on
+  // its flower bed to one that makes honey whenever it can; on the Start of
+  // Spring's thaw to one that knocks snow off when it can; and on its first
+  // robin to one that sings her song back.
   wayAhead() {
     if (!this.line && this.outlook !== 'lost') {
       const { result, line } = solve(this.layout, this.position(), { budget: 20000 });
@@ -2386,6 +2490,7 @@ export class Game {
     if (this.line && this.can) this.line = this.pourWell(this.line);
     if (this.line && this.tulips) this.line = this.forage(this.line);
     if (this.line && this.snowEvery) this.line = this.knockFirst(this.line);
+    if (this.line && this.robin) this.line = this.singAlong(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
@@ -2439,7 +2544,9 @@ export class Game {
     // on its seed tray, so that the seedlings still in it are watered and
     // picked in bloom; on its watering can, so that the drops still to pour
     // are poured with water in the can; and on its flower bed, so that the
-    // bee makes honey at the tulips still standing.
+    // bee makes honey at the tulips still standing. On the Start of Spring's
+    // first robin, the faces go on the new deal's own order so that it sings
+    // back her songs, from where she is in the one she's singing.
     const january = this.resolving ? this.january - this.matches : 0;
     for (let tries = 0; ; tries++) {
       const prefer = this.mirror
@@ -2476,6 +2583,7 @@ export class Game {
       if (!dealt || tries >= 30 || fine(dealt)) break;
     }
     if (!dealt) return false;
+    if (this.robin && this.sides.length === 1) dealt.sides[this.side] = compose(dealt.order, dealt.sides[this.side], (f) => MATCH[f], this.robin, this.seed, this.r);
     const busterTiles = this.busters && this.busters.map((d) => d.tiles.slice());
     const pails = this.pails && this.pails.map((p) => ({ ...p, tiles: p.tiles.slice() }));
     this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails, confetti: this.confetti, couple: this.couple, messages: this.messages });
