@@ -3153,3 +3153,52 @@ export const KITE = parseLayout('Kite', [
   ....#....
   `,
 ]);
+
+// The Start of Spring's fifth board: luck of the Irish, a shamrock for St
+// Patrick's Day, its three heart-shaped leaves, the top one's lobes at the
+// top and the side ones' out at the board's edges, each cleft between its
+// lobes, their points meeting at the middle, raised on themselves, and its
+// stem curving down from where they meet (spring.js has its parts, for its
+// look). 116 tiles on four layers, nine across and ten and a half down.
+export const SHAMROCK = parseLayout('Shamrock', [
+  `
+  .###.###.
+  >>>>>>>>.
+  .#######.
+  ..#####..
+  ##.###.##
+  ###...###
+  .#######.
+  ###.#.###
+  ##..>..##
+  .....#vv.
+  `,
+  `
+  .++..++..
+  .vvvvvvv.
+  .++++++..
+  ..++++...
+  +......+.
+  ++....++.
+  +++..+++.
+  +......+.
+  `,
+  `
+  .........
+  ..#...#..
+  ..#####..
+  ...>>....
+  .........
+  .#.....#.
+  .##...##.
+  `,
+  `
+  .........
+  ...++....
+  ....v....
+  .........
+  .........
+  .........
+  .+....+..
+  `,
+]);

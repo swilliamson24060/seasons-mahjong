@@ -1534,6 +1534,28 @@ export class Sound {
     [0, 0.16].forEach((t) => this.whistle(this.now + t, 1900, 1300, 0.06, 0.08));
   }
 
+  // On the Start of Spring's luck of the Irish, a four-leaf clover showing as
+  // its tile comes free: a twinkle, up high.
+  cloverShows() {
+    if (!this.on) return;
+    [2637, 3136, 3951].forEach((f, k) => this.bell(f, this.now + k * 0.07, 0.035, 1.2));
+  }
+
+  // A stroke of luck, the clover found: an Irish harp running up through D
+  // major, and a chime over it.
+  luck() {
+    if (!this.on) return;
+    [62, 66, 69, 74, 78, 81, 86].forEach((m, k) => this.harp(m, this.now + k * 0.06, 0.14));
+    this.bell(2349, this.now + 0.5, 0.04, 1.6);
+  }
+
+  // The clover blown away: a breath of wind, and a note falling.
+  cloverLost() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.6, 1600, 500, 0.08);
+    this.whistle(this.now + 0.1, 1175, 784, 0.4, 0.04);
+  }
+
   // On the Start of Spring's kite, the March wind turning: a gust rising and
   // falling away, and the kite's tail flapping in it.
   gust() {

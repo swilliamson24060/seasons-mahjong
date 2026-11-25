@@ -1,4 +1,4 @@
-import { LION, SNOWMAN, ROBIN, KITE } from './engine/layouts.js';
+import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK } from './engine/layouts.js';
 
 // The Start of Spring: in like a lion, out like a lamb, eight boards
 // through March, from the last blustery days of winter to the first of
@@ -11,8 +11,10 @@ import { LION, SNOWMAN, ROBIN, KITE } from './engine/layouts.js';
 // robin sings songs of three kinds of tile, to be sung back by pairs of
 // each taken in her order (engine/song.js); on the fourth, a kite, the March
 // wind blows from each side in turn, loosening the tiles on the edge it
-// blows on (engine/wind.js); the eighth is to be out like a lamb, when
-// March goes out like a lamb halfway and every tile turns over.
+// blows on (engine/wind.js); on the fifth, a shamrock, four-leaf clovers
+// hide on tiles held down, to be found once they show (engine/clover.js);
+// the eighth is to be out like a lamb, when March goes out like a lamb
+// halfway and every tile turns over.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), and PLAN.md has its boards and twists. Until the Start of
 // Spring's own tiles are drawn, its boards wear Halloween's.
@@ -76,6 +78,14 @@ export function kitePart(L, i) {
   return left ? 'sail-blue' : 'sail-green';
 }
 
+// The shamrock's look, each tile's part by where it is, in half tiles: its
+// leaves, a deep green, lighter where they're raised highest, and its stem.
+export function shamrockPart(L, i) {
+  const [x, y, z] = [L.x[i], L.y[i], L.z[i]];
+  if (z === 0 && (y === 19 || (x === 8 && y >= 12) || (y >= 16 && (x === 9 || x === 10)))) return 'stem';
+  return z >= 2 ? 'shamrock-light' : 'shamrock';
+}
+
 export const SPRING = [
   {
     name: 'The first chapter',
@@ -112,6 +122,15 @@ export const SPRING = [
     look: kitePart,
     sky: ['#5c7d99', '#15202a'],
     text: "The March wind is up, and so are the kites. It blows from the east 🌬️, then the south, the west and the north, turning every four matches, and the tiles on the edge of the board it blows on are loose, free to take even if something lies on them or beside them. Take a pair with one of them to catch the wind, for 5 points.",
+  },
+  {
+    name: 'The fifth chapter',
+    title: 'Luck of the Irish',
+    layout: SHAMROCK,
+    rules: { treats: false, ghostsFloat: false, clover: { within: 5 } },
+    look: shamrockPart,
+    sky: ['#4d7a5c', '#13211a'],
+    text: "It's St Patrick's Day, and the shamrock is out. A four-leaf clover hides on one of its tiles that's held down 🍀, and shows once that tile comes free: take it, with a tile of its kind, within five matches, for a stroke of luck, 25 points. Found or blown away, another hides.",
   },
 ];
 

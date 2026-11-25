@@ -471,6 +471,24 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       if (sung === 0 && songs === 1 && at === 1) toast(`Her first note, sung back! Now a pair of ${kindName(song[1], faceSet)}, then ${kindName(song[2], faceSet)}.`);
     }
   });
+  // On the Start of Spring's luck of the Irish: a four-leaf clover found, its
+  // tile taken while it keeps, or blown away, and another hiding; and one
+  // showing, as its tile comes free.
+  game.on('clover', ({ b, cloverFound, cloverLost, cloverShown }) => {
+    if (cloverFound >= 0) {
+      sound.luck();
+      board.float('🍀', cloverFound);
+      setTimeout(() => board.float(`+${POINTS.luck}`, b), 500); // after the pair's own points
+      toast(`A stroke of luck! ${POINTS.luck} points.${game.clover ? ' Another four-leaf clover hides on the shamrock.' : ''}`);
+    } else if (cloverLost >= 0) {
+      sound.cloverLost();
+      toast(`The four-leaf clover blew away.${game.clover ? ' Another hides on the shamrock.' : ''}`);
+    }
+    if (cloverShown >= 0) {
+      setTimeout(() => sound.cloverShows(), cloverFound >= 0 || cloverLost >= 0 ? 600 : 0);
+      if (cloverFound < 0 && cloverLost < 0) toast(game.cloversHidden === 1 ? `A four-leaf clover! Take its tile, with a tile of its kind, within ${matchWords(game.cloverWithin)}, for a stroke of luck.` : `A four-leaf clover! Take it within ${matchWords(game.cloverWithin)}.`);
+    }
+  });
   // On the Start of Spring's kite: a pair with a tile on the edge the wind
   // blows on catches the wind, and every four matches the wind turns.
   game.on('wind', ({ b, caughtWind, windTurned }) => {
@@ -1692,6 +1710,14 @@ function update() {
   // until the next snowball.
   $('snow').hidden = !g.snowEvery;
   if (g.snowEvery) $('snow').innerHTML = `☃️ <b>${g.snowKnocked}</b> · ⏳ ${g.untilSnow}`;
+  // The four-leaf clovers found, on the shamrock, and while one shows, the
+  // matches it keeps for.
+  $('clover').hidden = !g.cloverWithin;
+  if (g.cloverWithin) {
+    const showing = g.clover && g.clover.shownAt !== null;
+    $('clover').innerHTML = `🍀 <b>${g.cloversFound}</b>${showing ? ` · ⏳ ${g.cloverLeft}` : ''}`;
+    $('clover').setAttribute('aria-label', `${g.cloversFound} four-leaf ${g.cloversFound === 1 ? 'clover' : 'clovers'} found${showing ? `, and one showing, for ${matchWords(g.cloverLeft)}` : g.clover ? ', and one hiding' : ''}`);
+  }
   // The pairs that caught the wind, on the kite; where the wind blows from,
   // and the matches until it turns.
   $('wind').hidden = !g.windEvery;

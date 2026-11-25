@@ -38,6 +38,7 @@ import { tulipsOf, firstFlight, flyOn, makesHoney, honeyIn, foraging } from './b
 import { landingSpots, landingOf, knocks } from './snowballs.js';
 import { kindsLeft, firstSong, hear, songsIn, compose } from './song.js';
 import { windAt, upwindOf, inWind, windswept, catches } from './wind.js';
+import { SOON, RESTLESS, hidingPlaces, hidingOf } from './clover.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -51,14 +52,14 @@ export const TREATS = ['candle', 'key', 'cat'];
 // confetti, shooting stars, a toast for two, Cupid's arrows, sweethearts,
 // roses in bloom, candlelight, a box of chocolates, hugs and kisses,
 // raindrops, the splash zone, chasing colours, watering, the watering can,
-// busy bees, snowballs, the robin's song and the March wind. Nothing here
-// touches the page; the board
+// busy bees, snowballs, the robin's song, the March wind and the four-leaf
+// clover. Nothing here touches the page; the board
 // listens with on() for what happens: 'match', 'thaw', 'list', 'checkout',
 // 'bought', 'grab', 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold',
 // 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe', 'firework',
 // 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti', 'star', 'toast',
 // 'arrow', 'message', 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain',
-// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'song', 'wind', 'save', 'turn', 'treat',
+// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'song', 'wind', 'clover', 'save', 'turn', 'treat',
 // 'key', 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
@@ -166,7 +167,10 @@ export const TREATS = ['candle', 'key', 'cat'];
 // back by pairs of each taken in her order (song.js); and on its kite, wind:
 // { every }, the March wind blowing from the east, the south, the west and
 // the north, turning every so many matches, the tiles on the edge it blows
-// on loose, and a pair with one of them catching the wind (wind.js).
+// on loose, and a pair with one of them catching the wind (wind.js); and on
+// its luck of the Irish, clover: { within }, a four-leaf clover hiding on a
+// tile held down, showing once it comes free, to be taken within so many
+// matches, and another hiding after it (clover.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -174,7 +178,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -604,6 +608,19 @@ export class Game {
     this.windEvery = wind ? wind.every : 0;
     this.upwind = wind ? upwindOf(layout) : null;
     this.windCaught = 0;
+    // On its luck of the Irish, the four-leaf clover, { tile, shownAt, hidAt }:
+    // the tile it hides on, the match after which that tile came free and it
+    // showed, or null while it's hidden, and the match it hid after; or null
+    // with nowhere to hide.
+    // And how many matches it keeps for once it shows, the clovers hidden
+    // so far, and those found and blown away (clover.js). The first hides as
+    // the board starts.
+    this.cloverWithin = clover ? clover.within : 0;
+    this.clover = null;
+    this.cloversHidden = 0;
+    this.cloversFound = 0;
+    this.cloversLost = 0;
+    if (clover) this.hideClover();
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -1122,6 +1139,63 @@ export class Game {
         const made = wayWith(way, [t, u], 1, (l) => this.holds(l));
         if (made) return made;
       }
+    }
+    return way;
+  }
+
+  // On the Start of Spring's luck of the Irish, a four-leaf clover hides: on
+  // a tile held down that a way to clear the board, found afresh from the
+  // board as it stands, frees soon and then takes while the clover would
+  // keep, chosen from the board's seed; or, with none it frees that soon,
+  // one it frees later; or, with no such tile, on any tile held down; or
+  // nowhere, with none. Returns the tile, or -1.
+  hideClover() {
+    const held = [];
+    for (let t = 0; t < this.tableCount; t++) if (this.present[t] && !this.isFree(t)) held.push(t);
+    const { result, line } = held.length ? solve(this.layout, this.position(), { budget: 20000 }) : { result: 'none', line: [] };
+    const freeAt = (p, t) => this.loose(t) || isFree(this.layout, p, t);
+    const soon = result === 'win' ? hidingPlaces(line, this.present, held, freeAt, this.cloverWithin, SOON) : [];
+    const places = soon.length || result !== 'win' ? soon : hidingPlaces(line, this.present, held, freeAt, this.cloverWithin);
+    const t = hidingOf(places.length ? places : held, this.seed, this.cloversHidden);
+    if (t >= 0) this.cloversHidden++;
+    this.clover = t >= 0 ? { tile: t, shownAt: null, hidAt: this.matches } : null;
+    return t;
+  }
+
+  // Whether a tile still on the board has the clover on it, showing; and,
+  // while it shows, the matches it keeps for still.
+  hasClover(i) {
+    return this.clover !== null && this.clover.shownAt !== null && this.clover.tile === i && this.present[i] === 1;
+  }
+
+  get cloverLeft() {
+    return this.clover && this.clover.shownAt !== null ? this.cloverWithin - (this.matches - this.clover.shownAt) : 0;
+  }
+
+  // On luck of the Irish, the hints' way taking the clover while it keeps:
+  // the way given, if it takes the clover's tile in time; or else made to
+  // take it first, its pair further along the way taken first if both its
+  // tiles are free, or its tile made into a pair with a free tile of its
+  // kind to take first, as Cupid's couples are (cupid.js), or else a way
+  // found from where that leaves the tiles; or the way given.
+  pickClover(way) {
+    if (!this.clover || this.clover.shownAt === null || !way.length) return way;
+    const t = this.clover.tile;
+    const k = way.findIndex((p) => p.includes(t));
+    if (k >= 0 && k < this.cloverLeft) return way;
+    if (k > 0 && this.isFree(way[k][0]) && this.isFree(way[k][1])) {
+      const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+      if (this.holds(tried)) return tried;
+    }
+    if (!this.isFree(t)) return way;
+    for (const u of this.freeTiles()) {
+      if (u === t || MATCH[this.faces[u]] !== MATCH[this.faces[t]]) continue;
+      const made = wayWith(way, [t, u], 1, (l) => this.holds(l));
+      if (made) return made;
+      const present = Uint8Array.from(this.present);
+      present[t] = present[u] = 0;
+      const { result, line } = solve(this.layout, { ...this.position(), present }, { budget: 20000 });
+      if (result === 'win') return [[t, u], ...line];
     }
     return way;
   }
@@ -1852,7 +1926,9 @@ export class Game {
   // whether it broke a song begun, and whether she sang a new song after it;
   // and on its kite, whether it caught the wind, a tile of it on the edge the
   // wind blows on, and where the wind blows from if it turned after it, or
-  // -1. Null if the pair cannot be taken.
+  // -1; and on its luck of the Irish, the tile of the clover it found, the
+  // tile of one blown away after it, and the tile of one showing after it,
+  // each -1 with none. Null if the pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -2144,6 +2220,10 @@ export class Game {
       this.windCaught++;
       entry.caughtWind = true;
     }
+    // On its luck of the Irish, a pair with the clover's tile, the clover
+    // showing, is a stroke of luck.
+    const lucky = this.clover !== null && this.clover.shownAt !== null && (a === this.clover.tile || b === this.clover.tile);
+    if (this.cloverWithin) entry.clover = { clover: this.clover, hidden: this.cloversHidden, found: this.cloversFound, lost: this.cloversLost }; // as it was, for an undo
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
@@ -2176,6 +2256,28 @@ export class Game {
       for (const t of knocked) this.ice[t] = this.matches;
       this.snowKnocked += knocked.length;
       if (this.left > 0 && this.matches % this.snowEvery === 0) snowball = this.snowOn();
+    }
+    // On its luck of the Irish, the clover found, or blown away once it has
+    // kept as long as it does, another hides; the tile the clover hides on,
+    // come free, shows it; and one hidden too long, its tile not coming
+    // free, hides elsewhere, unseen.
+    let cloverFound = -1;
+    let cloverLost = -1;
+    let cloverShown = -1;
+    if (this.cloverWithin) {
+      if (lucky) {
+        cloverFound = this.clover.tile;
+        this.cloversFound++;
+        this.hideClover();
+      } else if (this.clover && this.clover.shownAt !== null && this.matches - this.clover.shownAt >= this.cloverWithin) {
+        cloverLost = this.clover.tile;
+        this.cloversLost++;
+        this.hideClover();
+      }
+      if (this.clover && this.clover.shownAt === null && this.isFree(this.clover.tile)) {
+        this.clover = { ...this.clover, shownAt: this.matches };
+        cloverShown = this.clover.tile;
+      } else if (this.clover && this.clover.shownAt === null && this.matches - this.clover.hidAt >= RESTLESS) this.hideClover();
     }
     // On the bagpipes, a piper plays, and the rest of his kind follow him.
     const followers = this.pipe(a, b);
@@ -2359,6 +2461,9 @@ export class Game {
       newSong: Boolean(heard && heard.fresh),
       caughtWind,
       windTurned,
+      cloverFound,
+      cloverLost,
+      cloverShown,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -2400,6 +2505,7 @@ export class Game {
     if (snowball >= 0 || knocked.length) this.emit('snow', result);
     if (heard && (heard.note || heard.broke || heard.fresh)) this.emit('song', result);
     if (caughtWind || windTurned >= 0) this.emit('wind', result);
+    if (cloverFound >= 0 || cloverLost >= 0 || cloverShown >= 0) this.emit('clover', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -2484,6 +2590,7 @@ export class Game {
       }
       if (last.robin) this.robin = last.robin;
       if (last.caughtWind) this.windCaught--;
+      if (last.clover) Object.assign(this, { clover: last.clover.clover, cloversHidden: last.clover.hidden, cloversFound: last.clover.found, cloversLost: last.clover.lost });
       if (last.snow) {
         this.ice.set(last.snow.ice);
         this.snowLanded = last.snow.landed;
@@ -2538,8 +2645,9 @@ export class Game {
   // in bloom; on its watering can to one that pours with water in it; on
   // its flower bed to one that makes honey whenever it can; on the Start of
   // Spring's thaw to one that knocks snow off when it can; on its first
-  // robin to one that sings her song back; and on its kite to one that
-  // catches the wind when it can.
+  // robin to one that sings her song back; on its kite to one that catches
+  // the wind when it can; and on its luck of the Irish to one that takes the
+  // four-leaf clover while it keeps.
   wayAhead() {
     if (!this.line && this.outlook !== 'lost') {
       const { result, line } = solve(this.layout, this.position(), { budget: 20000 });
@@ -2565,6 +2673,7 @@ export class Game {
     if (this.line && this.snowEvery) this.line = this.knockFirst(this.line);
     if (this.line && this.robin) this.line = this.singAlong(this.line);
     if (this.line && this.windEvery) this.line = this.catchWind(this.line);
+    if (this.line && this.cloverWithin) this.line = this.pickClover(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));

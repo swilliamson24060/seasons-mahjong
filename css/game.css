@@ -1139,6 +1139,57 @@ body.covered #board {
   background: linear-gradient(to top, rgba(165, 212, 255, 0.85), rgba(165, 212, 255, 0) 55%);
 }
 
+/* On the Start of Spring's luck of the Irish, the shamrock's leaves are a
+   deep green, lighter where they're raised highest, and its stem darker. A
+   tile a four-leaf clover shows on glows a lucky gold and carries the
+   clover, with the matches it keeps for, its glow fading at the last two. */
+.tile[data-look='shamrock'] {
+  --face-1: #eaf8e4;
+  --face-2: #3f9a4a;
+}
+
+.tile[data-look='shamrock-light'] {
+  --face-1: #f3fcee;
+  --face-2: #7cc56f;
+}
+
+.tile[data-look='stem'] {
+  --face-1: #e8f2df;
+  --face-2: #3c7232;
+}
+
+.tile.clover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 calc(var(--tile-w) * 0.05) #d7b23a,
+    inset 0 0 calc(var(--tile-w) * 0.2) rgba(240, 205, 80, 0.6);
+  pointer-events: none;
+}
+
+.tile.clover.wilting::before {
+  box-shadow: inset 0 0 0 calc(var(--tile-w) * 0.04) rgba(215, 178, 58, 0.6);
+}
+
+.tile.clover::after {
+  content: '🍀' attr(data-luck);
+  position: absolute;
+  top: -12%;
+  left: 6%;
+  padding: 0.1em 0.24em 0.1em 0.08em;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow:
+    0 0 5px rgba(80, 170, 80, 0.75),
+    inset 0 0 0 1px #9fd39a;
+  color: #2c7a34;
+  font: 800 max(10px, calc(var(--tile-w) * 0.28)) / 1 system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers
