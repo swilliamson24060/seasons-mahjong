@@ -7,6 +7,7 @@ import { NEW_YEAR, newYearOf } from './newyear.js';
 import { GROUNDHOG_DAY, groundhogOf, dayKey, daySeed, streakOf, weekTo } from './groundhog.js';
 import { LOVE_STORY, chapterOf } from './valentines.js';
 import { SHOWERS, showerOf } from './showers.js';
+import { springOf } from './spring.js';
 import { BANDS } from './engine/colours.js';
 import { GIFTS, TURNS, wordsOf } from './words.js';
 import { ballDrop } from './ui/ball.js';
@@ -738,8 +739,8 @@ function freePlay(key = turtleKey(), seed = newSeed(), turnAt = 0, keep = null) 
 // The holiday a board belongs to, which must be open for it to be played:
 // the night's are Halloween's, the week's Thanksgiving's, the twelve days'
 // Christmas's, the countdown's and New Year's Day's New Year's, the love
-// story's Valentine's Day's, April Showers' its own, and the turtle is no
-// one's.
+// story's Valentine's Day's, the Start of Spring's and April Showers' their
+// own, and the turtle is no one's.
 function holidayOf(layout) {
   if (HOURS.some((h) => h.layout === layout)) return theme('halloween');
   if (dayOf(layout)) return theme('thanksgiving');
@@ -747,14 +748,15 @@ function holidayOf(layout) {
   if (groundhogOf(layout)) return theme('groundhog');
   if (chapterOf(layout)) return theme('valentines');
   if (showerOf(layout)) return theme('showers');
+  if (springOf(layout)) return theme('spring');
   return newYearOf(layout) ? theme('new-year') : null;
 }
 
 // The day a board is for, if it is one of Thanksgiving week's, one of
 // Christmas's twelve, one of New Year's, its countdown's or New Year's
-// Day's, a chapter of Valentine's love story or one of April Showers':
-// played freely, it plays by that day's rules.
-const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(layout) || groundhogOf(layout) || chapterOf(layout) || showerOf(layout);
+// Day's, a chapter of Valentine's love story, of the Start of Spring's or
+// of April Showers': played freely, it plays by that day's rules.
+const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(layout) || groundhogOf(layout) || chapterOf(layout) || springOf(layout) || showerOf(layout);
 
 // ------------- Thanksgiving week, Christmas's twelve days, and New Year's boards
 
@@ -861,9 +863,10 @@ const named = (d) => d.called || d.name.replace(/^The /, 'the ');
 // What play() wants for a day's board: its options, the treats it gives or
 // none, in its own words or its holiday's, its nap, the words its turning
 // over is told in, its holiday's faces: Thanksgiving's, Christmas's, New
-// Year's, Groundhog Day's, Valentine's or April Showers'; and its look, the
-// parts of a board whose tiles are tinted by them, as May Day's basket
-// is.
+// Year's, Groundhog Day's, Valentine's or April Showers', and Halloween's
+// for a holiday whose own are still to come, the Start of Spring's; and its
+// look, the parts of a board whose tiles are tinted by them, as May Day's
+// basket and the lion are.
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;

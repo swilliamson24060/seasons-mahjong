@@ -845,6 +845,39 @@ body.covered #board {
 }
 
 
+/* On the Start of Spring's first board, in like a lion, his mane is a
+   golden brown, his ears deeper, his face a pale tawny, his muzzle cream,
+   his eyes dark and his nose a dusky pink. */
+.tile[data-look='mane'] {
+  --face-1: #fbe3b8;
+  --face-2: #d08a3a;
+}
+
+.tile[data-look='ears'] {
+  --face-1: #f6dcb5;
+  --face-2: #b6722d;
+}
+
+.tile[data-look='face'] {
+  --face-1: #fff3da;
+  --face-2: #eec888;
+}
+
+.tile[data-look='eyes'] {
+  --face-1: #f2ede6;
+  --face-2: #7a5e44;
+}
+
+.tile[data-look='muzzle'] {
+  --face-1: #fffbf3;
+  --face-2: #f2e1c4;
+}
+
+.tile[data-look='nose'] {
+  --face-1: #f7dcd5;
+  --face-2: #b5645a;
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers
