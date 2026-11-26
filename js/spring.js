@@ -1,4 +1,4 @@
-import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK } from './engine/layouts.js';
+import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK, WINDOW } from './engine/layouts.js';
 
 // The Start of Spring: in like a lion, out like a lamb, eight boards
 // through March, from the last blustery days of winter to the first of
@@ -13,8 +13,10 @@ import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK } from './engine/layouts.js';
 // wind blows from each side in turn, loosening the tiles on the edge it
 // blows on (engine/wind.js); on the fifth, a shamrock, four-leaf clovers
 // hide on tiles held down, to be found once they show (engine/clover.js);
-// the eighth is to be out like a lamb, when March goes out like a lamb
-// halfway and every tile turns over.
+// on the sixth, a window thrown open for the spring cleaning, rows swept
+// clean score from the top down (engine/sweep.js); the eighth is to be out
+// like a lamb, when March goes out like a lamb halfway and every tile turns
+// over.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), and PLAN.md has its boards and twists. Until the Start of
 // Spring's own tiles are drawn, its boards wear Halloween's.
@@ -86,6 +88,19 @@ export function shamrockPart(L, i) {
   return z >= 2 ? 'shamrock-light' : 'shamrock';
 }
 
+// The window's look, each tile's part by where it is, in half tiles: the
+// curtain rod, the frame and its panes, open to the sky, the curtains, the
+// sill, and the window box and the flower in it.
+export function windowPart(L, i) {
+  const [x, y, z] = [L.x[i], L.y[i], L.z[i]];
+  if (y === 0) return 'rod';
+  if (y === 14 && x >= 2 && x <= 14) return 'sill';
+  if (y === 16 && x >= 4 && x <= 12) return z ? 'flowers' : 'box';
+  if (x <= 2 || x >= 14 || y >= 16) return 'curtain';
+  if (y === 2 || y === 12 || x === 4 || x === 12) return 'frame';
+  return 'pane';
+}
+
 export const SPRING = [
   {
     name: 'The first chapter',
@@ -131,6 +146,15 @@ export const SPRING = [
     look: shamrockPart,
     sky: ['#4d7a5c', '#13211a'],
     text: "It's St Patrick's Day, and the shamrock is out. A four-leaf clover hides on one of its tiles that's held down 🍀, and shows once that tile comes free: take it, with a tile of its kind, within five matches, for a stroke of luck, 25 points. Found or blown away, another hides.",
+  },
+  {
+    name: 'The sixth chapter',
+    title: 'Spring cleaning',
+    layout: WINDOW,
+    rules: { treats: false, ghostsFloat: false, sweep: true },
+    look: windowPart,
+    sky: ['#5f7f98', '#16202b'],
+    text: "The window's thrown open, the March breeze is in, and it's time for the spring cleaning, from the top down 🧹. Take every tile of a row, on every layer, to sweep it clean, for 5 points a tile, but only once every row above it is swept: clear a row before the rows above it and it scores nothing. The row to sweep next is marked.",
   },
 ];
 

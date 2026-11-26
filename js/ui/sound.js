@@ -1534,6 +1534,21 @@ export class Sound {
     [0, 0.16].forEach((t) => this.whistle(this.now + t, 1900, 1300, 0.06, 0.08));
   }
 
+  // On the Start of Spring's spring cleaning, a row swept clean: a broom's
+  // three brisk strokes, and a bright chime, the row gleaming.
+  sweep() {
+    if (!this.on) return;
+    [0, 0.16, 0.32].forEach((t, k) => this.rustle(this.now + t, 0.14, k % 2 ? 2400 : 1500, k % 2 ? 900 : 3200, 0.13));
+    [1568, 2093, 2637, 3136].forEach((f, k) => this.bell(f, this.now + 0.5 + k * 0.06, 0.035, 1.4));
+  }
+
+  // A row cleared out of turn: a puff of dust, settling, and a low note.
+  dust() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.5, 900, 300, 0.1);
+    this.ping(196, this.now + 0.05, { gain: 0.06, fall: 0.3, into: this.master });
+  }
+
   // On the Start of Spring's luck of the Irish, a four-leaf clover showing as
   // its tile comes free: a twinkle, up high.
   cloverShows() {

@@ -1190,6 +1190,58 @@ body.covered #board {
   pointer-events: none;
 }
 
+/* On the Start of Spring's spring cleaning, the curtain rod is wood, the
+   window's frame and sill a fresh white, its panes, open to the sky, a
+   pale blue, its curtains a soft pink, and the window box terracotta with a
+   yellow flower in it. The row to sweep next is marked, each tile of it
+   ringed and underlined in a broom's gold. */
+.tile[data-look='rod'] {
+  --face-1: #f6e9d5;
+  --face-2: #a57648;
+}
+
+.tile[data-look='frame'] {
+  --face-1: #ffffff;
+  --face-2: #d8dce2;
+}
+
+.tile[data-look='pane'] {
+  --face-1: #eaf5ff;
+  --face-2: #9dc8ee;
+}
+
+.tile[data-look='curtain'] {
+  --face-1: #fff2f6;
+  --face-2: #e8a2bc;
+}
+
+.tile[data-look='sill'] {
+  --face-1: #fdfdfb;
+  --face-2: #ced2d8;
+}
+
+.tile[data-look='box'] {
+  --face-1: #fbe8de;
+  --face-2: #c8714d;
+}
+
+.tile[data-look='flowers'] {
+  --face-1: #fff8d6;
+  --face-2: #efc547;
+}
+
+.tile.sweep-next::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 calc(var(--tile-w) * 0.045) #f0b929,
+    inset 0 calc(var(--tile-w) * -0.1) 0 #f0b929,
+    inset 0 0 calc(var(--tile-w) * 0.18) rgba(245, 200, 70, 0.55);
+  pointer-events: none;
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers

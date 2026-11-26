@@ -471,6 +471,20 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       if (sung === 0 && songs === 1 && at === 1) toast(`Her first note, sung back! Now a pair of ${kindName(song[1], faceSet)}, then ${kindName(song[2], faceSet)}.`);
     }
   });
+  // On the Start of Spring's spring cleaning: a row swept clean from the top
+  // down, every row above it swept already, or one cleared out of turn.
+  game.on('sweep', ({ b, swept, sweptOut }) => {
+    if (swept.length) {
+      const points = swept.reduce((n, r) => n + game.sweepRows.rows[r].length, 0) * POINTS.sweep;
+      sound.sweep();
+      setTimeout(() => board.float(`+${points} 🧹`, b), 500); // after the pair's own points
+      const first = game.rowsSweptClean === swept.length;
+      toast(`${swept.length > 1 ? `${swept.length} rows swept clean` : 'Swept clean'}! ${points} points.${game.rowToSweep >= 0 ? (first ? ' Now the next row down.' : '') : ' Every row is clean.'}`);
+    } else if (sweptOut.length) {
+      sound.dust();
+      toast(`That row's cleared, but a row above it isn't swept yet, so it scores nothing. Clean from the top down.`);
+    }
+  });
   // On the Start of Spring's luck of the Irish: a four-leaf clover found, its
   // tile taken while it keeps, or blown away, and another hiding; and one
   // showing, as its tile comes free.
@@ -1710,6 +1724,15 @@ function update() {
   // until the next snowball.
   $('snow').hidden = !g.snowEvery;
   if (g.snowEvery) $('snow').innerHTML = `☃️ <b>${g.snowKnocked}</b> · ⏳ ${g.untilSnow}`;
+  // The rows swept clean from the top down, on the window, of all the rows,
+  // and the tiles left in the row to sweep next.
+  $('sweep').hidden = !g.sweepRows;
+  if (g.sweepRows) {
+    const next = g.rowToSweep;
+    const left = next >= 0 ? g.rowLeft(next) : 0;
+    $('sweep').innerHTML = `🧹 <b>${g.rowsSweptClean}</b>/${g.sweepRows.rows.length}${next >= 0 ? ` · ${left} to go` : ''}`;
+    $('sweep').setAttribute('aria-label', `${g.rowsSweptClean} of ${g.sweepRows.rows.length} rows swept clean from the top down${next >= 0 ? `; the row to sweep next has ${left} ${left === 1 ? 'tile' : 'tiles'} left` : ''}`);
+  }
   // The four-leaf clovers found, on the shamrock, and while one shows, the
   // matches it keeps for.
   $('clover').hidden = !g.cloverWithin;

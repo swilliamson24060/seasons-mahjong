@@ -3202,3 +3202,46 @@ export const SHAMROCK = parseLayout('Shamrock', [
   .+....+..
   `,
 ]);
+
+// The Start of Spring's sixth board: spring cleaning, a window thrown open,
+// the curtain rod across its top, its frame raised round its panes, open
+// to the sky, the frame's corners raised again; its curtains down either
+// side, gathered at the top and blowing out toward the hem, their folds
+// raised; and its sill, raised, under it, with a window box on it and a
+// flower in the box (spring.js has its parts, for its look). Every tile is
+// on a whole row, so that the board's rows are plain to see, for the clean
+// sweep. 124 tiles on three layers, nine across and ten down.
+export const WINDOW = parseLayout('Window', [
+  `
+  #########
+  #########
+  #########
+  #########
+  #########
+  #########
+  #########
+  #########
+  ##.###.##
+  ###...###
+  `,
+  `
+  .........
+  ..>>>>...
+  >.#...#>.
+  >.#...#>.
+  >.#...#>.
+  >.#...#>.
+  >.>>>>.>.
+  .>>>>>>..
+  >...#..>.
+  `,
+  `
+  .........
+  ..#...#..
+  .........
+  .........
+  .........
+  .........
+  ..#...#..
+  `,
+]);
