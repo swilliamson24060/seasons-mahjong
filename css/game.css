@@ -2681,6 +2681,13 @@ body.covered #board {
   color: var(--text);
 }
 
+/* A name with the room of what it was for too, having none, may wrap if
+   it must: out like a lamb with no melted snowmen, or the answer is yes,
+   with no broken hearts, is wider than a phone's card leaves it. */
+#card .score td[colspan] {
+  white-space: normal;
+}
+
 #card .score tr.total td {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   padding-top: 6px;

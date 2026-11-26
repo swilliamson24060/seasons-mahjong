@@ -53,7 +53,7 @@ let game = null;
 let board = null;
 let hour = -1; // the hour of the Long Night being played, or -1
 let runDay = -1; // the day being played of a run of days, Thanksgiving week, Christmas's twelve or New Year's boards, or -1; with hour, both -1 for free play
-let runId = null; // the run that day is of: 'thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines' or 'showers' (RUNS)
+let runId = null; // the run that day is of: 'thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'spring' or 'showers' (RUNS)
 let boardDate = null; // on Groundhog Day, the day the board in play is the board of, as its key
 let moves = []; // what has been done on this board, to play it back after a reload
 let elapsed = 0; // seconds played before the clock last started
@@ -87,6 +87,7 @@ let saved = {
   twelve: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   newyear: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   valentines: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
+  spring: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   showers: { reached: 0, best: {}, scores: {}, times: {}, playing: null },
   groundhog: { reached: 0, best: {}, scores: {}, times: {}, playing: null, days: {} },
   free: null,
@@ -856,11 +857,12 @@ const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(
 // The holidays played as runs of days, reached in turn, as the Long Night's
 // hours are: Thanksgiving week, Christmas's twelve days, New Year's boards,
 // the countdown from the 10 to the 1 and then New Year's Day, Valentine's
-// love story, a chapter a board, from Cupid's bow to the ring, and April
-// Showers, from the first shower to May Day. For each: its days; where its progress is kept in saved, as the night's is;
-// and the words its card and its end are told in. New Year's also has the
-// ball on its card, dropping a notch with each board of the countdown
-// cleared, and words for each one cleared.
+// love story, a chapter a board, from Cupid's bow to the ring, the Start of
+// Spring, from in like a lion to out like a lamb, and April Showers, from
+// the first shower to May Day. For each: its days; where its progress is
+// kept in saved, as the night's is; and the words its card and its end are
+// told in. New Year's also has the ball on its card, dropping a notch with
+// each board of the countdown cleared, and words for each one cleared.
 const RUNS = {
   thanksgiving: {
     days: DAYS,
@@ -912,6 +914,17 @@ const RUNS = {
     score: "Your Valentine's score",
     over: ['Yes!', 'The question is answered: you have seen the love story through, from Cupid taking aim to the ring.'],
   },
+  spring: {
+    days: SPRING,
+    progress: () => saved.spring,
+    title: 'The Start of Spring: in like a lion, out like a lamb',
+    intro: "Eight boards, from a lion's head to a lamb, as March comes in like a lion and goes out like a lamb, the sky clearing as winter gives way to spring. Each chapter you reach can be played again.",
+    begin: 'Begin with the lion',
+    back: 'Back to the Start of Spring',
+    meanwhile: "The Start of Spring's chapters",
+    score: 'Your Start of Spring score',
+    over: ['Spring is here!', 'March came in like a lion and went out like a lamb: you have seen the season through, from the lion to the lamb in the new grass.'],
+  },
   showers: {
     days: SHOWERS,
     progress: () => saved.showers,
@@ -956,10 +969,9 @@ const named = (d) => d.called || d.name.replace(/^The /, 'the ');
 // What play() wants for a day's board: its options, the treats it gives or
 // none, in its own words or its holiday's, its nap, the words its turning
 // over is told in, its holiday's faces: Thanksgiving's, Christmas's, New
-// Year's, Groundhog Day's, Valentine's or April Showers', and Halloween's
-// for a holiday whose own are still to come, the Start of Spring's; and its
-// look, the parts of a board whose tiles are tinted by them, as May Day's
-// basket and the lion are.
+// Year's, Groundhog Day's, Valentine's, the Start of Spring's or April
+// Showers'; and its look, the parts of a board whose tiles are tinted by
+// them, as May Day's basket and the lion are.
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;
@@ -2038,8 +2050,13 @@ function showCard(title, text, actions, grid = [], lines = []) {
   lines.forEach(([what, how, n], k) => {
     const tr = table.insertRow();
     if (k === lines.length - 1) tr.className = 'total';
-    tr.insertCell().textContent = what;
-    tr.insertCell().textContent = how;
+    // A row with nothing to say for what it was for gives its name that
+    // room too, so that a long one, out like a lamb with no melted
+    // snowmen, keeps inside a phone's card, wrapping only if it must.
+    const name = tr.insertCell();
+    name.textContent = what;
+    if (how) tr.insertCell().textContent = how;
+    else name.colSpan = 2;
     tr.insertCell().textContent = k === lines.length - 1 ? signed(n, '') : signed(n);
   });
   const box = $('card-grid');

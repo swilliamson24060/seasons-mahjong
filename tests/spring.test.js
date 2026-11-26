@@ -15,14 +15,14 @@ const at = (L, z, y) => [...L.x.keys()].filter((i) => L.z[i] === z && L.y[i] ===
 // The locks at the sides of the lion's mane, at the board's edges.
 const sideLocks = () => [...LION.x.keys()].filter((i) => LION.z[i] === 0 && (LION.x[i] === 0 || LION.x[i] === 16));
 
-test('the Start of Spring is told in chapters, each its own board, none more than nine tiles across, and not ready while they are being made', () => {
+test('the Start of Spring is told in eight chapters, each its own board, none more than nine tiles across, and ready to play, all eight made', () => {
   for (const d of SPRING) {
     check(d.layout && d.title && d.text && d.sky, `${d.name} is not made`);
     check(d.layout.width / 2 <= 9, `${d.name}'s board is ${d.layout.width / 2} tiles across`);
   }
   equal(new Set(SPRING.map((d) => d.layout)).size, SPRING.length, 'boards, one a chapter');
-  check(SPRING.length <= 8, `${SPRING.length} chapters, more than eight`);
-  check(!theme('spring').ready, 'the Start of Spring ready, with its boards still being made');
+  equal(SPRING.length, 8, 'chapters');
+  check(theme('spring').ready, 'the Start of Spring not ready, with all eight of its boards made');
 });
 
 test('the first chapter is in like a lion, a lion\'s head, the gentle start: 84 tiles on four layers, nine across, and no twist', () => {
