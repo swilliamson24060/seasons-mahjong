@@ -38,6 +38,7 @@ import { tulipsOf, firstFlight, flyOn, makesHoney, honeyIn, foraging } from './b
 import { landingSpots, landingOf, knocks } from './snowballs.js';
 import { kindsLeft, firstSong, hear, songsIn, compose } from './song.js';
 import { windAt, upwindOf, inWind, windswept, catches } from './wind.js';
+import { tideAt, comingIn, rowsUp, covered, ebbing } from './tide.js';
 import { SOON, RESTLESS, hidingPlaces, hidingOf } from './clover.js';
 import { rowsOf, nextRow, emptied, sweptIn, cleaning } from './sweep.js';
 import { isEquinox, balancing } from './equinox.js';
@@ -177,7 +178,11 @@ export const TREATS = ['candle', 'key', 'cat'];
 // cleaning, sweep: whether the board's rows, each swept clean as its last
 // tile goes, score only swept from the top down (sweep.js); and on its day
 // and night, equinox: whether a pair with a tile from each half of the
-// board, day and night together, is an equinox pair (equinox.js).
+// board, day and night together, is an equinox pair (equinox.js); and on
+// the beach season's sandcastle, tide: { every, high }, the tide coming in
+// a row up the board every so many matches, as far as `high` rows, and
+// going back out, the rows under the water not to be taken from, and with
+// nothing else to take, the tide going out at once (tide.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -185,7 +190,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -319,7 +324,9 @@ export class Game {
                                   ? cleaning(this.sweepRows)
                                   : equinox
                                     ? balancing(table)
-                                    : null;
+                                    : tide
+                                      ? ebbing(table, tide.every, tide.high)
+                                      : null;
     // On New Year's 9, the rockets, 1 for a tile that is one, chosen by
     // where they lie, before the deal, so that it can be made with them.
     this.rockets = null;
@@ -625,6 +632,13 @@ export class Game {
     this.windEvery = wind ? wind.every : 0;
     this.upwind = wind ? upwindOf(layout) : null;
     this.windCaught = 0;
+    // On the beach season's sandcastle, how often the tide moves a row and
+    // how far it comes in, each tile's row up from the foot, and the match
+    // the tide last went out at, at once or from the start (tide.js).
+    this.tideEvery = tide ? tide.every : 0;
+    this.tideHigh = tide ? tide.high : 0;
+    this.rowsUp = tide ? rowsUp(layout) : null;
+    this.tideFrom = 0;
     // On its luck of the Irish, the four-leaf clover, { tile, shownAt, hidAt }:
     // the tile it hides on, the match after which that tile came free and it
     // showed, or null while it's hidden, and the match it hid after; or null
@@ -1859,9 +1873,36 @@ export class Game {
     return this.present[i] === 1 && (this.loose(i) || this.inWind(i) || isFree(this.layout, this.present, i));
   }
 
-  // Free to be taken: open, and not frozen.
+  // Free to be taken: open, not frozen, and out of the water.
   isFree(i) {
-    return this.open(i) && !this.frozen(i);
+    return this.open(i) && !this.frozen(i) && !this.underWater(i);
+  }
+
+  // On the sandcastle, the rows the tide covers now, whether it's coming in
+  // or going out, and the matches until it moves a row.
+  get tideLevel() {
+    return this.tideEvery ? tideAt(this.matches - this.tideFrom, this.tideEvery, this.tideHigh) : 0;
+  }
+
+  get tideComingIn() {
+    return this.tideEvery > 0 && comingIn(this.matches - this.tideFrom, this.tideEvery, this.tideHigh);
+  }
+
+  get untilTide() {
+    return this.tideEvery ? this.tideEvery - ((this.matches - this.tideFrom) % this.tideEvery) : Infinity;
+  }
+
+  // Whether a tile still on the board is under the water.
+  underWater(i) {
+    return this.tideEvery > 0 && this.present[i] === 1 && covered(this.rowsUp, this.tideLevel, i);
+  }
+
+  // With the tide in and nothing to take but what it covers, it goes out at
+  // once, to come in again from here. Returns whether it went.
+  ebb() {
+    if (!this.tideEvery || this.left === 0 || this.tideLevel === 0 || this.pairs().length) return false;
+    this.tideFrom = this.matches;
+    return true;
   }
 
   // Whether the store is still open: the list can be crossed off until the
@@ -2332,6 +2373,7 @@ export class Game {
     // showing, is a stroke of luck.
     const lucky = this.clover !== null && this.clover.shownAt !== null && (a === this.clover.tile || b === this.clover.tile);
     if (this.cloverWithin) entry.clover = { clover: this.clover, hidden: this.cloversHidden, found: this.cloversFound, lost: this.cloversLost }; // as it was, for an undo
+    if (this.tideEvery) entry.tideFrom = this.tideFrom; // as it was, for an undo
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
@@ -2350,6 +2392,10 @@ export class Game {
     }
     // And on its kite, every so many matches the wind turns.
     const windTurned = this.windEvery > 0 && this.left > 0 && this.matches % this.windEvery === 0 ? this.windFrom : -1;
+    // On the beach season's sandcastle, the tide coming in a row, or going
+    // out one.
+    const tideWas = this.tideEvery ? tideAt(this.matches - 1 - this.tideFrom, this.tideEvery, this.tideHigh) : 0;
+    const tideMoved = this.tideEvery > 0 && this.left > 0 && this.tideLevel !== tideWas ? (this.tideLevel > tideWas ? 'in' : 'out') : null;
     // On its flower bed, the bee flies on to another tulip.
     const flew = this.bee ? this.bee.at : -1;
     if (this.bee) this.bee = flyOn(this.tulips, this.bee, this.present, this.seed);
@@ -2577,6 +2623,7 @@ export class Game {
       newSong: Boolean(heard && heard.fresh),
       caughtWind,
       windTurned,
+      tideMoved,
       cloverFound,
       cloverLost,
       cloverShown,
@@ -2624,6 +2671,7 @@ export class Game {
     if (snowball >= 0 || knocked.length) this.emit('snow', result);
     if (heard && (heard.note || heard.broke || heard.fresh)) this.emit('song', result);
     if (caughtWind || windTurned >= 0) this.emit('wind', result);
+    if (tideMoved) this.emit('tide', result);
     if (cloverFound >= 0 || cloverLost >= 0 || cloverShown >= 0) this.emit('clover', result);
     if (cleaned && (cleaned.swept.length || cleaned.out.length)) this.emit('sweep', result);
     if (equinoxPair) this.emit('equinox', result);
@@ -2714,6 +2762,7 @@ export class Game {
       if (last.clover) Object.assign(this, { clover: last.clover.clover, cloversHidden: last.clover.hidden, cloversFound: last.clover.found, cloversLost: last.clover.lost });
       if (last.rows) this.rowsSwept = last.rows;
       if (last.equinox) this.equinoxPairs--;
+      if (last.tideFrom !== undefined) this.tideFrom = last.tideFrom;
       if (last.snow) {
         this.ice.set(last.snow.ice);
         this.snowLanded = last.snow.landed;
@@ -2734,6 +2783,7 @@ export class Game {
       if (last.confetti) this.confetti = last.confetti;
       if (last.couple) this.couple = last.couple;
       if (last.messages) this.messages = last.messages;
+      if (last.tideFrom !== undefined) this.tideFrom = last.tideFrom;
     }
     this.line = last.line;
     this.outlook = last.outlook;
@@ -2883,7 +2933,9 @@ export class Game {
                           ? pouring(this.layout, this.can, this.canMost, this.canLevel)
                           : this.tulips
                             ? foraging(this.tulips, this.seed, this.bee)
-                            : this.prefer;
+                            : this.tideEvery
+                              ? ebbing(this.layout, this.tideEvery, this.tideHigh, this.matches - this.tideFrom)
+                              : this.prefer;
       dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead(), prefer);
       const fine = (d) =>
         (!this.mirror || swansIn(this.layout, this.mirror, d.sides[this.side], this.present).length === swans) &&
@@ -2896,7 +2948,7 @@ export class Game {
     if (this.robin && this.sides.length === 1) dealt.sides[this.side] = compose(dealt.order, dealt.sides[this.side], (f) => MATCH[f], this.robin, this.seed, this.r);
     const busterTiles = this.busters && this.busters.map((d) => d.tiles.slice());
     const pails = this.pails && this.pails.map((p) => ({ ...p, tiles: p.tiles.slice() }));
-    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails, confetti: this.confetti, couple: this.couple, messages: this.messages });
+    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails, confetti: this.confetti, couple: this.couple, messages: this.messages, tideFrom: this.tideFrom });
     this.sides = dealt.sides;
     // The candy hearts go with the tiles, put on the new deal as the deal
     // put them, a message begun to be said next.
@@ -2941,6 +2993,9 @@ export class Game {
     if (cat) this.treats.cat--;
     else this.shuffles++;
     this.emit('shuffle', { cat });
+    // On the sandcastle, the new deal leaves nothing to take but what the
+    // water covers only when its order has the tide go out at once.
+    if (this.ebb()) this.emit('tide', { tideMoved: 'out', ebbed: true });
     return true;
   }
 
@@ -2955,6 +3010,7 @@ export class Game {
       turn: this.turnAhead ? { after: this.turnAt - this.matches, faces: this.sides[1] } : null,
       ice: this.iceAhead(),
       wind: this.windEvery ? { every: this.windEvery, at: this.matches, upwind: this.upwind } : null,
+      tide: this.tideEvery ? { every: this.tideEvery, high: this.tideHigh, phase: this.matches - this.tideFrom, rows: this.rowsUp } : null,
     };
   }
 
@@ -2983,18 +3039,31 @@ export class Game {
   }
 
   // Whether a line of pairs wins from here, the tiles turning over when they
-  // should, lost souls waking as they would, ice thawing as it would, and
-  // the March wind turning as it would.
+  // should, lost souls waking as they would, ice thawing as it would, the
+  // March wind turning as it would, and the tide coming in and going out as
+  // it would: a pair under the water is taken only as the tide goes out at
+  // once, with no other pair out of it to take.
   holds(line) {
     const p = Uint8Array.from(this.present);
     const sides = this.sides.map((s) => Int16Array.from(s));
     let matches = this.matches;
+    let tideFrom = this.tideFrom;
     for (const [x, y] of line) {
       const faces = sides[matches >= this.turnAt ? 1 : 0];
       const thawed = (i) => !this.ice || this.ice[i] <= matches;
       const windy = (i) => this.windEvery > 0 && inWind(this.upwind, windAt(matches, this.windEvery), p, i);
-      const free = (i) => p[i] === 1 && thawed(i) && (this.loose(i, faces) || windy(i) || isFree(this.layout, p, i));
-      if (!free(x) || !free(y) || MATCH[faces[x]] !== MATCH[faces[y]]) return false;
+      const open = (i) => p[i] === 1 && thawed(i) && (this.loose(i, faces) || windy(i) || isFree(this.layout, p, i));
+      if (!open(x) || !open(y) || MATCH[faces[x]] !== MATCH[faces[y]]) return false;
+      const level = this.tideEvery ? tideAt(matches - tideFrom, this.tideEvery, this.tideHigh) : 0;
+      if (level > 0 && (covered(this.rowsUp, level, x) || covered(this.rowsUp, level, y))) {
+        const kinds = new Set();
+        for (let i = 0; i < p.length; i++) {
+          if (!open(i) || covered(this.rowsUp, level, i)) continue;
+          if (kinds.has(MATCH[faces[i]])) return false; // another pair out of the water, to be taken instead
+          kinds.add(MATCH[faces[i]]);
+        }
+        tideFrom = matches;
+      }
       p[x] = p[y] = 0;
       if (++matches === this.turnAt) for (const t of soulsAt(this.layout, sides[1], p)) sides[1][t] = LOST;
     }
@@ -3006,8 +3075,10 @@ export class Game {
     this.outlook = 'unknown';
   }
 
-  // Tells the listeners when the board is won or nothing can be taken.
+  // Tells the listeners when the board is won or nothing can be taken; on
+  // the sandcastle, after the tide goes out at once if it must.
   settle() {
+    if (this.ebb()) this.emit('tide', { tideMoved: 'out', ebbed: true });
     if (this.won) this.emit('win', this);
     else if (this.stuck) this.emit('stuck', this);
   }

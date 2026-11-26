@@ -399,6 +399,17 @@ test("the Start of Spring is heard, and not too loud: a snowball landing and sno
   return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
+test("the beach season's tide is heard, and not too loud: coming in a row, and going out one", async () => {
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries({ 'the tide coming in': [1.8, (s) => s.tideIn()], 'the tide going out': [1.6, (s) => s.tideOut()] })) {
+    const peak = peakOf(await render('halloween', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${peaks.map((p) => p.toFixed(2)).join(' and ')}`;
+});
+
 test("April Showers' rain is heard, and not too loud: a raindrop landing, one caught and one dripping off the rim, splashes in the puddle, from the first to the tenth in a row, the rainbow's colours caught, the seedlings watered, blooming, picked and pulled up, the watering can filled, poured and tipped empty, a bee buzzing and making honey, and May morning, as April turns to May", async () => {
   const sounds = {
     'a raindrop landing': [0.6, (s) => s.raindrop()],

@@ -1,12 +1,13 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { SANDPAIL } from '../js/engine/layouts.js';
+import { SANDPAIL, SANDCASTLE } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
-import { SUMMER, summerOf, pailPart } from '../js/summer.js';
+import { SUMMER, summerOf, pailPart, castlePart } from '../js/summer.js';
 import { theme } from '../js/themes.js';
 
 const FIRST = SUMMER[0];
+const SECOND = SUMMER[1];
 
 // The tiles on a layer in a row, given in half tiles, by where each starts
 // across.
@@ -70,4 +71,34 @@ test("the pail's deals can be won in the order they were dealt, with the spade's
   for (const i of spadeHandle()) check(g.isFree(i), "a tile of the spade's handle is not free at the start");
   check(FIRST.text.includes("as the spade's handle is"), "the card doesn't tell the free-tile rule by the spade's handle");
   return `200 deals; ${(free / 200).toFixed(0)} tiles free at the start`;
+});
+
+test('the second chapter is the sandcastle: 92 tiles on two layers, nine across, every tile on a whole row, and the tide coming in every three matches, as far as three rows', () => {
+  equal(SECOND.name, 'The second chapter', "the second chapter's name");
+  equal(SECOND.title, 'The sandcastle', "the second chapter's title");
+  equal(summerOf(SANDCASTLE), SECOND, "the sandcastle's chapter");
+  check(Object.keys(layouts).includes('SANDCASTLE'), 'the sandcastle plays by its address, #play/sandcastle');
+  equal(SANDCASTLE.count, 92, 'tiles');
+  equal(SANDCASTLE.width / 2, 9, 'tiles across');
+  equal(SANDCASTLE.height / 2, 10, 'tiles down');
+  equal(SANDCASTLE.depth, 2, 'layers');
+  check([...SANDCASTLE.y].every((y) => y % 2 === 0), 'a tile off a whole row, for the tide to half cover');
+  check(SANDCASTLE.count > SANDPAIL.count, 'no more tiles than the pail');
+  equal(JSON.stringify(dayOptions(SECOND)), JSON.stringify({ treats: false, ghostsFloat: false, tide: { every: 3, high: 3 } }), 'the tide');
+  check(['Every three matches', "can't be taken", 'goes out at once'].every((w) => SECOND.text.includes(w)), "the card doesn't tell the tide");
+});
+
+test('the sandcastle reads as a sandcastle: two towers and a keep, their flags flying, their tops raised, the battlements, the wall with the gateway through its foot, the moat and the beach', () => {
+  equal(at(SANDCASTLE, 0, 0), '2,8,14', 'the flags over the towers and the keep');
+  equal(at(SANDCASTLE, 1, 2), '0,2,6,8,10,14,16', "the towers' and the keep's tops, raised");
+  equal(at(SANDCASTLE, 0, 8), '0,4,8,12,16', 'the battlements');
+  equal(at(SANDCASTLE, 0, 14), '0,2,4,12,14,16', "the castle's foot, the gateway through it");
+  equal(`${at(SANDCASTLE, 0, 16)} | ${at(SANDCASTLE, 0, 18)}`, '0,2,4,6,8,10,12,14,16 | 0,2,4,6,8,10,12,14,16', 'the moat and the beach, across the board');
+  const parts = {};
+  for (let i = 0; i < SANDCASTLE.count; i++) {
+    const p = castlePart(SANDCASTLE, i);
+    parts[p] = (parts[p] || 0) + 1;
+  }
+  equal(['flag', 'castle-top', 'castle', 'gate', 'moat', 'sand'].map((p) => `${p} ${parts[p]}`).join(', '), 'flag 3, castle-top 26, castle 42, gate 3, moat 9, sand 9', 'its parts, for its look');
+  equal(SECOND.look, castlePart, 'the sandcastle not tinted as its parts are');
 });

@@ -526,6 +526,18 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       toast(game.matches === game.windEvery ? `The wind turns: it blows from the ${from} now, and the tiles on the board's ${from} edge are loose.` : `The wind turns: from the ${from} now.`);
     }
   });
+  // On the beach season's sandcastle: every three matches the tide comes in
+  // a row, or goes out one, and with nothing to take but what the water
+  // covers, it goes out at once.
+  game.on('tide', ({ tideMoved, ebbed }) => {
+    if (tideMoved === 'in') {
+      sound.tideIn();
+      if (game.tideLevel === 1 && game.matches === game.tideEvery) toast("The tide's coming in: the bottom row is under the water, and its tiles can't be taken until it goes out again.");
+    } else {
+      sound.tideOut();
+      if (ebbed) toast('Nothing left to take but what the water covers: the tide goes out.');
+    }
+  });
   // On April Showers' watering can: a pair from its body fills it, if
   // there's room, and a pair of its drops pours it, if there's water in it.
   game.on('can', ({ b, canDoes }) => {
@@ -1775,6 +1787,15 @@ function update() {
     const from = WINDS[g.windFrom];
     $('wind').innerHTML = `🪁 <b>${g.windCaught}</b> · 🌬️ ${from[0].toUpperCase()} ⏳ ${g.untilWindTurns}`;
     $('wind').setAttribute('aria-label', `The wind blows from the ${from}, and turns in ${matchWords(g.untilWindTurns)}; ${g.windCaught} ${g.windCaught === 1 ? 'pair has' : 'pairs have'} caught it`);
+  }
+  // On the beach season's sandcastle, the rows the tide covers, coming in
+  // or going out, and the matches until it moves.
+  $('tide').hidden = !g.tideEvery;
+  if (g.tideEvery) {
+    const level = g.tideLevel;
+    const way = g.tideComingIn ? 'coming in' : 'going out';
+    $('tide').innerHTML = level ? `🌊 <b>${level}</b> ${g.tideComingIn ? '↑' : '↓'} ⏳ ${g.untilTide}` : `🌊 out ⏳ ${g.untilTide}`;
+    $('tide').setAttribute('aria-label', level ? `The tide covers the bottom ${level === 1 ? 'row' : `${level} rows`} and is ${way}; it moves in ${matchWords(g.untilTide)}` : `The tide is out; it comes in in ${matchWords(g.untilTide)}`);
   }
   // On its watering can, how full it is, and the pours made.
   $('can').hidden = !g.can;

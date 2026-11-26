@@ -1378,6 +1378,50 @@ body.covered #board {
   --face-2: #f2c7b8;
 }
 
+/* On its sandcastle, the castle is packed sand, its raised tops and its
+   battlements lighter, catching the sun, its flags red and the lintel
+   over its gate a shadowy brown; the moat is the sea's blue, and the beach
+   golden, as the pail's sand is. */
+.tile[data-look='castle'] {
+  --face-1: #f9e3bb;
+  --face-2: #d4a35f;
+}
+
+.tile[data-look='castle-top'] {
+  --face-1: #fff1d8;
+  --face-2: #e6bd7f;
+}
+
+.tile[data-look='flag'] {
+  --face-1: #ffe0dc;
+  --face-2: #e8493c;
+}
+
+.tile[data-look='gate'] {
+  --face-1: #f1d2b0;
+  --face-2: #9a6a3c;
+}
+
+.tile[data-look='moat'] {
+  --face-1: #e2f4ff;
+  --face-2: #4a9fd8;
+}
+
+/* A tile the tide covers lies under the sea's blue, light rippling on it,
+   until the tide goes out. */
+.tile.underwater::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(60% 14% at 30% 22%, rgba(255, 255, 255, 0.55), transparent 70%),
+    radial-gradient(50% 12% at 72% 58%, rgba(255, 255, 255, 0.4), transparent 70%),
+    linear-gradient(rgba(70, 160, 220, 0.55), rgba(30, 110, 180, 0.62));
+  box-shadow: inset 0 0 0 calc(var(--tile-w) * 0.035) rgba(40, 120, 190, 0.8);
+  pointer-events: none;
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers

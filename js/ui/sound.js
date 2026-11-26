@@ -1699,6 +1699,22 @@ export class Sound {
     this.whistle(this.now + 0.05, 880, 1320, 0.25, 0.05);
   }
 
+  // On the beach season's sandcastle, the tide coming in a row: a wave
+  // rolling up the beach and spreading, its foam hissing.
+  tideIn() {
+    if (!this.on) return;
+    this.rustle(this.now, 1.2, 250, 1100, 0.26);
+    this.rustle(this.now + 0.4, 0.9, 2600, 5200, 0.08);
+  }
+
+  // The tide going out a row: the wave drawing back down the beach, and
+  // the shingle rattling after it.
+  tideOut() {
+    if (!this.on) return;
+    this.rustle(this.now, 1, 1000, 260, 0.23);
+    for (let k = 0; k < 8; k++) this.rustle(this.now + 0.35 + k * 0.06 + Math.random() * 0.03, 0.03, 3000, 2000, 0.08);
+  }
+
   // The Start of Spring's shuffle, a March gust blowing the tiles about: the
   // wind rushing up, buffeting, and dying away, the tiles skittering in it.
   marchGust() {

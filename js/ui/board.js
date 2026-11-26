@@ -694,6 +694,7 @@ export class Board {
       const melt = g.thawIn(i);
       return `${name}, snowed in: take a pair beside it to knock the snow off, or it melts in ${melt} ${melt === 1 ? 'match' : 'matches'}`;
     }
+    if (g.underWater(i)) return `${name}, under the water: it can't be taken until the tide goes out`;
     if (g.rules.equinox) {
       const side = sideOf(g.layout, i);
       return side ? `${name}, on the ${side} side: take it with a tile from the ${side === 'day' ? 'night' : 'day'} side for an equinox pair` : `${name}, on the scales' post, on neither side`;
@@ -875,6 +876,9 @@ export class Board {
       else delete el.dataset.wind;
       // On its spring cleaning, the row to sweep next is marked.
       el.classList.toggle('sweep-next', g.inRowToSweep(i));
+      // On the beach season's sandcastle, a tile under the water lies under
+      // the sea's blue.
+      el.classList.toggle('underwater', g.underWater(i));
       // On its luck of the Irish, the tile a four-leaf clover shows on
       // carries it, with the matches it keeps for, deeper at the last.
       const lucky = g.hasClover(i);

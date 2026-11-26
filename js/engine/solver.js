@@ -3,6 +3,7 @@ import { KINDS, MATCH, GHOST, LOST } from './tiles.js';
 import { soulsAt } from './midnight.js';
 import { seeded } from './rng.js';
 import { WINDS, windAt, inWind, acrossOf } from './wind.js';
+import { tideAt, covered } from './tide.js';
 
 // Tuned on a few thousand turtle deals: how much more a pair counts for when
 // it frees a tile whose match is already free, how widely ties are broken,
@@ -40,12 +41,18 @@ const BOTH = 3;
 // and each tile's upwind tiles (wind.js), the tiles on the edge it blows on
 // loose as the pairs taken in the search turn it. With the wind blowing,
 // nothing is taken without searching: a kind's tiles all free now may not
-// all be once the wind turns.
+// all be once the wind turns. And tide, on the beach season's sandcastle:
+// { every, high, phase, rows }, how often it moves a row and how far it
+// comes in, the matches it is into its coming and going, and each tile's
+// row up from the foot (tide.js), the rows under the water not to be taken
+// from, and the tide going out at once with nothing else to take. With the
+// tide moving, too, nothing is taken without searching, and a position is
+// remembered with the tide's place in its coming and going.
 //
 // Returns { result, line, steps }, where result is 'win', 'lost', or
 // 'unknown' when the budget of steps ran out first.
 export function solve(L, position, { budget = 200000 } = {}) {
-  const { faces, unlocked = null, ghostsFloat = false, soulsFloat = false, turn = null, ice = null, wind = null } = position;
+  const { faces, unlocked = null, ghostsFloat = false, soulsFloat = false, turn = null, ice = null, wind = null, tide = null } = position;
   const n = L.count;
   const K = KINDS.length;
   const present = Uint8Array.from(position.present);
@@ -57,7 +64,11 @@ export function solve(L, position, { budget = 200000 } = {}) {
   const loose = (i) => (unlocked !== null && unlocked[i] === 1) || (ghostsFloat && cur[i] === GHOST) || (soulsFloat && cur[i] === LOST);
   let taken = 0; // the pairs taken so far at this point of the search, which thaw the ice and turn the wind
   const windy = (i) => wind !== null && inWind(wind.upwind, windAt(wind.at + taken, wind.every), present, i);
-  const free = (i) => (ice === null || ice[i] <= taken) && (loose(i) || windy(i) || isFree(L, present, i));
+  let ebbed = tide ? -tide.phase : 0; // the pairs taken when the tide last went out, counted from this position
+  const level = () => (tide ? tideAt(taken - ebbed, tide.every, tide.high) : 0);
+  const wet = (i) => tide !== null && covered(tide.rows, level(), i);
+  const free = (i) => (ice === null || ice[i] <= taken) && !wet(i) && (loose(i) || windy(i) || isFree(L, present, i));
+  const cycle = tide ? 2 * tide.high * tide.every : 1;
   const r = seeded(7);
   const line = [];
   const dead = new Set();
@@ -146,14 +157,22 @@ export function solve(L, position, { budget = 200000 } = {}) {
   let turnLeft = -1; // the tiles left at the stroke of midnight
 
   let total = 0; // the tiles there were to begin with
+  // A position searched, the tide put back as it was on the way out of it,
+  // for one that went out at once in it.
   const search = (left) => {
+    const before = ebbed;
+    const won = node(left);
+    ebbed = before;
+    return won;
+  };
+  const node = (left) => {
     if (left === 0) return true;
     taken = (total - left) / 2;
     if (++steps > limit) {
       cut = true;
       return false;
     }
-    const key = keyOf(present) + souls;
+    const key = keyOf(present) + souls + (tide ? `~${(taken - ebbed) % cycle}` : '');
     if (dead.has(key)) return false;
 
     const tiles = [];
@@ -172,7 +191,7 @@ export function solve(L, position, { budget = 200000 } = {}) {
 
     if (settled) {
       if (hopeless(tiles, left)) return lost(key);
-      const forced = wind ? -1 : open.findIndex((o, k) => o.length > 0 && o.length === tiles[k].length);
+      const forced = wind || tide ? -1 : open.findIndex((o, k) => o.length > 0 && o.length === tiles[k].length);
       if (forced >= 0) {
         const o = open[forced];
         for (const i of o) present[i] = 0;
@@ -194,6 +213,12 @@ export function solve(L, position, { budget = 200000 } = {}) {
           moves.push({ a, b, score: frees(a, b, open) + both + L.z[a] + L.z[b] + r() * NOISE });
         }
       }
+    }
+    // With nothing to take but what the water covers, the tide goes out at
+    // once, and the same tiles are looked at again, dry.
+    if (!moves.length && level() > 0) {
+      ebbed = taken;
+      return node(left);
     }
     moves.sort((m1, m2) => m2.score - m1.score);
     for (const { a, b } of moves) {

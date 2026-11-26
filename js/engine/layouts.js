@@ -3400,3 +3400,31 @@ export const SANDPAIL = parseLayout('Sand pail', [
   ..>>.....
   `,
 ]);
+
+// The Summer Beach Season's second board: the sandcastle, two towers and a
+// keep between them, each with a flag flying over it and its top raised,
+// the battlements along the wall below them, and the wall, the gateway
+// through its foot under the gate's lintel, over the moat and the beach
+// (summer.js has their parts, for their look). Every tile lies on a whole
+// row, for the tide to cover row by row. 92 tiles on two layers, nine
+// across and ten down.
+export const SANDCASTLE = parseLayout('Sandcastle', [
+  `
+  .#..#..#.
+  ##.###.##
+  ##.###.##
+  ##.###.##
+  #.#.#.#.#
+  #########
+  #########
+  ###...###
+  #########
+  #########
+  `,
+  `
+  .........
+  ##.###.##
+  ##.###.##
+  ##.###.##
+  `,
+]);
