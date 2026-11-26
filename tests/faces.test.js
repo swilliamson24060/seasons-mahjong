@@ -5,14 +5,15 @@ import { DAYS } from '../js/thanksgiving.js';
 import { TWELVE_DAYS } from '../js/christmas.js';
 import { COUNTDOWN } from '../js/newyear.js';
 import { SHOWERS } from '../js/showers.js';
+import { SPRING } from '../js/spring.js';
 import { Game } from '../js/engine/game.js';
 import { TURTLE } from '../js/engine/layouts.js';
 import { Board } from '../js/ui/board.js';
 
 const INDEXED = ['eyes', 'bones', 'graves', 'monster', 'flower', 'moon'];
 
-test("there are Halloween's faces, Thanksgiving's, Christmas's, New Year's, Groundhog Day's, Valentine's, April Showers' and the turtle's own, each a drawing of every face", () => {
-  equal(FACE_SETS.join(' '), 'halloween thanksgiving christmas new-year groundhog valentines showers turtle', 'the sets');
+test("there are Halloween's faces, Thanksgiving's, Christmas's, New Year's, Groundhog Day's, Valentine's, April Showers', the turtle's own and the Start of Spring's, each a drawing of every face", () => {
+  equal(FACE_SETS.join(' '), 'halloween thanksgiving christmas new-year groundhog valentines showers turtle spring', 'the sets');
   const svg = sprite();
   const ids = [...svg.querySelectorAll('symbol')].map((s) => s.id);
   equal(ids.length, FACES.length * FACE_SETS.length + 1, 'symbols, and the egg'); // the egg a tile hides in, on the hens' board
@@ -28,10 +29,10 @@ test("there are Halloween's faces, Thanksgiving's, Christmas's, New Year's, Grou
   return `${ids.length} faces`;
 });
 
-test("Halloween's faces keep their names, and Thanksgiving's, Christmas's, New Year's, Groundhog Day's, Valentine's, April Showers' and the turtle's have names of their own", () => {
+test("Halloween's faces keep their names, and Thanksgiving's, Christmas's, New Year's, Groundhog Day's, Valentine's, April Showers', the turtle's and the Start of Spring's have names of their own", () => {
   for (const f of FACES) equal(faceName(f.id), f.name, f.key);
   for (const k of KINDS) equal(kindName(k.id), k.name, k.key);
-  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'showers', 'turtle']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'showers', 'turtle', 'spring']) {
     const names = new Map();
     for (const f of FACES) {
       const name = faceName(f.id, set);
@@ -101,6 +102,15 @@ test("Halloween's faces keep their names, and Thanksgiving's, Christmas's, New Y
   equal(kindName(MATCH[FACE.nightshade], 'turtle'), 'Pond flower', "the turtle's flowers");
   equal(kindName(MATCH[FACE['full-moon']], 'turtle'), 'Pond shell', "the turtle's moons");
   equal(faceName(FACE['lost-soul'], 'turtle'), 'Shy turtle', "the turtle's lost soul, tucked into his shell");
+  equal(faceName(FACE['eyes-3'], 'spring'), "Three of Robin's eggs", "the Start of Spring's three of eyes");
+  equal(faceName(FACE['bones-9'], 'spring'), 'Nine of Shoots', "the Start of Spring's nine of bones");
+  equal(faceName(FACE['graves-1'], 'spring'), 'One of Kites', "the Start of Spring's one of graves");
+  equal(['vampire', 'werewolf', 'mummy', 'zombie'].map((k) => faceName(FACE[k], 'spring')).join(', '), 'East wind, South wind, West wind, North wind', 'the four winds of March, for the monsters');
+  equal(['lantern', 'brew', 'ghost'].map((k) => faceName(FACE[k], 'spring')).join(', '), 'Robin, Shamrock, Lamb', 'the red, the green and the white');
+  equal(kindName(MATCH[FACE.nightshade], 'spring'), 'March flower', "the Start of Spring's flowers");
+  equal(['nightshade', 'foxglove', 'hemlock', 'wolfsbane'].map((k) => faceName(FACE[k], 'spring')).join(', '), 'Primrose, Hyacinth, Forsythia, Magnolia', "March's flowers");
+  equal(kindName(MATCH[FACE['full-moon']], 'spring'), 'Hour of the equinox', "the Start of Spring's moons");
+  equal(['new-moon', 'waxing-moon', 'full-moon', 'waning-moon'].map((k) => faceName(FACE[k], 'spring')).join(', '), 'Dawn, Noon, Dusk, Midnight', "the equinox's day, equal to its night");
 });
 
 test("on Twelfth Night a tile left without a partner turns to coal, as Christmas's lost soul is drawn", () => {
@@ -118,14 +128,26 @@ test("on May Day a tile left without a partner is a wilted flower, as April Show
   check(SHOWERS.at(-1).text.includes('a flower that wilted'), "May Day's card says what a tile left without a partner becomes");
 });
 
+test("out like a lamb, a tile left without a partner is a melted snowman, as the Start of Spring's lost soul is drawn", () => {
+  equal(faceName(FACE['lost-soul'], 'spring'), 'Melted snowman', "the Start of Spring's lost soul");
+  check(SPRING.at(-1).text.includes('a snowman, melted'), "out like a lamb's card says what a tile left without a partner becomes");
+});
+
 test("each set's corner numbers have a colour by day and by night", async () => {
   const css = await (await fetch('css/game.css')).text();
-  for (const prefix of ['index', 'index-tg', 'index-xm', 'index-ny', 'index-gh', 'index-vl', 'index-sh', 'index-tt']) {
+  for (const prefix of ['index', 'index-tg', 'index-xm', 'index-ny', 'index-gh', 'index-vl', 'index-sh', 'index-tt', 'index-sp']) {
     for (const group of INDEXED) {
       const found = css.match(new RegExp(`--${prefix}-${group}:\\s*#[0-9a-f]{6};`, 'g')) || [];
       equal(found.length, 2, `--${prefix}-${group}, by day and by night`);
     }
   }
+});
+
+test('the faces page offers every set of faces, each once', async () => {
+  const page = new DOMParser().parseFromString(await (await fetch('faces.html')).text(), 'text/html');
+  const offered = [...page.querySelectorAll('#set option')].map((o) => o.value);
+  equal(new Set(offered).size, offered.length, 'sets offered once each');
+  equal([...offered].sort().join(' '), [...FACE_SETS].sort().join(' '), 'the sets the faces page offers');
 });
 
 test("Friendsgiving's card names the dishes as Thanksgiving's faces draw them", () => {
@@ -164,6 +186,8 @@ test("a board's tiles can change to another set's faces, each tile the same face
   wears('showers');
   board.setFaces('turtle');
   wears('turtle');
+  board.setFaces('spring');
+  wears('spring');
   board.setFaces('halloween');
   wears('halloween');
 });

@@ -115,6 +115,16 @@ export const GIFTS = {
     used: { candle: 'The firefly lights up a match, for free.', cat: 'A ripple runs across the pond: a free shuffle.', key: 'Choose a blocked tile for the frog to hop free.' },
     keyName: 'frog',
   },
+  spring: {
+    icons: { candle: '🪁', key: '🐑', cat: '🌬️' },
+    names: { candle: 'a kite, to spot you a match', key: 'a lamb, to nudge a blocked tile free', cat: 'a March gust, for a free shuffle' },
+    buttons: { key: 'Lamb', cat: 'Gust' },
+    help: { candle: 'A kite flies up and spots you a match, for free.', key: 'A lamb nudges one blocked tile free.', cat: 'A March gust blows the tiles about, for free.' },
+    came: (name) => `A gift of the spring: ${name}.`,
+    from: () => 'Each pair of robins brings a gift of the spring.',
+    used: { candle: 'The kite spots you a match from up high, for free.', cat: 'A March gust blows the tiles about: a free shuffle.', key: 'Choose a blocked tile for the lamb to nudge free.' },
+    keyName: 'lamb',
+  },
 };
 
 // How a board's turning over is told: Halloween's midnight, or its sunrise
@@ -259,7 +269,7 @@ export const TURNS = {
 
 // The turning over each holiday's tiles are told in, on a board outside
 // its own that turns over.
-const TURN_OF = { halloween: 'midnight', thanksgiving: 'sundown', christmas: 'twelfth', 'new-year': 'newyear', groundhog: 'forecast', valentines: 'question', showers: 'may', turtle: 'dusk' };
+const TURN_OF = { halloween: 'midnight', thanksgiving: 'sundown', christmas: 'twelfth', 'new-year': 'newyear', groundhog: 'forecast', valentines: 'question', showers: 'may', turtle: 'dusk', spring: 'lamb' };
 
 // The words a board outside the holidays' own is told in: those of the
 // tiles it wears, or Halloween's for tiles with none of their own.

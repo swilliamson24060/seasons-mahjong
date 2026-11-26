@@ -408,6 +408,13 @@ body.covered #board {
   --index-tt-monster: #2f6a5e;
   --index-tt-flower: #c2407a;
   --index-tt-moon: #45577a;
+  /* The Start of Spring's: the robin's eggs' blue, the shoots' green, the kites' red, the winds' slate, the hyacinth's violet and dusk's orange. */
+  --index-sp-eyes: #1f78ad;
+  --index-sp-bones: #2e8a3a;
+  --index-sp-graves: #c0392b;
+  --index-sp-monster: #4a6283;
+  --index-sp-flower: #6b4fc8;
+  --index-sp-moon: #c8611c;
   position: absolute;
   width: calc(var(--tile-w) - var(--gap));
   height: calc(var(--tile-h) - var(--gap));
@@ -1936,6 +1943,12 @@ body.covered #board {
   --index-tt-monster: #8fdcc8;
   --index-tt-flower: #ffa6cc;
   --index-tt-moon: #a8bcf0;
+  --index-sp-eyes: #9fdcf8;
+  --index-sp-bones: #9ee68a;
+  --index-sp-graves: #ff9a8a;
+  --index-sp-monster: #b6c8e6;
+  --index-sp-flower: #c6b6ff;
+  --index-sp-moon: #ffb27a;
 }
 
 .tile.night svg {
@@ -1950,8 +1963,10 @@ body.covered #board {
    Year's is a sleepyhead, glowing a dreamy lilac; Groundhog Day's is the
    groundhog's shadow, glowing the pale blue of snow at dusk;
    Valentine's is a broken heart, glowing a tender pink; and April
-   Showers' is a wilted flower, glowing a faded rose; and the turtle's is a
-   shy turtle, tucked into his shell, glowing a pond green. */
+   Showers' is a wilted flower, glowing a faded rose; the Start of
+   Spring's is a snowman, melted, glowing the clear blue of meltwater; and
+   the turtle's is a shy turtle, tucked into his shell, glowing a pond
+   green. */
 [data-faces='christmas'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(255, 128, 48, 0.9));
 }
@@ -1970,6 +1985,10 @@ body.covered #board {
 
 [data-faces='showers'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(222, 178, 200, 0.95));
+}
+
+[data-faces='spring'] .tile.soul svg {
+  filter: drop-shadow(0 0 4px rgba(150, 218, 255, 0.95));
 }
 
 [data-faces='turtle'] .tile.soul svg {
