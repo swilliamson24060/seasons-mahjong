@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER, LIEBESTRAUM, SECOND_TIME, DREAM_LINE, DREAM_HARMONY, PRELUDE, PRELUDE_LEFT, SECOND_PHRASE, RAINDROP, GYMNOPEDIE, GYMNOPEDIE_LEFT } from '../js/ui/sound.js';
+import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER, LIEBESTRAUM, SECOND_TIME, DREAM_LINE, DREAM_HARMONY, PRELUDE, PRELUDE_LEFT, SECOND_PHRASE, RAINDROP, GYMNOPEDIE, GYMNOPEDIE_LEFT, SPRING_SONG, SPRING_SONG_LEFT, THEME_AGAIN } from '../js/ui/sound.js';
 
 // A Sound playing into an offline context, `seconds` long, for Thanksgiving
 // or another holiday: what it plays is rendered, to be measured as numbers.
@@ -53,11 +53,11 @@ test("We Gather Together's four voices keep time together, sixteen bars of 3/4 f
 
 test("each holiday's music goes with its tiles, every one made having its own, and Halloween's the rest until theirs come", () => {
   const s = new Sound();
-  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'showers', 'turtle', 'halloween']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'spring', 'showers', 'turtle', 'halloween']) {
     s.use(set);
     equal(s.set, set, set);
   }
-  s.use('spring');
+  s.use('summer');
   equal(s.set, 'halloween', 'a holiday whose music is still to come');
 });
 
@@ -73,6 +73,21 @@ test("Chopin's Raindrop keeps time: eight bars of 4/4, the theme and the theme a
   equal(RAINDROP % 12, 8, 'the raindrop an A flat');
   equal(PRELUDE.at(-1)[0] % 12, 1, 'ending on D flat');
   check(PRELUDE.every(([note]) => [1, 3, 5, 6, 8, 10, 0, 2].includes(note % 12)), "a note outside D flat's scale, but for the run's D");
+});
+
+test("Mendelssohn's Spring Song keeps time: fifteen bars of 2/4, the theme to its half close on E and the theme again to its close on A", () => {
+  const beats = (notes) => notes.reduce((n, [, b]) => n + b, 0);
+  equal(beats(SPRING_SONG), 15 * 2, 'beats: fifteen bars');
+  equal(beats(SPRING_SONG.slice(0, THEME_AGAIN)), 8 * 2, 'the theme again not from the ninth bar');
+  equal(SPRING_SONG.slice(0, 10).join(' '), SPRING_SONG.slice(THEME_AGAIN, THEME_AGAIN + 10).join(' '), 'the theme the second time opening as the first does');
+  equal(SPRING_SONG.slice(0, 8).map(([note]) => note).join(' '), '73 74 75 76 81 76 74 73', 'the opening: C sharp, running up through D and D sharp to E, the leap to A, and down through E and D to C sharp');
+  equal(SPRING_SONG[THEME_AGAIN - 1][0] % 12, 4, 'the theme coming to its half close on E');
+  const outside = [...new Set(SPRING_SONG.map(([note]) => note).filter((note) => ![9, 11, 1, 2, 4, 6, 8].includes(note % 12)))].sort((a, b) => a - b);
+  equal(outside.join(' '), '70 72 75', "the notes outside A major's scale: the runs' A sharp, B sharp and D sharp");
+  equal(SPRING_SONG.at(-1)[0] % 12, 9, 'ending on A');
+  equal(SPRING_SONG_LEFT.length, 15, "the left hand's bars");
+  check(SPRING_SONG_LEFT.every(([, chord]) => chord.length >= 3), 'a bar without its chord');
+  equal(SPRING_SONG_LEFT.map(([bass]) => 'C C# D D# E F F# G G# A A# B'.split(' ')[bass % 12]).join(' '), 'A C# D B G# A F# E A C# D A# B E A', 'the bass, bar by bar');
 });
 
 test("Satie's first Gymnopédie keeps time: four bars of chords, then the tune's two phrases, twenty-one bars of 3/4, a bass and a chord to each", () => {
@@ -121,6 +136,26 @@ test("April Showers' music is all heard, and none too loud", async () => {
   const peaks = [];
   for (const [name, [seconds, play]] of Object.entries(sounds)) {
     const peak = peakOf(await render('showers', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
+});
+
+test("the Start of Spring's music is all heard, and none too loud", async () => {
+  const sounds = {
+    'a match': [2.4, (s) => s.match()],
+    'a chapter cleared': [13, (s) => s.win({ day: 0 })],
+    'the season seen through': [23, (s) => s.win({ day: 7, last: true })],
+    'a March gust, for a shuffle': [1.6, (s) => s.shuffle()],
+    "a robin's chirp, for a hint": [0.8, (s) => s.hint()],
+    "a kite's string, for a treat": [2.6, (s) => s.treat()],
+    "the lion's roar, with no pairs left": [2, (s) => s.stuck()],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('spring', seconds, play));
     peaks.push(peak);
     check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
     check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
