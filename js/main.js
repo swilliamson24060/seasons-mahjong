@@ -8,6 +8,7 @@ import { GROUNDHOG_DAY, groundhogOf, dayKey, daySeed, streakOf, weekTo } from '.
 import { LOVE_STORY, chapterOf } from './valentines.js';
 import { SHOWERS, showerOf } from './showers.js';
 import { SPRING, springOf } from './spring.js';
+import { summerOf } from './summer.js';
 import { BANDS } from './engine/colours.js';
 import { WINDS } from './engine/wind.js';
 import { GIFTS, TURNS, wordsOf } from './words.js';
@@ -843,14 +844,16 @@ function holidayOf(layout) {
   if (chapterOf(layout)) return theme('valentines');
   if (showerOf(layout)) return theme('showers');
   if (springOf(layout)) return theme('spring');
+  if (summerOf(layout)) return theme('summer');
   return newYearOf(layout) ? theme('new-year') : null;
 }
 
 // The day a board is for, if it is one of Thanksgiving week's, one of
 // Christmas's twelve, one of New Year's, its countdown's or New Year's
-// Day's, a chapter of Valentine's love story, of the Start of Spring's or
-// of April Showers': played freely, it plays by that day's rules.
-const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(layout) || groundhogOf(layout) || chapterOf(layout) || springOf(layout) || showerOf(layout);
+// Day's, a chapter of Valentine's love story, of the Start of Spring's, of
+// April Showers' or of the beach season's: played freely, it plays by that
+// day's rules.
+const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(layout) || groundhogOf(layout) || chapterOf(layout) || springOf(layout) || showerOf(layout) || summerOf(layout);
 
 // ------------- Thanksgiving week, Christmas's twelve days, and New Year's boards
 
@@ -970,8 +973,9 @@ const named = (d) => d.called || d.name.replace(/^The /, 'the ');
 // none, in its own words or its holiday's, its nap, the words its turning
 // over is told in, its holiday's faces: Thanksgiving's, Christmas's, New
 // Year's, Groundhog Day's, Valentine's, the Start of Spring's or April
-// Showers'; and its look, the parts of a board whose tiles are tinted by
-// them, as May Day's basket and the lion are.
+// Showers', and Halloween's for a holiday whose own are still to come, the
+// beach season's; and its look, the parts of a board whose tiles are
+// tinted by them, as May Day's basket and the lion are.
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;

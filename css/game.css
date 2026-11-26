@@ -1329,6 +1329,55 @@ body.covered #board {
   --face-2: #f1d457;
 }
 
+/* On the Summer Beach Season's first board, a pail and spade, the pail is
+   a bright red, its rim deeper, the band round it sunny yellow and the
+   starfish on it orange, its handle white; the spade is blue, its grip
+   deeper; and the sand is golden, the shells on it a pale pink. */
+.tile[data-look='pail'] {
+  --face-1: #ffd7cf;
+  --face-2: #e8493c;
+}
+
+.tile[data-look='pail-rim'] {
+  --face-1: #ffc4ba;
+  --face-2: #c22f25;
+}
+
+.tile[data-look='pail-band'] {
+  --face-1: #fff6cf;
+  --face-2: #f2c33b;
+}
+
+.tile[data-look='starfish'] {
+  --face-1: #ffe2c8;
+  --face-2: #f08a3c;
+}
+
+.tile[data-look='pail-handle'] {
+  --face-1: #ffffff;
+  --face-2: #c9d2da;
+}
+
+.tile[data-look='spade'] {
+  --face-1: #e6f4ff;
+  --face-2: #3b8fd6;
+}
+
+.tile[data-look='spade-grip'] {
+  --face-1: #e6f4ff;
+  --face-2: #2a6fb0;
+}
+
+.tile[data-look='sand'] {
+  --face-1: #fff4d8;
+  --face-2: #e8c886;
+}
+
+.tile[data-look='shell'] {
+  --face-1: #fffaf2;
+  --face-2: #f2c7b8;
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers
