@@ -5,6 +5,7 @@ import { BANDS, bandOf } from '../engine/colours.js';
 import { plotOf } from '../engine/watering.js';
 import { partOf } from '../engine/pour.js';
 import { WINDS } from '../engine/wind.js';
+import { sideOf } from '../engine/equinox.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const LIFT = 0.11; // how far each layer sits up and to the right, in tile widths
@@ -693,6 +694,10 @@ export class Board {
       const melt = g.thawIn(i);
       return `${name}, snowed in: take a pair beside it to knock the snow off, or it melts in ${melt} ${melt === 1 ? 'match' : 'matches'}`;
     }
+    if (g.rules.equinox) {
+      const side = sideOf(g.layout, i);
+      return side ? `${name}, on the ${side} side: take it with a tile from the ${side === 'day' ? 'night' : 'day'} side for an equinox pair` : `${name}, on the scales' post, on neither side`;
+    }
     if (g.inRowToSweep(i)) return `${name}, in the row to sweep next: take every tile of it, on every layer, to sweep it clean`;
     if (g.hasClover(i)) return `${name}, with a four-leaf clover on it: take it with a tile of its kind within ${g.cloverLeft} ${g.cloverLeft === 1 ? 'match' : 'matches'}, for a stroke of luck`;
     if (g.inWind(i)) return `${name}, on the edge the wind blows on, from the ${WINDS[g.windFrom]}: free to take, and a pair with it catches the wind`;
@@ -893,7 +898,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips || g.snowEvery || g.robin || g.windEvery || g.cloverWithin || g.sweepRows) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips || g.snowEvery || g.robin || g.windEvery || g.cloverWithin || g.sweepRows || g.rules.equinox) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

@@ -3245,3 +3245,57 @@ export const WINDOW = parseLayout('Window', [
   ..#...#..
   `,
 ]);
+
+// The Start of Spring's seventh board: day and night, the sun and the moon
+// in balance on a pair of scales at the equinox: the beam across the top,
+// raised at its ends and highest over the post; the post down the middle
+// to a stepped base; the pans hanging level, raised; the sun in the left
+// pan, a disc raised to a dome, its rays at its corners; and the moon in
+// the right, a crescent raised along its back, stars at its corners. The
+// left half is day and the right half night, 57 tiles each, day and night
+// equal, and the post, 18 tiles, neither (spring.js has its parts, for its
+// look). 132 tiles on four layers, nine across and ten down.
+export const SCALES = parseLayout('Scales', [
+  `
+  #########
+  #########
+  #####.###
+  #####..##
+  #####.###
+  #########
+  #########
+  >>>.#>>>.
+  ...###...
+  ..#####..
+  `,
+  `
+  >>>>>>>>.
+  ....v.++.
+  +++...++.
+  +++.v.++.
+  ......++.
+  ....v....
+  >>>..>>>.
+  ....v....
+  .........
+  ..>>>>...
+  `,
+  `
+  .>.>>.>..
+  .........
+  ......>>.
+  .##....>.
+  .>....>>.
+  ....#....
+  .##...##.
+  ....#....
+  .........
+  ....#....
+  `,
+  `
+  ....#....
+  .........
+  .........
+  .+.....>.
+  `,
+]);

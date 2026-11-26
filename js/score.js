@@ -44,8 +44,9 @@
 // first robin, each of her songs sung back, pairs of its three kinds taken
 // in her order; on its kite, each pair that caught the wind, a tile of it on
 // the edge the wind blows on; on its luck of the Irish, each four-leaf
-// clover found, its tile taken while it keeps; and on its spring cleaning,
-// each row swept clean from the top down, by its tiles.
+// clover found, its tile taken while it keeps; on its spring cleaning, each
+// row swept clean from the top down, by its tiles; and on its day and night,
+// each equinox pair, a tile from each half of the board.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -98,6 +99,7 @@ export const POINTS = {
   wind: 5, // on the kite, each pair that caught the wind: a tile of it on the edge the wind blows on
   luck: 25, // on luck of the Irish, each four-leaf clover found: its tile taken within five matches of its showing
   sweep: 5, // on spring cleaning, each tile of a row swept clean, every row above it swept already
+  equinox: 5, // on day and night, each equinox pair: a tile from the day side and one from the night side
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -198,6 +200,7 @@ export function scoreOf(game, seconds, words = TURN) {
   if (game.windEvery) rows.push(['Caught the wind', times(game.windCaught, POINTS.wind), game.windCaught * POINTS.wind]);
   if (game.cloverWithin) rows.push(['Four-leaf clovers', `${game.cloversFound} found${game.cloversLost ? `, ${game.cloversLost} blown away` : ''}`, game.cloversFound * POINTS.luck]);
   if (game.sweepRows) rows.push(['Rows swept clean', `${game.rowsSweptClean} of ${game.sweepRows.rows.length}`, game.sweptTiles * POINTS.sweep]);
+  if (game.rules.equinox) rows.push(['Equinox pairs', times(game.equinoxPairs, POINTS.equinox), game.equinoxPairs * POINTS.equinox]);
   if (game.can) rows.push(['Pours', [`${game.pours} of ${game.dropPairs}`, game.dryPours && `${game.dryPours} dry`].filter(Boolean).join(', '), game.pours * POINTS.pour]);
   if (game.chocolates) {
     const n = game.chocolatesIn('savoured');

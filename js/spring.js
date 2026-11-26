@@ -1,4 +1,4 @@
-import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK, WINDOW } from './engine/layouts.js';
+import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK, WINDOW, SCALES } from './engine/layouts.js';
 
 // The Start of Spring: in like a lion, out like a lamb, eight boards
 // through March, from the last blustery days of winter to the first of
@@ -14,9 +14,11 @@ import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK, WINDOW } from './engine/layouts.j
 // blows on (engine/wind.js); on the fifth, a shamrock, four-leaf clovers
 // hide on tiles held down, to be found once they show (engine/clover.js);
 // on the sixth, a window thrown open for the spring cleaning, rows swept
-// clean score from the top down (engine/sweep.js); the eighth is to be out
-// like a lamb, when March goes out like a lamb halfway and every tile turns
-// over.
+// clean score from the top down (engine/sweep.js); on the seventh, the
+// sun and moon on a pair of scales, a pair with a tile from the day side
+// and one from the night side is an equinox pair (engine/equinox.js); the
+// eighth is to be out like a lamb, when March goes out like a lamb halfway
+// and every tile turns over.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), and PLAN.md has its boards and twists. Until the Start of
 // Spring's own tiles are drawn, its boards wear Halloween's.
@@ -101,6 +103,19 @@ export function windowPart(L, i) {
   return 'pane';
 }
 
+// The scales' look, each tile's part by where it is, in half tiles: the
+// pillar of the post down the middle, a warm brass, on neither side; the
+// beam, the pans and the base, gold on the day side and silver on the
+// night side; the sun and its rays, and the moon and its stars.
+export function scalesPart(L, i) {
+  const [x, y, z] = [L.x[i], L.y[i], L.z[i]];
+  if (x === 8) return 'pillar';
+  const day = x < 8;
+  if (y === 0 || y >= 12) return day ? 'scale-day' : 'scale-night';
+  if (z === 0 && (y === 2 || y === 10) && [0, 6, 10, 16].includes(x)) return day ? 'ray' : 'star';
+  return day ? 'sun' : 'moon';
+}
+
 export const SPRING = [
   {
     name: 'The first chapter',
@@ -155,6 +170,15 @@ export const SPRING = [
     look: windowPart,
     sky: ['#5f7f98', '#16202b'],
     text: "The window's thrown open, the March breeze is in, and it's time for the spring cleaning, from the top down 🧹. Take every tile of a row, on every layer, to sweep it clean, for 5 points a tile, but only once every row above it is swept: clear a row before the rows above it and it scores nothing. The row to sweep next is marked.",
+  },
+  {
+    name: 'The seventh chapter',
+    title: 'Day and night',
+    layout: SCALES,
+    rules: { treats: false, ghostsFloat: false, equinox: true },
+    look: scalesPart,
+    sky: ['#5a6f8c', '#151c2a'],
+    text: "It's the equinox, and day and night are equal, the sun and the moon in balance on the scales 🌓. The board's left half is day and its right half night: take a pair with a tile from each, day and night together, for an equinox pair, 5 points. The scales' post, down the middle, is on neither side.",
   },
 ];
 

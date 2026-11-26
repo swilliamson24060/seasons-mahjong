@@ -1534,6 +1534,16 @@ export class Sound {
     [0, 0.16].forEach((t) => this.whistle(this.now + t, 1900, 1300, 0.06, 0.08));
   }
 
+  // On the Start of Spring's day and night, an equinox pair: day and night
+  // together, a bright high bell and a soft low one rung as one, the low
+  // one ringing on.
+  equinox() {
+    if (!this.on) return;
+    this.bell(1568, this.now, 0.04, 1.2);
+    this.bell(392, this.now, 0.06, 2.2);
+    this.bell(784, this.now + 0.12, 0.025, 1.4);
+  }
+
   // On the Start of Spring's spring cleaning, a row swept clean: a broom's
   // three brisk strokes, and a bright chime, the row gleaming.
   sweep() {

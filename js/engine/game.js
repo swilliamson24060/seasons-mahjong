@@ -40,6 +40,7 @@ import { kindsLeft, firstSong, hear, songsIn, compose } from './song.js';
 import { windAt, upwindOf, inWind, windswept, catches } from './wind.js';
 import { SOON, RESTLESS, hidingPlaces, hidingOf } from './clover.js';
 import { rowsOf, nextRow, emptied, sweptIn, cleaning } from './sweep.js';
+import { isEquinox, balancing } from './equinox.js';
 import { solve } from './solver.js';
 import { seeded } from './rng.js';
 
@@ -54,13 +55,14 @@ export const TREATS = ['candle', 'key', 'cat'];
 // roses in bloom, candlelight, a box of chocolates, hugs and kisses,
 // raindrops, the splash zone, chasing colours, watering, the watering can,
 // busy bees, snowballs, the robin's song, the March wind, the four-leaf
-// clover and the clean sweep. Nothing here touches the page; the board
+// clover, the clean sweep and day meeting night. Nothing here touches the
+// page; the board
 // listens with on() for what happens: 'match', 'thaw', 'list', 'checkout',
 // 'bought', 'grab', 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold',
 // 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe', 'firework',
 // 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti', 'star', 'toast',
 // 'arrow', 'message', 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain',
-// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'song', 'wind', 'clover', 'sweep', 'save', 'turn', 'treat',
+// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'song', 'wind', 'clover', 'sweep', 'equinox', 'save', 'turn', 'treat',
 // 'key', 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
@@ -173,7 +175,9 @@ export const TREATS = ['candle', 'key', 'cat'];
 // tile held down, showing once it comes free, to be taken within so many
 // matches, and another hiding after it (clover.js); and on its spring
 // cleaning, sweep: whether the board's rows, each swept clean as its last
-// tile goes, score only swept from the top down (sweep.js).
+// tile goes, score only swept from the top down (sweep.js); and on its day
+// and night, equinox: whether a pair with a tile from each half of the
+// board, day and night together, is an equinox pair (equinox.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -181,7 +185,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -192,7 +196,7 @@ export class Game {
     this.tableCount = n;
     this.fridgeSize = fridge;
     this.seed = seed;
-    this.rules = { ghostsFloat, soulsFloat, treats, lovebirds, flock, goslings, swans, dance, disco };
+    this.rules = { ghostsFloat, soulsFloat, treats, lovebirds, flock, goslings, swans, dance, disco, equinox };
     this.danceR = seeded(seed ^ 0x1d872b41); // who dances with whom
     this.lords = null; // until the lords are chosen, below
     this.treatFaces = treatFaces;
@@ -279,8 +283,10 @@ export class Game {
     // (splash.js); its rainbow catching the colours it can (colours.js); its
     // seed tray watering every seedling and picking it in bloom
     // (watering.js); its watering can pouring every pair of drops with water
-    // in the can (pour.js); and its flower bed making honey at every tulip
-    // (bees.js).
+    // in the can (pour.js); its flower bed making honey at every tulip
+    // (bees.js); the Start of Spring's spring cleaning sweeping every row
+    // from the top down (sweep.js); and its day and night pairing day with
+    // night where it can (equinox.js).
     this.prefer = this.rings
       ? ringByRing(layout, this.rings.map((r) => r.tiles), seeded(seed ^ 0x68e31da4).shuffle(this.rings.map((_, k) => k)))
       : swans
@@ -311,7 +317,9 @@ export class Game {
                                 ? foraging(this.tulips, seed)
                                 : this.sweepRows
                                   ? cleaning(this.sweepRows)
-                                  : null;
+                                  : equinox
+                                    ? balancing(table)
+                                    : null;
     // On New Year's 9, the rockets, 1 for a tile that is one, chosen by
     // where they lie, before the deal, so that it can be made with them.
     this.rockets = null;
@@ -633,6 +641,7 @@ export class Game {
     // On its spring cleaning, each row 1 once swept in turn, -1 once cleared
     // out of turn, and 0 till then (sweep.js).
     this.rowsSwept = this.sweepRows ? new Int8Array(this.sweepRows.rows.length) : null;
+    this.equinoxPairs = 0; // on its day and night, the equinox pairs taken (equinox.js)
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -1263,6 +1272,30 @@ export class Game {
       if (n > most) [best, most] = [tried, n];
     }
     return best;
+  }
+
+  // On the Start of Spring's day and night, the hints' way taking an equinox
+  // pair when it can: the way given, if its next pair is one already; or
+  // else one of its pairs further along, free now, taken first, if the way
+  // still holds then; or else two free tiles of a kind, one from each side,
+  // made into a pair to take first, as Cupid's couples are (cupid.js); or
+  // the way given.
+  meetHalfway(way) {
+    if (!way.length || isEquinox(this.layout, ...way[0])) return way;
+    for (let k = 1; k < way.length; k++) {
+      if (!isEquinox(this.layout, ...way[k]) || !this.isFree(way[k][0]) || !this.isFree(way[k][1])) continue;
+      const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+      if (this.holds(tried)) return tried;
+    }
+    const free = this.freeTiles();
+    for (let i = 0; i < free.length; i++) {
+      for (let j = i + 1; j < free.length; j++) {
+        if (MATCH[this.faces[free[i]]] !== MATCH[this.faces[free[j]]] || !isEquinox(this.layout, free[i], free[j])) continue;
+        const made = wayWith(way, [free[i], free[j]], 1, (l) => this.holds(l));
+        if (made) return made;
+      }
+    }
+    return way;
   }
 
   // On April Showers' watering can, which part of it a tile still on the
@@ -1993,9 +2026,10 @@ export class Game {
   // wind blows on, and where the wind blows from if it turned after it, or
   // -1; on its luck of the Irish, the tile of the clover it found, the tile
   // of one blown away after it, and the tile of one showing after it, each
-  // -1 with none; and on its spring cleaning, the rows it swept clean in
-  // turn and those it cleared out of turn. Null if the pair cannot be
-  // taken.
+  // -1 with none; on its spring cleaning, the rows it swept clean in turn
+  // and those it cleared out of turn; and on its day and night, whether it
+  // was an equinox pair, a tile from each half of the board. Null if the
+  // pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -2010,6 +2044,13 @@ export class Game {
     if (lovebirds) {
       this.lovebirds++;
       entry.lovebirds = true;
+    }
+    // On the Start of Spring's day and night, a pair with a tile from each
+    // half of the board, day and night together, is an equinox pair.
+    const equinoxPair = this.rules.equinox && isEquinox(this.layout, a, b);
+    if (equinoxPair) {
+      this.equinoxPairs++;
+      entry.equinox = true;
     }
     // On a board of songbirds, a pair whose two tiles touch flocks together.
     const flocked = this.rules.flock && touching(this.layout, a, b);
@@ -2541,6 +2582,7 @@ export class Game {
       cloverShown,
       swept: cleaned ? cleaned.swept : [],
       sweptOut: cleaned ? cleaned.out : [],
+      equinoxPair,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -2584,6 +2626,7 @@ export class Game {
     if (caughtWind || windTurned >= 0) this.emit('wind', result);
     if (cloverFound >= 0 || cloverLost >= 0 || cloverShown >= 0) this.emit('clover', result);
     if (cleaned && (cleaned.swept.length || cleaned.out.length)) this.emit('sweep', result);
+    if (equinoxPair) this.emit('equinox', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -2670,6 +2713,7 @@ export class Game {
       if (last.caughtWind) this.windCaught--;
       if (last.clover) Object.assign(this, { clover: last.clover.clover, cloversHidden: last.clover.hidden, cloversFound: last.clover.found, cloversLost: last.clover.lost });
       if (last.rows) this.rowsSwept = last.rows;
+      if (last.equinox) this.equinoxPairs--;
       if (last.snow) {
         this.ice.set(last.snow.ice);
         this.snowLanded = last.snow.landed;
@@ -2726,8 +2770,9 @@ export class Game {
   // Spring's thaw to one that knocks snow off when it can; on its first
   // robin to one that sings her song back; on its kite to one that catches
   // the wind when it can; on its luck of the Irish to one that takes the
-  // four-leaf clover while it keeps; and on its spring cleaning to one that
-  // sweeps from the top down.
+  // four-leaf clover while it keeps; on its spring cleaning to one that
+  // sweeps from the top down; and on its day and night to one that takes an
+  // equinox pair when it can.
   wayAhead() {
     if (!this.line && this.outlook !== 'lost') {
       const { result, line } = solve(this.layout, this.position(), { budget: 20000 });
@@ -2755,6 +2800,7 @@ export class Game {
     if (this.line && this.windEvery) this.line = this.catchWind(this.line);
     if (this.line && this.cloverWithin) this.line = this.pickClover(this.line);
     if (this.line && this.sweepRows) this.line = this.sweepDown(this.line);
+    if (this.line && this.rules.equinox) this.line = this.meetHalfway(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));

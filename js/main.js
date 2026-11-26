@@ -471,6 +471,13 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       if (sung === 0 && songs === 1 && at === 1) toast(`Her first note, sung back! Now a pair of ${kindName(song[1], faceSet)}, then ${kindName(song[2], faceSet)}.`);
     }
   });
+  // On the Start of Spring's day and night: a pair with a tile from the day
+  // side and one from the night side, an equinox pair.
+  game.on('equinox', ({ b }) => {
+    sound.equinox();
+    setTimeout(() => board.float(`+${POINTS.equinox} 🌓`, b), 450); // after the pair's own points
+    if (game.equinoxPairs === 1) toast(`Day meets night! A pair with a tile from each side is an equinox pair: ${POINTS.equinox} points.`);
+  });
   // On the Start of Spring's spring cleaning: a row swept clean from the top
   // down, every row above it swept already, or one cleared out of turn.
   game.on('sweep', ({ b, swept, sweptOut }) => {
@@ -1724,6 +1731,10 @@ function update() {
   // until the next snowball.
   $('snow').hidden = !g.snowEvery;
   if (g.snowEvery) $('snow').innerHTML = `☃️ <b>${g.snowKnocked}</b> · ⏳ ${g.untilSnow}`;
+  // The equinox pairs taken, on the scales: a tile from the day side and one
+  // from the night side, together.
+  $('equinox').hidden = !g.rules.equinox;
+  if (g.rules.equinox) $('equinox').innerHTML = `🌓 <b>${g.equinoxPairs}</b>`;
   // The rows swept clean from the top down, on the window, of all the rows,
   // and the tiles left in the row to sweep next.
   $('sweep').hidden = !g.sweepRows;

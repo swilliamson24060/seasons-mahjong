@@ -1242,6 +1242,45 @@ body.covered #board {
   pointer-events: none;
 }
 
+/* On the Start of Spring's day and night, the scales' post down the
+   middle is a warm brass; its beam, pans and base are gold on the day side,
+   on the left, and silver on the night side, on the right; the sun and its
+   rays a golden yellow, and the moon and its stars a cool, pale blue. */
+.tile[data-look='pillar'] {
+  --face-1: #fbf3e2;
+  --face-2: #c69a4c;
+}
+
+.tile[data-look='scale-day'] {
+  --face-1: #fff6dc;
+  --face-2: #dcab3f;
+}
+
+.tile[data-look='scale-night'] {
+  --face-1: #eef1f8;
+  --face-2: #9aa6c0;
+}
+
+.tile[data-look='sun'] {
+  --face-1: #fff8d2;
+  --face-2: #f2b42c;
+}
+
+.tile[data-look='ray'] {
+  --face-1: #fffbe0;
+  --face-2: #f6cf55;
+}
+
+.tile[data-look='moon'] {
+  --face-1: #e8edfa;
+  --face-2: #8494c3;
+}
+
+.tile[data-look='star'] {
+  --face-1: #f0f3fd;
+  --face-2: #a7b4df;
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers
