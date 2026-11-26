@@ -335,7 +335,7 @@ test("Thanksgiving's sounds are all heard, and none too loud", async () => {
   return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
-test("the Start of Spring is heard, and not too loud: a snowball landing and snow knocked off on the thaw, on the first robin each note of her song sung back, a new song sung, a song sung back and one broken, on the kite the wind turning and a pair catching it, on luck of the Irish a four-leaf clover showing, found and blown away, on spring cleaning a row swept clean and one cleared out of turn, and on day and night an equinox pair", async () => {
+test("the Start of Spring is heard, and not too loud: a snowball landing and snow knocked off on the thaw, on the first robin each note of her song sung back, a new song sung, a song sung back and one broken, on the kite the wind turning and a pair catching it, on luck of the Irish a four-leaf clover showing, found and blown away, on spring cleaning a row swept clean and one cleared out of turn, on day and night an equinox pair, and March going out like a lamb", async () => {
   const sounds = {
     'a snowball landing': [0.6, (s) => s.snowball()],
     'snow knocked off': [1.6, (s) => s.knockOff()],
@@ -352,6 +352,7 @@ test("the Start of Spring is heard, and not too loud: a snowball landing and sno
     'a row swept clean': [1.8, (s) => s.sweep()],
     'a row cleared out of turn': [0.7, (s) => s.dust()],
     'an equinox pair': [2.4, (s) => s.equinox()],
+    'March going out like a lamb': [3.6, (s) => s.lamb()],
   };
   const peaks = [];
   for (const [name, [seconds, play]] of Object.entries(sounds)) {

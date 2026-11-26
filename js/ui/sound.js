@@ -1480,6 +1480,43 @@ export class Sound {
     [1046.5, 1318.5, 1568, 2093, 1568, 2093].forEach((f, k) => this.bell(f, this.now + 1.6 + k * 0.16, 0.06, 2));
   }
 
+  // On the Start of Spring's out like a lamb, March going out like a lamb as
+  // the tiles turn over: a lamb's bleat, wavering, twice, and the spring
+  // bells rung up into the morning.
+  lamb() {
+    if (!this.on) return;
+    [0, 0.8].forEach((t, k) => this.bleat(this.now + t, k ? 330 : 370));
+    [1046.5, 1174.7, 1318.5, 1568, 2093].forEach((f, k) => this.bell(f, this.now + 1.7 + k * 0.14, 0.05, 2));
+  }
+
+  // A lamb's bleat: a reedy, wavering note, its pitch falling a little,
+  // through the shape of a small mouth.
+  bleat(at, f = 350) {
+    const o = this.ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f, at);
+    o.frequency.linearRampToValueAtTime(f * 0.92, at + 0.55);
+    const wobble = this.ctx.createOscillator();
+    wobble.frequency.value = 7;
+    const depth = this.ctx.createGain();
+    depth.gain.value = f * 0.04;
+    wobble.connect(depth).connect(o.frequency);
+    const mouth = this.ctx.createBiquadFilter();
+    mouth.type = 'bandpass';
+    mouth.frequency.value = 1200;
+    mouth.Q.value = 3;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(0.14, at + 0.06);
+    g.gain.setValueAtTime(0.14, at + 0.4);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + 0.6);
+    o.connect(mouth).connect(g).connect(this.master);
+    o.start(at);
+    o.stop(at + 0.62);
+    wobble.start(at);
+    wobble.stop(at + 0.62);
+  }
+
   // On the Start of Spring's thaw, a snowball landing: a soft, powdery
   // thump, and the snow settling.
   snowball() {

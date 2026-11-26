@@ -3299,3 +3299,64 @@ export const SCALES = parseLayout('Scales', [
   .+.....>.
   `,
 ]);
+
+// The Start of Spring's eighth board: out like a lamb, a lamb in the new
+// grass, facing left: her head, an ear raised on it, her woolly body piled
+// high, five layers over it, her legs, and the meadow under her, two rows
+// across the board, daisies in it (spring.js has her parts, for her look).
+// The full set of 144 tiles on six layers, nine across and ten down.
+export const LAMB = parseLayout('Lamb', [
+  `
+  .#.......
+  ########.
+  >>>>>>>>.
+  #########
+  >.#######
+  ..>>>>>>.
+  ...#####.
+  ..>.#>.#.
+  #########
+  #########
+  `,
+  `
+  ++.......
+  +..++++..
+  +.++++++.
+  ..++++++.
+  ..++++++.
+  ...++++..
+  .........
+  .........
+  +.+..+.+.
+  ...>.....
+  `,
+  `
+  .........
+  .........
+  ...#####.
+  ...#####.
+  ...#####.
+  ...#####.
+  `,
+  `
+  .........
+  .........
+  ...++++..
+  ...++++..
+  ...++++..
+  `,
+  `
+  .........
+  .........
+  .....#...
+  ....###..
+  ....###..
+  .....#...
+  `,
+  `
+  .........
+  .........
+  .........
+  ....++...
+  `,
+]);

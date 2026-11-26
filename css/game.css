@@ -1281,6 +1281,47 @@ body.covered #board {
   --face-2: #a7b4df;
 }
 
+/* On the Start of Spring's out like a lamb, once March goes out like a
+   lamb and the tiles turn over to spring's side, the lamb comes into
+   colour: her fleece white, brightest where it's piled highest, her face a
+   warm cream, her ear pink, her hooves dark, and the meadow green with
+   yellow-hearted daisies. March's wild side is the night's, and keeps its
+   dark tiles (.tile.night, below). */
+.tile[data-look='fleece'] {
+  --face-1: #ffffff;
+  --face-2: #e6e0d3;
+}
+
+.tile[data-look='fleece-top'] {
+  --face-1: #ffffff;
+  --face-2: #f2eee6;
+}
+
+.tile[data-look='lamb-face'] {
+  --face-1: #fff4ec;
+  --face-2: #e2bfa9;
+}
+
+.tile[data-look='lamb-ear'] {
+  --face-1: #ffe9ee;
+  --face-2: #e6a5b3;
+}
+
+.tile[data-look='hoof'] {
+  --face-1: #ebe7e3;
+  --face-2: #6a5f57;
+}
+
+.tile[data-look='meadow'] {
+  --face-1: #eef9e3;
+  --face-2: #74ae48;
+}
+
+.tile[data-look='daisy'] {
+  --face-1: #fffef7;
+  --face-2: #f1d457;
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers

@@ -9,7 +9,7 @@
 // since other games on the same site share the browser's cache store.
 
 const PREFIX = 'seasons-';
-const CACHE = `${PREFIX}58`;
+const CACHE = `${PREFIX}59`;
 const SLOW = 3500; // ms to wait on the network before answering from the cache
 
 const FILES = [

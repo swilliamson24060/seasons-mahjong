@@ -1,4 +1,4 @@
-import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK, WINDOW, SCALES } from './engine/layouts.js';
+import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK, WINDOW, SCALES, LAMB } from './engine/layouts.js';
 
 // The Start of Spring: in like a lion, out like a lamb, eight boards
 // through March, from the last blustery days of winter to the first of
@@ -16,9 +16,11 @@ import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK, WINDOW, SCALES } from './engine/l
 // on the sixth, a window thrown open for the spring cleaning, rows swept
 // clean score from the top down (engine/sweep.js); on the seventh, the
 // sun and moon on a pair of scales, a pair with a tile from the day side
-// and one from the night side is an equinox pair (engine/equinox.js); the
-// eighth is to be out like a lamb, when March goes out like a lamb halfway
-// and every tile turns over.
+// and one from the night side is an equinox pair (engine/equinox.js); and
+// the eighth, a lamb in the new grass, is out like a lamb, starting on
+// March's wild side, and turning over to spring's halfway, a tile left
+// without a partner melting into a snowman, as the Long Night's midnight
+// wakes lost souls.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), and PLAN.md has its boards and twists. Until the Start of
 // Spring's own tiles are drawn, its boards wear Halloween's.
@@ -116,6 +118,17 @@ export function scalesPart(L, i) {
   return day ? 'sun' : 'moon';
 }
 
+// The lamb's look, each tile's part by where it is, in half tiles: her
+// face and the ear on it, her fleece, lighter where it's piled highest,
+// her hooves, and the meadow and its daisies.
+export function lambPart(L, i) {
+  const [x, y, z] = [L.x[i], L.y[i], L.z[i]];
+  if (y >= 16) return z ? 'daisy' : 'meadow';
+  if (y === 14) return 'hoof';
+  if ((z <= 1 && x <= 3 && y <= 8) || (z === 0 && x === 4 && y <= 2)) return z === 1 && y === 3 ? 'lamb-ear' : 'lamb-face';
+  return z >= 3 ? 'fleece-top' : 'fleece';
+}
+
 export const SPRING = [
   {
     name: 'The first chapter',
@@ -179,6 +192,16 @@ export const SPRING = [
     look: scalesPart,
     sky: ['#5a6f8c', '#151c2a'],
     text: "It's the equinox, and day and night are equal, the sun and the moon in balance on the scales 🌓. The board's left half is day and its right half night: take a pair with a tile from each, day and night together, for an equinox pair, 5 points. The scales' post, down the middle, is on neither side.",
+  },
+  {
+    name: 'The eighth chapter',
+    title: 'Out like a lamb',
+    layout: LAMB,
+    rules: { treats: false, ghostsFloat: false, turn: 1 / 2, firstSide: 'night' },
+    words: 'lamb',
+    look: lambPart,
+    sky: ['#79a4c4', '#1c3042'],
+    text: "March came in like a lion, and it goes out like a lamb. The board starts on March's wild side, dark, and halfway through, March goes out like a lamb and every tile turns over to spring's side. Hold the moon, or Space, to see it coming, and before then, take pairs that match on both sides. A tile left without a partner is a snowman, melted ⛄: melted snowmen match each other, and stay where they melted.",
   },
 ];
 
