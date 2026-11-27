@@ -3460,3 +3460,45 @@ export const FOOTPRINTS = parseLayout('Footprints', [
   ..#...#..
   `,
 ]);
+
+// The Summer Beach Season's fourth board: sailing, a sailboat, the pennant
+// flying at its masthead, the mast, the mainsail to its left and the jib
+// to its right, each full of wind, billowing where it's raised, the deck
+// raised over the hull, the hull's middle raised higher, and the sea under
+// it, the waves along the foot (summer.js has their parts, for their
+// look). Every tile lies on a whole row; the waves roll in over the
+// bottom one. 108 tiles on three layers, nine across and ten down.
+export const SAILBOAT = parseLayout('Sailboat', [
+  `
+  ....#....
+  ...##....
+  ..###.#..
+  .####.##.
+  #####.###
+  #########
+  #########
+  .#######.
+  #########
+  #########
+  `,
+  `
+  .........
+  ...#.....
+  ..##..#..
+  .###..#..
+  ####..##.
+  .###..##.
+  #########
+  .#######.
+  `,
+  `
+  .........
+  .........
+  ...#.....
+  ..##.....
+  ..##..#..
+  .........
+  .........
+  ...###...
+  `,
+]);

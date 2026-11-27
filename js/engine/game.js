@@ -40,6 +40,7 @@ import { kindsLeft, firstSong, hear, songsIn, compose } from './song.js';
 import { windAt, upwindOf, inWind, windswept, catches } from './wind.js';
 import { tideAt, comingIn, rowsUp, covered, ebbing } from './tide.js';
 import { firstCrab, afterPair, goBack, scuttling, startles } from './crab.js';
+import { waveTiles, rollIn } from './waves.js';
 import { SOON, RESTLESS, hidingPlaces, hidingOf } from './clover.js';
 import { rowsOf, nextRow, emptied, sweptIn, cleaning } from './sweep.js';
 import { isEquinox, balancing } from './equinox.js';
@@ -187,7 +188,10 @@ export const TREATS = ['candle', 'key', 'cat'];
 // footprints in the sand, crab: { every }, a sand crab scuttling sideways
 // along its row a tile with every match, the tile it's on not to be taken,
 // startled back into its burrow by a pair right beside it, and another
-// coming out `every` matches later (crab.js).
+// coming out `every` matches later (crab.js); and on its sailing, waves:
+// { every }, a wave rolling in over the bottom row every so many matches,
+// its tiles turning round among themselves a place along, so long as the
+// board can still be won so (waves.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -195,7 +199,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null, crab = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null, crab = null, waves = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -649,6 +653,10 @@ export class Game {
     // On its footprints in the sand, the sand crab (crab.js), out as the
     // board starts, as the deal had it; how many matches after one is
     // startled another comes out; and the crabs startled.
+    // On its sailing, how often a wave rolls in, and the waves that turned
+    // the bottom row (waves.js).
+    this.waveEvery = waves ? waves.every : 0;
+    this.wavesRolled = 0;
     this.crabEvery = crab ? crab.every : 0;
     this.crab = crab ? firstCrab(layout, this.present, seed) : null;
     this.crabsStartled = 0;
@@ -1657,6 +1665,27 @@ export class Game {
     return { sides, swaps: changed.swaps };
   }
 
+  // On the beach season's sailing, the matches until the next wave.
+  get untilWave() {
+    return this.waveEvery ? this.waveEvery - (this.matches % this.waveEvery) : Infinity;
+  }
+
+  // A wave rolls in over the bottom row, and its tiles turn round among
+  // themselves, so long as the board can still be won so (waves.js).
+  // Returns { sides, tiles, shift }, the faces before it, the tiles it
+  // reached, and how many places along they turned; or null, the wave
+  // falling short.
+  rollWave() {
+    const tiles = waveTiles(this.layout, this.present);
+    const rolled = rollIn(this.layout, this.position(), tiles);
+    if (!rolled) return null;
+    const sides = this.sides;
+    this.sides = sides.map((s, k) => (k === this.side ? rolled.faces : s));
+    this.line = rolled.line;
+    this.outlook = 'win';
+    return { sides, tiles, shift: rolled.shift };
+  }
+
   // The pails taken while fresh, those that soured, and those spilt.
   pailsIn(state) {
     return this.pails ? this.pails.filter((p) => p.state === state).length : 0;
@@ -2581,6 +2610,15 @@ export class Game {
     const danced = due ? this.dance() : null;
     if (danced) entry.dance = danced;
     const sitOut = due && !danced && this.canDance; // no change of partners would leave a board that can be won
+    // On the beach season's sailing, every so many matches a wave rolls in
+    // over the bottom row, and its tiles turn round among themselves.
+    const waveDue = this.waveEvery > 0 && this.left > 0 && this.matches % this.waveEvery === 0;
+    const wave = waveDue ? this.rollWave() : null;
+    if (wave) {
+      entry.wave = wave;
+      this.wavesRolled++;
+    }
+    const waveShort = waveDue && !wave && waveTiles(this.layout, this.present).length > 1; // no turn of them would leave a board that can be won
     let treat = null;
     if (giving) {
       this.treatPairs++;
@@ -2625,6 +2663,8 @@ export class Game {
       spilt: spilt.length,
       dance: danced && { swaps: danced.swaps, before: danced.sides[this.side] },
       sitOut,
+      wave: wave && { tiles: wave.tiles, shift: wave.shift, before: wave.sides[this.side] },
+      waveShort,
       leapt,
       piped: followers,
       litPair,
@@ -2713,6 +2753,7 @@ export class Game {
     if (swan || swamOff) this.emit('swan', result);
     if (milked.length || soured.length || spilt.length) this.emit('milk', result);
     if (danced || sitOut) this.emit('dance', result);
+    if (wave || waveShort) this.emit('wave', result);
     if (leapt) this.emit('leap', result);
     if (followers.length) this.emit('pipe', result);
     if (litPair || rockets.length) this.emit('firework', result);
@@ -2791,6 +2832,10 @@ export class Game {
       if (last.swan) this.swansFound--;
       if (last.pails) this.pails = last.pails;
       if (last.dance) this.sides = last.dance.sides;
+      if (last.wave) {
+        this.sides = last.wave.sides;
+        this.wavesRolled--;
+      }
       if (last.leaps) this.leaps -= last.leaps;
       if (last.followers) {
         for (const t of last.followers) this.present[t] = 1;

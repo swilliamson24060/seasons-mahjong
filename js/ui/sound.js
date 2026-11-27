@@ -1715,6 +1715,15 @@ export class Sound {
     for (let k = 0; k < 8; k++) this.rustle(this.now + 0.35 + k * 0.06 + Math.random() * 0.03, 0.03, 3000, 2000, 0.08);
   }
 
+  // On its sailing, a wave rolling in along the foot of the board: its swell
+  // rising, breaking, and its foam hissing away.
+  waveRolls() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.8, 300, 1500, 0.18);
+    this.rustle(this.now + 0.55, 0.35, 2500, 900, 0.22);
+    this.rustle(this.now + 0.75, 1.1, 5000, 2500, 0.07);
+  }
+
   // On its footprints in the sand, a sand crab coming out of its burrow: a
   // scrabble of sand, and its claws clicking.
   crabOut() {

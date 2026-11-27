@@ -747,6 +747,13 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     sound.waltz();
     toast(dance ? 'The music changes, and the free tiles change partners with tiles held down.' : 'The music changes, but the dancers keep their partners this time.');
   });
+  // On the beach season's sailing: every six matches a wave rolls in along
+  // the foot of the board and turns its tiles round, or falls short.
+  game.on('wave', ({ wave }) => {
+    sound.waveRolls();
+    if (!wave) toast('A wave rolls in, but falls short: the tiles along the foot stay as they are.');
+    else if (game.wavesRolled === 1) toast('A wave rolls in along the foot of the board, and the tiles it reaches turn round among themselves, a place along.');
+  });
   game.on('treat', ({ treat }) => {
     sound.treat();
     toast(gifts.came(gifts.names[treat]));
@@ -1816,6 +1823,12 @@ function update() {
     const home = g.crab && g.crab.tile < 0 && g.left > 0;
     $('crab').innerHTML = `🦀 <b>${g.crabsStartled}</b>${home ? ` · ⏳ ${g.crab.outIn}` : ''}`;
     $('crab').setAttribute('aria-label', `${g.crabsStartled} ${g.crabsStartled === 1 ? 'crab' : 'crabs'} sent back into ${g.crabsStartled === 1 ? 'its burrow' : 'their burrows'}${home ? `; the next comes out in ${matchWords(g.crab.outIn)}` : g.crab && g.crab.tile >= 0 ? '; a crab is out' : ''}`);
+  }
+  // On its sailing, the waves rolled in, and the matches until the next.
+  $('waves').hidden = !g.waveEvery;
+  if (g.waveEvery) {
+    $('waves').innerHTML = `🌊 <b>${g.wavesRolled}</b> · ⏳ ${g.untilWave}`;
+    $('waves').setAttribute('aria-label', `${g.wavesRolled} ${g.wavesRolled === 1 ? 'wave has' : 'waves have'} rolled in; the next comes in ${matchWords(g.untilWave)}`);
   }
   // On its watering can, how full it is, and the pours made.
   $('can').hidden = !g.can;

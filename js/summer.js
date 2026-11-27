@@ -1,4 +1,4 @@
-import { SANDPAIL, SANDCASTLE, FOOTPRINTS } from './engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT } from './engine/layouts.js';
 
 // The Summer Beach Season: a day at the beach, eight boards from a pail and
 // spade in the morning to the sun setting into the sea, to be reached in
@@ -10,9 +10,11 @@ import { SANDPAIL, SANDCASTLE, FOOTPRINTS } from './engine/layouts.js';
 // can't be taken from (engine/tide.js); on the third, footprints in the
 // sand, a sand crab scuttles along its row, the tile it's on not to be
 // taken, until a pair taken right beside it sends it back into its burrow
-// (engine/crab.js); the last, sunset, is planned to turn over halfway as
-// the sun sets into the sea, a tile left without a partner a lost
-// flip-flop.
+// (engine/crab.js); on the fourth, sailing, every six matches a wave rolls
+// in over the bottom row and its tiles turn round among themselves, so long
+// as the board can still be won (engine/waves.js); the last, sunset, is
+// planned to turn over halfway as the sun sets into the sea, a tile left
+// without a partner a lost flip-flop.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), and PLAN.md has its boards and twists. Until the beach
 // season's own tiles are drawn, its boards wear Halloween's.
@@ -58,6 +60,23 @@ export function printPart(L, i) {
   return 'dry-sand';
 }
 
+// The sailboat's look, each tile's part by where it is, in half tiles: the
+// waves along the foot and the sea above them, the hull, its raised middle
+// lighter, and the deck, the pennant at the masthead, the mast, and the
+// mainsail to its left and the jib to its right, billowing where they're
+// raised.
+export function sailPart(L, i) {
+  const [x, y, z] = [L.x[i], L.y[i], L.z[i]];
+  if (y >= 18) return 'wave';
+  if (y === 16) return 'sea';
+  if (y === 14) return z ? 'hull-top' : 'hull';
+  if (y === 12) return 'deck';
+  if (y === 0) return 'pennant';
+  if (x === 8 && z === 0) return 'mast';
+  if (z > 0) return 'sail-full';
+  return x < 8 ? 'sail' : 'jib';
+}
+
 export const SUMMER = [
   {
     name: 'The first chapter',
@@ -85,6 +104,15 @@ export const SUMMER = [
     look: printPart,
     sky: ['#62acec', '#11365a'],
     text: "Two lines of footprints wind up the beach from the sea, and a sand crab's out of its burrow 🦀. It scuttles sideways along its row a tile with every match, and the tile it's on can't be taken while it's there. Take a pair right beside it, a tile touching its tile, to send it scuttling back into its burrow, for 10 points; another comes out three matches later. With nowhere left in its row to go, or nothing to take but its tile, it goes back on its own.",
+  },
+  {
+    name: 'The fourth chapter',
+    title: 'Sailing',
+    layout: SAILBOAT,
+    rules: { treats: false, ghostsFloat: false, waves: { every: 6 } },
+    look: sailPart,
+    sky: ['#5aa8f0', '#0f3560'],
+    text: "The wind's up and the boat's out on the water, her sails full. Every six matches a wave rolls in along the foot of the board 🌊, and the tiles it reaches turn round among themselves: each takes the face of the one beside it, a place along, the end one's going round to the other end. A wave never leaves a board that can't be won: with no way to turn the tiles that would, it falls short.",
   },
 ];
 

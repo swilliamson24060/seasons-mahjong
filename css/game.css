@@ -1435,6 +1435,68 @@ body.covered #board {
   --face-2: #4a9fd8;
 }
 
+/* On its sailing, the pennant is red at the masthead and the mast a
+   varnished brown; the sails are white canvas, full and bright where they
+   billow; the deck is wood, the hull a deep blue, lighter where it rises,
+   the sea blue, and the waves at the foot a pale, foaming blue. */
+.tile[data-look='pennant'] {
+  --face-1: #ffe0dc;
+  --face-2: #e8493c;
+}
+
+.tile[data-look='mast'] {
+  --face-1: #f3e3cf;
+  --face-2: #9a6a3c;
+}
+
+.tile[data-look='sail'] {
+  --face-1: #ffffff;
+  --face-2: #d9e2ec;
+}
+
+.tile[data-look='jib'] {
+  --face-1: #ffffff;
+  --face-2: #cfdbe8;
+}
+
+.tile[data-look='sail-full'] {
+  --face-1: #ffffff;
+  --face-2: #eef3f8;
+}
+
+.tile[data-look='deck'] {
+  --face-1: #f6e2c4;
+  --face-2: #b98a52;
+}
+
+.tile[data-look='hull'] {
+  --face-1: #e3f0ff;
+  --face-2: #2f6fb6;
+}
+
+.tile[data-look='hull-top'] {
+  --face-1: #f0f7ff;
+  --face-2: #5b93d1;
+}
+
+.tile[data-look='wave'] {
+  --face-1: #f4fbff;
+  --face-2: #8cc6ea;
+}
+
+/* When a wave rolls in on the sailboat, the tiles it reaches wash over one
+   after another along the row, each new face showing as the wave passes. */
+.tile.washing {
+  animation: washing 0.5s ease-in-out;
+}
+
+@keyframes washing {
+  50% {
+    transform: translateY(-14%) scaleY(0.2);
+    filter: brightness(1.25);
+  }
+}
+
 /* The tile the sand crab sits on: ringed in a crab's red, the crab on its
    top left corner, as the twists' badges are, clear of the tile's number. */
 .tile.crabbed::before {

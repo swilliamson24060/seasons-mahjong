@@ -1,14 +1,15 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { SANDPAIL, SANDCASTLE, FOOTPRINTS } from '../js/engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
-import { SUMMER, summerOf, pailPart, castlePart, printPart } from '../js/summer.js';
+import { SUMMER, summerOf, pailPart, castlePart, printPart, sailPart } from '../js/summer.js';
 import { theme } from '../js/themes.js';
 
 const FIRST = SUMMER[0];
 const SECOND = SUMMER[1];
 const THIRD = SUMMER[2];
+const FOURTH = SUMMER[3];
 
 // The tiles on a layer in a row, given in half tiles, by where each starts
 // across.
@@ -130,4 +131,34 @@ test('the footprints read as footprints in the sand: two lines of them winding u
   }
   equal(['footprint', 'dry-sand', 'wet-sand', 'dune', 'sea'].map((p) => `${p} ${parts[p]}`).join(', '), 'footprint 14, dry-sand 63, wet-sand 9, dune 7, sea 7', 'their parts, for their look');
   equal(THIRD.look, printPart, 'the footprints not tinted as their parts are');
+});
+
+test('the fourth chapter is sailing: 108 tiles on three layers, nine across, every tile on a whole row, and a wave rolling in along the foot every six matches', () => {
+  equal(FOURTH.name, 'The fourth chapter', "the fourth chapter's name");
+  equal(FOURTH.title, 'Sailing', "the fourth chapter's title");
+  equal(summerOf(SAILBOAT), FOURTH, "the sailboat's chapter");
+  check(Object.keys(layouts).includes('SAILBOAT'), 'the sailboat plays by its address, #play/sailboat');
+  equal(SAILBOAT.count, 108, 'tiles');
+  equal(SAILBOAT.width / 2, 9, 'tiles across');
+  equal(SAILBOAT.height / 2, 10, 'tiles down');
+  equal(SAILBOAT.depth, 3, 'layers');
+  check([...SAILBOAT.y].every((y) => y % 2 === 0), 'a tile off a whole row');
+  check(SAILBOAT.count > FOOTPRINTS.count, 'no more tiles than the footprints');
+  equal(JSON.stringify(dayOptions(FOURTH)), JSON.stringify({ treats: false, ghostsFloat: false, waves: { every: 6 } }), 'the waves');
+  check(['Every six matches', 'turn round among themselves', 'a place along', 'falls short'].every((w) => FOURTH.text.includes(w)), "the card doesn't tell the waves");
+});
+
+test('the sailboat reads as a sailboat: the pennant at the masthead, the mast, the mainsail and the jib full of wind, the deck and the hull, and the sea and the waves', () => {
+  equal(at(SAILBOAT, 0, 0), '8', 'the pennant at the masthead');
+  equal(at(SAILBOAT, 0, 10), '0,2,4,6,8,10,12,14,16', 'the sails at their widest, either side of the mast');
+  equal(['4', '6', '8'].map((y) => at(SAILBOAT, 2, Number(y))).join(' | '), '6 | 4,6 | 4,6,12', 'the sails billowing, raised highest');
+  equal(at(SAILBOAT, 2, 14), '6,8,10', "the hull's middle, raised highest");
+  equal(`${at(SAILBOAT, 0, 16)} | ${at(SAILBOAT, 0, 18)}`, '0,2,4,6,8,10,12,14,16 | 0,2,4,6,8,10,12,14,16', 'the sea and the waves, across the board');
+  const parts = {};
+  for (let i = 0; i < SAILBOAT.count; i++) {
+    const p = sailPart(SAILBOAT, i);
+    parts[p] = (parts[p] || 0) + 1;
+  }
+  equal(['pennant', 'mast', 'sail', 'jib', 'sail-full', 'deck', 'hull', 'hull-top', 'sea', 'wave'].map((p) => `${p} ${parts[p]}`).join(', '), 'pennant 1, mast 5, sail 14, jib 10, sail-full 25, deck 18, hull 7, hull-top 10, sea 9, wave 9', 'its parts, for its look');
+  equal(FOURTH.look, sailPart, 'the sailboat not tinted as its parts are');
 });

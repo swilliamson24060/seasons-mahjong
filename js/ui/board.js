@@ -141,6 +141,7 @@ export class Board {
     game.on('hatch', ({ hatched }) => this.hatched(hatched));
     game.on('gold', ({ gold }) => this.gild(gold));
     game.on('dance', ({ dance }) => dance && this.danced(dance));
+    game.on('wave', ({ wave }) => wave && this.washed(wave));
     game.on('save', ({ slot }) => {
       this.selected = -1;
       this.paint(slot);
@@ -581,6 +582,29 @@ export class Board {
     }, 5 * 40 + 650);
   }
 
+  // A wave rolls in along the foot of the board, and the tiles it reaches
+  // turn round among themselves: each washes over in turn along the row,
+  // showing the face it had until the wave has passed it, then its new one.
+  washed({ tiles, before }) {
+    if (still()) {
+      for (const i of tiles) this.paint(i);
+      return this.refresh();
+    }
+    this.busy++;
+    tiles.forEach((i, k) => {
+      const el = this.tiles[i].el;
+      const delay = k * 60;
+      this.paint(i, undefined, before[i]);
+      el.style.animationDelay = `${delay}ms`;
+      this.restart(el, 'washing');
+      setTimeout(() => this.paint(i), delay + 250);
+    });
+    setTimeout(() => {
+      this.busy--;
+      this.refresh();
+    }, tiles.length * 60 + 600);
+  }
+
   // A net of balloons opens: the balloons left float up and away from their
   // tiles, and the new ones drop on to theirs.
   netOpened({ landed, floated }) {
@@ -695,6 +719,7 @@ export class Board {
       return `${name}, snowed in: take a pair beside it to knock the snow off, or it melts in ${melt} ${melt === 1 ? 'match' : 'matches'}`;
     }
     if (g.underWater(i)) return `${name}, under the water: it can't be taken until the tide goes out`;
+    if (g.waveEvery && g.layout.y[i] === g.layout.height - 2) return `${name}, along the foot of the board, where the waves roll in: the next turns these tiles round in ${g.untilWave} ${g.untilWave === 1 ? 'match' : 'matches'}`;
     if (g.crabOn(i)) return `${name}, with a sand crab on it: it can't be taken while the crab is there; take a pair right beside it to send the crab back into its burrow`;
     if (g.rules.equinox) {
       const side = sideOf(g.layout, i);
@@ -991,6 +1016,7 @@ export class Board {
       if (entry.souls) this.turnOver(1);
       if (entry.gold) for (const k of entry.gold) this.rings[k].classList.remove('won');
       if (entry.dance) for (const i of entry.dance.swaps.flat()) this.paint(i);
+      if (entry.wave) for (const i of entry.wave.tiles) this.paint(i);
       if (entry.followers) for (const i of entry.followers) this.paint(i);
     } else if (entry.type === 'save') this.paint(entry.tile);
     else this.shuffled();
