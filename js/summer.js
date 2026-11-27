@@ -1,4 +1,4 @@
-import { SANDPAIL, SANDCASTLE } from './engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS } from './engine/layouts.js';
 
 // The Summer Beach Season: a day at the beach, eight boards from a pail and
 // spade in the morning to the sun setting into the sea, to be reached in
@@ -7,9 +7,12 @@ import { SANDPAIL, SANDCASTLE } from './engine/layouts.js';
 // first, a pail and spade, is the gentle start, with no twist, as in like a
 // lion is; on the second, the sandcastle, the tide comes in a row up the
 // board every few matches and goes back out, and the rows under the water
-// can't be taken from (engine/tide.js); the last, sunset, is planned to
-// turn over halfway as the sun sets into the sea, a tile left without a
-// partner a lost flip-flop.
+// can't be taken from (engine/tide.js); on the third, footprints in the
+// sand, a sand crab scuttles along its row, the tile it's on not to be
+// taken, until a pair taken right beside it sends it back into its burrow
+// (engine/crab.js); the last, sunset, is planned to turn over halfway as
+// the sun sets into the sea, a tile left without a partner a lost
+// flip-flop.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), and PLAN.md has its boards and twists. Until the beach
 // season's own tiles are drawn, its boards wear Halloween's.
@@ -43,6 +46,18 @@ export function castlePart(L, i) {
   return 'castle';
 }
 
+// The footprints' look, each tile's part by where it is, in half tiles: the
+// footprints raised on the sand, the dunes at the top, the sea at the foot,
+// the wet sand at the water's edge, and the dry sand.
+export function printPart(L, i) {
+  const [y, z] = [L.y[i], L.z[i]];
+  if (z > 0) return 'footprint';
+  if (y === 0) return 'dune';
+  if (y >= 18) return 'sea';
+  if (y === 16) return 'wet-sand';
+  return 'dry-sand';
+}
+
 export const SUMMER = [
   {
     name: 'The first chapter',
@@ -61,6 +76,15 @@ export const SUMMER = [
     look: castlePart,
     sky: ['#6fb0e0', '#13385a'],
     text: "The sandcastle's built, its flags are flying, and the tide's on its way. Every three matches it comes in a row up the beach 🌊, over the beach, the moat and the castle's foot, three rows at the most, and then goes back out a row at a time. While a row is under the water, its tiles can't be taken. With nothing left to take but what the water covers, the tide goes out at once.",
+  },
+  {
+    name: 'The third chapter',
+    title: 'Footprints in the sand',
+    layout: FOOTPRINTS,
+    rules: { treats: false, ghostsFloat: false, crab: { every: 3 } },
+    look: printPart,
+    sky: ['#62acec', '#11365a'],
+    text: "Two lines of footprints wind up the beach from the sea, and a sand crab's out of its burrow 🦀. It scuttles sideways along its row a tile with every match, and the tile it's on can't be taken while it's there. Take a pair right beside it, a tile touching its tile, to send it scuttling back into its burrow, for 10 points; another comes out three matches later. With nowhere left in its row to go, or nothing to take but its tile, it goes back on its own.",
   },
 ];
 

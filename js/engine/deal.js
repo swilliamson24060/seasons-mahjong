@@ -107,7 +107,11 @@ function pairsOf(faces, present, odd = false) {
 // tile never pins another down, and ice only ever thaws, so a random walk
 // nearly always gets through, and the search only has to back out of the
 // odd dead end. prefer, if given, orders the free tiles to try (deal() says
-// how). Null if there is no such order, or none was found within the budget.
+// how). A prefer that keeps a state of its own along the order, as the
+// sandcastle's tide and the footprints' crab do, gives it as prefer.key(m),
+// as of the order's m-th pair, so that a dead end is remembered with it: the
+// same tiles left with the tide or the crab elsewhere may not be one. Null
+// if there is no such order, or none was found within the budget.
 export function blankOrder(L, start, r, budget = 20000, ice = null, prefer = null) {
   const present = Uint8Array.from(start);
   const order = [];
@@ -116,11 +120,16 @@ export function blankOrder(L, start, r, budget = 20000, ice = null, prefer = nul
   const walk = (left) => {
     if (left === 0) return true;
     if (++steps > budget) return false;
-    const key = keyOf(present);
-    if (dead.has(key)) return false;
+    const stateful = prefer !== null && typeof prefer.key === 'function';
+    let key = keyOf(present);
+    if (!stateful && dead.has(key)) return false;
     const taken = order.length;
     const shuffled = r.shuffle(freeTiles(L, present).filter((i) => ice === null || ice[i] <= taken));
     const free = prefer ? prefer(shuffled, present, order) : shuffled;
+    if (stateful) {
+      key += `|${prefer.key(taken)}`;
+      if (dead.has(key)) return false;
+    }
     for (let i = 0; i < free.length; i++) {
       for (let j = i + 1; j < free.length; j++) {
         const a = free[i];

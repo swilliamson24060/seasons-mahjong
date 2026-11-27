@@ -42,7 +42,7 @@ export const covered = (rows, level, i) => rows[i] < level;
 export function ebbing(L, every, high, phase = 0) {
   const rows = rowsUp(L);
   const outAt = []; // the match the tide last went out at, as of each match of the order made so far
-  return (free, present, order) => {
+  const prefer = (free, present, order) => {
     const m = order.length;
     let out = m === 0 ? -phase : outAt[m - 1];
     const level = tideAt(m - out, every, high);
@@ -54,4 +54,8 @@ export function ebbing(L, every, high, phase = 0) {
     outAt[m] = out;
     return dry;
   };
+  // Where the tide is in its coming and going, as of the m-th pair, for
+  // the deal to remember a dead end with.
+  prefer.key = (m) => (m - outAt[m]) % (2 * high * every);
+  return prefer;
 }

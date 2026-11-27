@@ -1,9 +1,10 @@
-import { isFree, keyOf } from './layout.js';
+import { isFree, keyOf, freeTiles } from './layout.js';
 import { KINDS, MATCH, GHOST, LOST } from './tiles.js';
 import { soulsAt } from './midnight.js';
 import { seeded } from './rng.js';
 import { WINDS, windAt, inWind, acrossOf } from './wind.js';
 import { tideAt, covered } from './tide.js';
+import { afterPair, goBack } from './crab.js';
 
 // Tuned on a few thousand turtle deals: how much more a pair counts for when
 // it frees a tile whose match is already free, how widely ties are broken,
@@ -47,12 +48,17 @@ const BOTH = 3;
 // row up from the foot (tide.js), the rows under the water not to be taken
 // from, and the tide going out at once with nothing else to take. With the
 // tide moving, too, nothing is taken without searching, and a position is
-// remembered with the tide's place in its coming and going.
+// remembered with the tide's place in its coming and going. And crab, on
+// its footprints in the sand: the sand crab, { tile, dir, outIn, count,
+// every, seed } (crab.js), its tile not to be taken from, carried along as
+// the pairs are taken, startled, scuttling and coming out as it would, and
+// going back into its burrow at once with nothing else to take; a position
+// is remembered with where the crab is.
 //
 // Returns { result, line, steps }, where result is 'win', 'lost', or
 // 'unknown' when the budget of steps ran out first.
 export function solve(L, position, { budget = 200000 } = {}) {
-  const { faces, unlocked = null, ghostsFloat = false, soulsFloat = false, turn = null, ice = null, wind = null, tide = null } = position;
+  const { faces, unlocked = null, ghostsFloat = false, soulsFloat = false, turn = null, ice = null, wind = null, tide = null, crab = null } = position;
   const n = L.count;
   const K = KINDS.length;
   const present = Uint8Array.from(position.present);
@@ -67,7 +73,8 @@ export function solve(L, position, { budget = 200000 } = {}) {
   let ebbed = tide ? -tide.phase : 0; // the pairs taken when the tide last went out, counted from this position
   const level = () => (tide ? tideAt(taken - ebbed, tide.every, tide.high) : 0);
   const wet = (i) => tide !== null && covered(tide.rows, level(), i);
-  const free = (i) => (ice === null || ice[i] <= taken) && !wet(i) && (loose(i) || windy(i) || isFree(L, present, i));
+  let crabNow = crab && { tile: crab.tile, dir: crab.dir, outIn: crab.outIn, count: crab.count }; // the crab at this point of the search
+  const free = (i) => (ice === null || ice[i] <= taken) && !wet(i) && (crabNow === null || crabNow.tile !== i) && (loose(i) || windy(i) || isFree(L, present, i));
   const cycle = tide ? 2 * tide.high * tide.every : 1;
   const r = seeded(7);
   const line = [];
@@ -161,8 +168,10 @@ export function solve(L, position, { budget = 200000 } = {}) {
   // for one that went out at once in it.
   const search = (left) => {
     const before = ebbed;
+    const crabBefore = crabNow;
     const won = node(left);
     ebbed = before;
+    crabNow = crabBefore;
     return won;
   };
   const node = (left) => {
@@ -172,7 +181,7 @@ export function solve(L, position, { budget = 200000 } = {}) {
       cut = true;
       return false;
     }
-    const key = keyOf(present) + souls + (tide ? `~${(taken - ebbed) % cycle}` : '');
+    const key = keyOf(present) + souls + (tide ? `~${(taken - ebbed) % cycle}` : '') + (crabNow ? `^${crabNow.tile},${crabNow.dir},${crabNow.outIn},${crabNow.count}` : '');
     if (dead.has(key)) return false;
 
     const tiles = [];
@@ -191,7 +200,7 @@ export function solve(L, position, { budget = 200000 } = {}) {
 
     if (settled) {
       if (hopeless(tiles, left)) return lost(key);
-      const forced = wind || tide ? -1 : open.findIndex((o, k) => o.length > 0 && o.length === tiles[k].length);
+      const forced = wind || tide || crab ? -1 : open.findIndex((o, k) => o.length > 0 && o.length === tiles[k].length);
       if (forced >= 0) {
         const o = open[forced];
         for (const i of o) present[i] = 0;
@@ -220,14 +229,23 @@ export function solve(L, position, { budget = 200000 } = {}) {
       ebbed = taken;
       return node(left);
     }
+    // With nothing to take but the crab's tile, the crab goes back into its
+    // burrow at once.
+    if (!moves.length && crabNow && crabNow.tile >= 0) {
+      crabNow = goBack(crabNow, crab.every);
+      return node(left);
+    }
     moves.sort((m1, m2) => m2.score - m1.score);
     for (const { a, b } of moves) {
       present[a] = present[b] = 0;
       line.push([a, b]);
+      const crabHere = crabNow;
+      if (crabNow) crabNow = afterPair(L, present, crabNow, a, b, crab.every, crab.seed, () => freeTiles(L, present)).crab;
       const turning = !settled && left - 2 === turnLeft;
       const woke = turning ? wake() : null;
       if (search(left - 2)) return true;
       if (turning) sleep(woke);
+      crabNow = crabHere;
       line.pop();
       present[a] = present[b] = 1;
       if (cut) return false;

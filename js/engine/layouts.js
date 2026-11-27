@@ -3428,3 +3428,35 @@ export const SANDCASTLE = parseLayout('Sandcastle', [
   ##.###.##
   `,
 ]);
+
+// The Summer Beach Season's third board: footprints in the sand, the beach
+// from the dunes at the top down to the sea at the foot, the wet sand at
+// the water's edge, and two lines of footprints winding up it from the
+// water, a foot to a row, each raised on the sand (summer.js has their
+// parts, for their look). Every tile lies on a whole row, for the sand crab
+// to scuttle along. 100 tiles on two layers, nine across and ten down.
+export const FOOTPRINTS = parseLayout('Footprints', [
+  `
+  .#######.
+  #########
+  #########
+  #########
+  #########
+  #########
+  #########
+  #########
+  #########
+  .#######.
+  `,
+  `
+  .........
+  .........
+  ..#...#..
+  ...#.#...
+  ..#...#..
+  .#.....#.
+  ..#...#..
+  .#.....#.
+  ..#...#..
+  `,
+]);

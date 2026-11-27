@@ -51,6 +51,7 @@ import './equinox.test.js';
 import './lamb.test.js';
 import './summer.test.js';
 import './tide.test.js';
+import './crab.test.js';
 import './raindrops.test.js';
 import './splash.test.js';
 import './colours.test.js';

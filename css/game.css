@@ -1407,6 +1407,60 @@ body.covered #board {
   --face-2: #4a9fd8;
 }
 
+/* On its footprints in the sand, the footprints are wet sand, a deep
+   brown, on the pale dry sand, the dunes at the top a grassy green, and
+   the sea at the foot blue, the sand at its edge wet and darker. */
+.tile[data-look='footprint'] {
+  --face-1: #e2b98a;
+  --face-2: #7f4f24;
+}
+
+.tile[data-look='dry-sand'] {
+  --face-1: #fffaec;
+  --face-2: #efd8a6;
+}
+
+.tile[data-look='dune'] {
+  --face-1: #f4f2d6;
+  --face-2: #b7c48a;
+}
+
+.tile[data-look='wet-sand'] {
+  --face-1: #f6e3c0;
+  --face-2: #c99e62;
+}
+
+.tile[data-look='sea'] {
+  --face-1: #e2f4ff;
+  --face-2: #4a9fd8;
+}
+
+/* The tile the sand crab sits on: ringed in a crab's red, the crab on its
+   top left corner, as the twists' badges are, clear of the tile's number. */
+.tile.crabbed::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 calc(var(--tile-w) * 0.05) rgba(225, 85, 50, 0.85);
+  pointer-events: none;
+}
+
+.tile.crabbed::after {
+  content: '🦀';
+  position: absolute;
+  top: -12%;
+  left: 6%;
+  padding: 0.08em 0.18em;
+  border-radius: 9px;
+  background: #fff6e6;
+  box-shadow:
+    0 0 5px rgba(200, 90, 40, 0.7),
+    inset 0 0 0 1px #e8a07a;
+  font: max(11px, calc(var(--tile-w) * 0.34)) / 1 system-ui, -apple-system, sans-serif;
+  pointer-events: none;
+}
+
 /* A tile the tide covers lies under the sea's blue, light rippling on it,
    until the tide goes out. */
 .tile.underwater::before {

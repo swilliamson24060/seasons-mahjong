@@ -538,6 +538,17 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       if (ebbed) toast('Nothing left to take but what the water covers: the tide goes out.');
     }
   });
+  // On its footprints in the sand: a pair right beside the sand crab sends
+  // it back into its burrow, for points, and three matches later another
+  // comes out; with nowhere to go, it goes back on its own.
+  game.on('crab', ({ b, crabStartled, crabCameOut, crabWentHome, crabWentBack }) => {
+    if (crabStartled >= 0) {
+      sound.crabStartled();
+      setTimeout(() => board.float(`+${POINTS.crab} 🦀`, b), 450); // after the pair's own points
+      if (game.crabsStartled === 1) toast(`You sent the crab scuttling back into its burrow! ${POINTS.crab} points. Another comes out in ${matchWords(game.crabEvery)}.`);
+    } else if (crabWentHome || crabWentBack) sound.crabHome();
+    if (crabCameOut >= 0) setTimeout(() => sound.crabOut(), crabStartled >= 0 ? 600 : 0);
+  });
   // On April Showers' watering can: a pair from its body fills it, if
   // there's room, and a pair of its drops pours it, if there's water in it.
   game.on('can', ({ b, canDoes }) => {
@@ -1796,6 +1807,15 @@ function update() {
     const way = g.tideComingIn ? 'coming in' : 'going out';
     $('tide').innerHTML = level ? `🌊 <b>${level}</b> ${g.tideComingIn ? '↑' : '↓'} ⏳ ${g.untilTide}` : `🌊 out ⏳ ${g.untilTide}`;
     $('tide').setAttribute('aria-label', level ? `The tide covers the bottom ${level === 1 ? 'row' : `${level} rows`} and is ${way}; it moves in ${matchWords(g.untilTide)}` : `The tide is out; it comes in in ${matchWords(g.untilTide)}`);
+  }
+  // On its footprints in the sand, the crabs startled back into their
+  // burrows, and with the crab in its burrow, the matches until the next
+  // comes out.
+  $('crab').hidden = !g.crabEvery;
+  if (g.crabEvery) {
+    const home = g.crab && g.crab.tile < 0 && g.left > 0;
+    $('crab').innerHTML = `🦀 <b>${g.crabsStartled}</b>${home ? ` · ⏳ ${g.crab.outIn}` : ''}`;
+    $('crab').setAttribute('aria-label', `${g.crabsStartled} ${g.crabsStartled === 1 ? 'crab' : 'crabs'} sent back into ${g.crabsStartled === 1 ? 'its burrow' : 'their burrows'}${home ? `; the next comes out in ${matchWords(g.crab.outIn)}` : g.crab && g.crab.tile >= 0 ? '; a crab is out' : ''}`);
   }
   // On its watering can, how full it is, and the pours made.
   $('can').hidden = !g.can;

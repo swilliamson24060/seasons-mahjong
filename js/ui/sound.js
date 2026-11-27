@@ -1715,6 +1715,31 @@ export class Sound {
     for (let k = 0; k < 8; k++) this.rustle(this.now + 0.35 + k * 0.06 + Math.random() * 0.03, 0.03, 3000, 2000, 0.08);
   }
 
+  // On its footprints in the sand, a sand crab coming out of its burrow: a
+  // scrabble of sand, and its claws clicking.
+  crabOut() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.25, 2200, 1200, 0.09);
+    [0.22, 0.29, 0.36].forEach((t) => this.ping(2600, this.now + t, { type: 'triangle', gain: 0.04, attack: 0.001, fall: 0.03, into: this.master }));
+  }
+
+  // A crab startled back into its burrow: it scurries off sideways, its
+  // legs pattering, drops into its hole with a plop, and a chime.
+  crabStartled() {
+    if (!this.on) return;
+    for (let k = 0; k < 7; k++) this.ping(2300 + (k % 2) * 300, this.now + k * 0.045, { type: 'triangle', gain: 0.04, attack: 0.001, fall: 0.025, into: this.master });
+    this.plip(this.now + 0.36, 500, 260, 0.12, 0.1);
+    [1568, 2093].forEach((f, k) => this.bell(f, this.now + 0.5 + k * 0.08, 0.035, 1.2));
+  }
+
+  // A crab going back into its burrow on its own: a quick patter, and a
+  // soft plop.
+  crabHome() {
+    if (!this.on) return;
+    for (let k = 0; k < 4; k++) this.ping(2300 + (k % 2) * 300, this.now + k * 0.05, { type: 'triangle', gain: 0.03, attack: 0.001, fall: 0.025, into: this.master });
+    this.plip(this.now + 0.24, 480, 260, 0.08, 0.1);
+  }
+
   // The Start of Spring's shuffle, a March gust blowing the tiles about: the
   // wind rushing up, buffeting, and dying away, the tiles skittering in it.
   marchGust() {

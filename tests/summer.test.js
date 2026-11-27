@@ -1,13 +1,14 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { SANDPAIL, SANDCASTLE } from '../js/engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
-import { SUMMER, summerOf, pailPart, castlePart } from '../js/summer.js';
+import { SUMMER, summerOf, pailPart, castlePart, printPart } from '../js/summer.js';
 import { theme } from '../js/themes.js';
 
 const FIRST = SUMMER[0];
 const SECOND = SUMMER[1];
+const THIRD = SUMMER[2];
 
 // The tiles on a layer in a row, given in half tiles, by where each starts
 // across.
@@ -101,4 +102,32 @@ test('the sandcastle reads as a sandcastle: two towers and a keep, their flags f
   }
   equal(['flag', 'castle-top', 'castle', 'gate', 'moat', 'sand'].map((p) => `${p} ${parts[p]}`).join(', '), 'flag 3, castle-top 26, castle 42, gate 3, moat 9, sand 9', 'its parts, for its look');
   equal(SECOND.look, castlePart, 'the sandcastle not tinted as its parts are');
+});
+
+test('the third chapter is footprints in the sand: 100 tiles on two layers, nine across, every tile on a whole row, and a sand crab coming out three matches after one is startled', () => {
+  equal(THIRD.name, 'The third chapter', "the third chapter's name");
+  equal(THIRD.title, 'Footprints in the sand', "the third chapter's title");
+  equal(summerOf(FOOTPRINTS), THIRD, "the footprints' chapter");
+  check(Object.keys(layouts).includes('FOOTPRINTS'), 'the footprints play by their address, #play/footprints');
+  equal(FOOTPRINTS.count, 100, 'tiles');
+  equal(FOOTPRINTS.width / 2, 9, 'tiles across');
+  equal(FOOTPRINTS.height / 2, 10, 'tiles down');
+  equal(FOOTPRINTS.depth, 2, 'layers');
+  check([...FOOTPRINTS.y].every((y) => y % 2 === 0), "a tile off a whole row, for the crab's row to be unclear");
+  check(FOOTPRINTS.count > SANDCASTLE.count, 'no more tiles than the sandcastle');
+  equal(JSON.stringify(dayOptions(THIRD)), JSON.stringify({ treats: false, ghostsFloat: false, crab: { every: 3 } }), 'the crab');
+  check(["can't be taken while it's there", 'right beside it', 'three matches later', 'goes back on its own'].every((w) => THIRD.text.includes(w)), "the card doesn't tell the crab");
+});
+
+test('the footprints read as footprints in the sand: two lines of them winding up the beach from the sea, a foot to a row, between the dunes and the water', () => {
+  equal(at(FOOTPRINTS, 1, 16), '4,12', 'the first footprints, at the water\'s edge');
+  equal(['14', '12', '10', '8', '6', '4'].map((y) => at(FOOTPRINTS, 1, Number(y))).join(' | '), '2,14 | 4,12 | 2,14 | 4,12 | 6,10 | 4,12', 'the footprints winding up, a foot to a row');
+  equal(`${at(FOOTPRINTS, 0, 0)} | ${at(FOOTPRINTS, 0, 18)}`, '2,4,6,8,10,12,14 | 2,4,6,8,10,12,14', 'the dunes and the sea, their ends rounded');
+  const parts = {};
+  for (let i = 0; i < FOOTPRINTS.count; i++) {
+    const p = printPart(FOOTPRINTS, i);
+    parts[p] = (parts[p] || 0) + 1;
+  }
+  equal(['footprint', 'dry-sand', 'wet-sand', 'dune', 'sea'].map((p) => `${p} ${parts[p]}`).join(', '), 'footprint 14, dry-sand 63, wet-sand 9, dune 7, sea 7', 'their parts, for their look');
+  equal(THIRD.look, printPart, 'the footprints not tinted as their parts are');
 });

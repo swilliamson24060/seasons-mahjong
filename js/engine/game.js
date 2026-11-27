@@ -1,4 +1,4 @@
-import { isFree } from './layout.js';
+import { isFree, freeTiles } from './layout.js';
 import { MATCH, GHOST, LANTERN, LOST, dealPairs } from './tiles.js';
 import { deal, redeal } from './deal.js';
 import { soulsAt } from './midnight.js';
@@ -39,6 +39,7 @@ import { landingSpots, landingOf, knocks } from './snowballs.js';
 import { kindsLeft, firstSong, hear, songsIn, compose } from './song.js';
 import { windAt, upwindOf, inWind, windswept, catches } from './wind.js';
 import { tideAt, comingIn, rowsUp, covered, ebbing } from './tide.js';
+import { firstCrab, afterPair, goBack, scuttling, startles } from './crab.js';
 import { SOON, RESTLESS, hidingPlaces, hidingOf } from './clover.js';
 import { rowsOf, nextRow, emptied, sweptIn, cleaning } from './sweep.js';
 import { isEquinox, balancing } from './equinox.js';
@@ -182,7 +183,11 @@ export const TREATS = ['candle', 'key', 'cat'];
 // the beach season's sandcastle, tide: { every, high }, the tide coming in
 // a row up the board every so many matches, as far as `high` rows, and
 // going back out, the rows under the water not to be taken from, and with
-// nothing else to take, the tide going out at once (tide.js).
+// nothing else to take, the tide going out at once (tide.js); and on its
+// footprints in the sand, crab: { every }, a sand crab scuttling sideways
+// along its row a tile with every match, the tile it's on not to be taken,
+// startled back into its burrow by a pair right beside it, and another
+// coming out `every` matches later (crab.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -190,7 +195,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null, crab = null } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -326,7 +331,9 @@ export class Game {
                                     ? balancing(table)
                                     : tide
                                       ? ebbing(table, tide.every, tide.high)
-                                      : null;
+                                      : crab
+                                        ? scuttling(table, crab.every, seed)
+                                        : null;
     // On New Year's 9, the rockets, 1 for a tile that is one, chosen by
     // where they lie, before the deal, so that it can be made with them.
     this.rockets = null;
@@ -639,6 +646,12 @@ export class Game {
     this.tideHigh = tide ? tide.high : 0;
     this.rowsUp = tide ? rowsUp(layout) : null;
     this.tideFrom = 0;
+    // On its footprints in the sand, the sand crab (crab.js), out as the
+    // board starts, as the deal had it; how many matches after one is
+    // startled another comes out; and the crabs startled.
+    this.crabEvery = crab ? crab.every : 0;
+    this.crab = crab ? firstCrab(layout, this.present, seed) : null;
+    this.crabsStartled = 0;
     // On its luck of the Irish, the four-leaf clover, { tile, shownAt, hidAt }:
     // the tile it hides on, the match after which that tile came free and it
     // showed, or null while it's hidden, and the match it hid after; or null
@@ -1169,6 +1182,32 @@ export class Game {
     const free = this.freeTiles();
     for (const t of free) {
       if (!this.inWind(t)) continue;
+      for (const u of free) {
+        if (u === t || MATCH[this.faces[u]] !== MATCH[this.faces[t]]) continue;
+        const made = wayWith(way, [t, u], 1, (l) => this.holds(l));
+        if (made) return made;
+      }
+    }
+    return way;
+  }
+
+  // On the beach season's footprints, the way mended to startle the crab
+  // back into its burrow now, if it can be: a pair right beside it taken
+  // first, from further down the way, or else one of its own, put in where
+  // the way still wins.
+  startleCrab(way) {
+    if (!way.length || !this.crab || this.crab.tile < 0) return way;
+    const startling = ([x, y]) => startles(this.layout, this.crab, x, y);
+    if (startling(way[0])) return way;
+    for (let k = 1; k < way.length; k++) {
+      if (!startling(way[k]) || !this.isFree(way[k][0]) || !this.isFree(way[k][1])) continue;
+      const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+      if (this.holds(tried)) return tried;
+    }
+    const free = this.freeTiles();
+    const beside = [...this.layout.left[this.crab.tile], ...this.layout.right[this.crab.tile]];
+    for (const t of free) {
+      if (!beside.includes(t)) continue;
       for (const u of free) {
         if (u === t || MATCH[this.faces[u]] !== MATCH[this.faces[t]]) continue;
         const made = wayWith(way, [t, u], 1, (l) => this.holds(l));
@@ -1875,7 +1914,20 @@ export class Game {
 
   // Free to be taken: open, not frozen, and out of the water.
   isFree(i) {
-    return this.open(i) && !this.frozen(i) && !this.underWater(i);
+    return this.open(i) && !this.frozen(i) && !this.underWater(i) && !this.crabOn(i);
+  }
+
+  // On the footprints, whether the crab is on a tile.
+  crabOn(i) {
+    return Boolean(this.crab) && this.crab.tile === i; // asked before the crab is set, too, as a board is being made
+  }
+
+  // With the crab out and nothing to take but its tile, it scuttles back
+  // into its burrow at once. Returns whether it went.
+  shooCrab() {
+    if (!this.crab || this.crab.tile < 0 || this.left === 0 || this.pairs().length) return false;
+    this.crab = goBack(this.crab, this.crabEvery);
+    return true;
   }
 
   // On the sandcastle, the rows the tide covers now, whether it's coming in
@@ -2374,6 +2426,7 @@ export class Game {
     const lucky = this.clover !== null && this.clover.shownAt !== null && (a === this.clover.tile || b === this.clover.tile);
     if (this.cloverWithin) entry.clover = { clover: this.clover, hidden: this.cloversHidden, found: this.cloversFound, lost: this.cloversLost }; // as it was, for an undo
     if (this.tideEvery) entry.tideFrom = this.tideFrom; // as it was, for an undo
+    if (this.crab) entry.crab = this.crab; // as it was, for an undo
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
@@ -2396,6 +2449,17 @@ export class Game {
     // out one.
     const tideWas = this.tideEvery ? tideAt(this.matches - 1 - this.tideFrom, this.tideEvery, this.tideHigh) : 0;
     const tideMoved = this.tideEvery > 0 && this.left > 0 && this.tideLevel !== tideWas ? (this.tideLevel > tideWas ? 'in' : 'out') : null;
+    // On its footprints in the sand, the crab startled back into its
+    // burrow by the pair, or scuttling on, or coming out.
+    const crabWas = this.crab ? this.crab.tile : -1;
+    const crabbed = this.crab ? afterPair(this.layout, this.present, this.crab, a, b, this.crabEvery, this.seed, () => freeTiles(this.layout, this.present)) : null;
+    if (crabbed) {
+      this.crab = crabbed.crab;
+      if (crabbed.startled) {
+        this.crabsStartled++;
+        entry.startled = true;
+      }
+    }
     // On its flower bed, the bee flies on to another tulip.
     const flew = this.bee ? this.bee.at : -1;
     if (this.bee) this.bee = flyOn(this.tulips, this.bee, this.present, this.seed);
@@ -2624,6 +2688,9 @@ export class Game {
       caughtWind,
       windTurned,
       tideMoved,
+      crabStartled: crabbed && crabbed.startled ? crabWas : -1,
+      crabCameOut: crabbed && crabbed.cameOut ? this.crab.tile : -1,
+      crabWentHome: Boolean(crabbed && !crabbed.startled && crabWas >= 0 && this.crab.tile < 0),
       cloverFound,
       cloverLost,
       cloverShown,
@@ -2672,6 +2739,7 @@ export class Game {
     if (heard && (heard.note || heard.broke || heard.fresh)) this.emit('song', result);
     if (caughtWind || windTurned >= 0) this.emit('wind', result);
     if (tideMoved) this.emit('tide', result);
+    if (crabbed && (crabbed.startled || crabbed.cameOut || result.crabWentHome)) this.emit('crab', result);
     if (cloverFound >= 0 || cloverLost >= 0 || cloverShown >= 0) this.emit('clover', result);
     if (cleaned && (cleaned.swept.length || cleaned.out.length)) this.emit('sweep', result);
     if (equinoxPair) this.emit('equinox', result);
@@ -2763,6 +2831,8 @@ export class Game {
       if (last.rows) this.rowsSwept = last.rows;
       if (last.equinox) this.equinoxPairs--;
       if (last.tideFrom !== undefined) this.tideFrom = last.tideFrom;
+      if (last.crab) this.crab = last.crab;
+      if (last.startled) this.crabsStartled--;
       if (last.snow) {
         this.ice.set(last.snow.ice);
         this.snowLanded = last.snow.landed;
@@ -2784,6 +2854,7 @@ export class Game {
       if (last.couple) this.couple = last.couple;
       if (last.messages) this.messages = last.messages;
       if (last.tideFrom !== undefined) this.tideFrom = last.tideFrom;
+      if (last.crab) this.crab = last.crab;
     }
     this.line = last.line;
     this.outlook = last.outlook;
@@ -2851,6 +2922,7 @@ export class Game {
     if (this.line && this.cloverWithin) this.line = this.pickClover(this.line);
     if (this.line && this.sweepRows) this.line = this.sweepDown(this.line);
     if (this.line && this.rules.equinox) this.line = this.meetHalfway(this.line);
+    if (this.line && this.crab) this.line = this.startleCrab(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
@@ -2935,7 +3007,9 @@ export class Game {
                             ? foraging(this.tulips, this.seed, this.bee)
                             : this.tideEvery
                               ? ebbing(this.layout, this.tideEvery, this.tideHigh, this.matches - this.tideFrom)
-                              : this.prefer;
+                              : this.crab
+                                ? scuttling(this.layout, this.crabEvery, this.seed, this.crab)
+                                : this.prefer;
       dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead(), prefer);
       const fine = (d) =>
         (!this.mirror || swansIn(this.layout, this.mirror, d.sides[this.side], this.present).length === swans) &&
@@ -2948,7 +3022,7 @@ export class Game {
     if (this.robin && this.sides.length === 1) dealt.sides[this.side] = compose(dealt.order, dealt.sides[this.side], (f) => MATCH[f], this.robin, this.seed, this.r);
     const busterTiles = this.busters && this.busters.map((d) => d.tiles.slice());
     const pails = this.pails && this.pails.map((p) => ({ ...p, tiles: p.tiles.slice() }));
-    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails, confetti: this.confetti, couple: this.couple, messages: this.messages, tideFrom: this.tideFrom });
+    this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails, confetti: this.confetti, couple: this.couple, messages: this.messages, tideFrom: this.tideFrom, crab: this.crab });
     this.sides = dealt.sides;
     // The candy hearts go with the tiles, put on the new deal as the deal
     // put them, a message begun to be said next.
@@ -2996,6 +3070,7 @@ export class Game {
     // On the sandcastle, the new deal leaves nothing to take but what the
     // water covers only when its order has the tide go out at once.
     if (this.ebb()) this.emit('tide', { tideMoved: 'out', ebbed: true });
+    if (this.shooCrab()) this.emit('crab', { crabWentBack: true, crabStartled: -1, crabCameOut: -1 });
     return true;
   }
 
@@ -3011,6 +3086,7 @@ export class Game {
       ice: this.iceAhead(),
       wind: this.windEvery ? { every: this.windEvery, at: this.matches, upwind: this.upwind } : null,
       tide: this.tideEvery ? { every: this.tideEvery, high: this.tideHigh, phase: this.matches - this.tideFrom, rows: this.rowsUp } : null,
+      crab: this.crab ? { ...this.crab, every: this.crabEvery, seed: this.seed } : null,
     };
   }
 
@@ -3048,6 +3124,7 @@ export class Game {
     const sides = this.sides.map((s) => Int16Array.from(s));
     let matches = this.matches;
     let tideFrom = this.tideFrom;
+    let crab = this.crab;
     for (const [x, y] of line) {
       const faces = sides[matches >= this.turnAt ? 1 : 0];
       const thawed = (i) => !this.ice || this.ice[i] <= matches;
@@ -3064,7 +3141,17 @@ export class Game {
         }
         tideFrom = matches;
       }
+      if (crab && (x === crab.tile || y === crab.tile)) {
+        const kinds = new Set();
+        for (let i = 0; i < p.length; i++) {
+          if (i === crab.tile || !open(i)) continue;
+          if (kinds.has(MATCH[faces[i]])) return false; // another pair to take, the crab staying put
+          kinds.add(MATCH[faces[i]]);
+        }
+        crab = goBack(crab, this.crabEvery);
+      }
       p[x] = p[y] = 0;
+      if (crab) crab = afterPair(this.layout, p, crab, x, y, this.crabEvery, this.seed, () => freeTiles(this.layout, p)).crab;
       if (++matches === this.turnAt) for (const t of soulsAt(this.layout, sides[1], p)) sides[1][t] = LOST;
     }
     return p.every((v) => v === 0);
@@ -3079,6 +3166,7 @@ export class Game {
   // the sandcastle, after the tide goes out at once if it must.
   settle() {
     if (this.ebb()) this.emit('tide', { tideMoved: 'out', ebbed: true });
+    if (this.shooCrab()) this.emit('crab', { crabWentBack: true, crabStartled: -1, crabCameOut: -1 });
     if (this.won) this.emit('win', this);
     else if (this.stuck) this.emit('stuck', this);
   }
