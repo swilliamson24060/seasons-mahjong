@@ -1,4 +1,4 @@
-import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM } from './engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM, BEACHBALL } from './engine/layouts.js';
 
 // The Summer Beach Season: a day at the beach, eight boards from a pail and
 // spade in the morning to the sun setting into the sea, to be reached in
@@ -14,8 +14,11 @@ import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM } from './engine/l
 // in over the bottom row and its tiles turn round among themselves, so long
 // as the board can still be won (engine/waves.js); on the fifth, an ice
 // cream, the cherry on top, saved for the last pair, scores (engine/
-// cherry.js); the last, sunset, is planned to turn over halfway as the sun
-// sets into the sea, a tile left without a partner a lost flip-flop.
+// cherry.js); on the sixth, a beach ball, a tile left free in the sun for
+// six matches burns, and a pair taken before either of its tiles does is a
+// cool pair, for points (engine/sunburn.js); the last, sunset, is planned
+// to turn over halfway as the sun sets into the sea, a tile left without a
+// partner a lost flip-flop.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), and PLAN.md has its boards and twists. Until the beach
 // season's own tiles are drawn, its boards wear Halloween's.
@@ -93,6 +96,21 @@ export function scoopPart(L, i) {
   return 'cone';
 }
 
+// The beach ball's look, each tile's part by where it is, in half tiles:
+// the white cap raised on top, and round it the ball's six panels, blue,
+// white, yellow, white, green and white from the top round to the right,
+// by the way each tile lies from the ball's middle (tiles being a third
+// taller than they are wide); and under the ball the sand, with the ball's
+// shadow on it.
+const PANELS = ['panel-blue', 'panel-white', 'panel-yellow', 'panel-white', 'panel-green', 'panel-white'];
+export function ballPart(L, i) {
+  const [x, y, z] = [L.x[i], L.y[i], L.z[i]];
+  if (y >= 16) return y === 16 && x >= 4 && x <= 12 ? 'ball-shadow' : 'sand';
+  if (z === 2) return 'ball-cap';
+  const turn = (Math.atan2(((y + 1 - 7) * 4) / 3, x + 1 - 9) * 180) / Math.PI + 450; // from the top, round to the right
+  return PANELS[Math.floor(turn / 60) % 6];
+}
+
 export const SUMMER = [
   {
     name: 'The first chapter',
@@ -138,6 +156,15 @@ export const SUMMER = [
     look: scoopPart,
     sky: ['#58a6f2', '#0e3562'],
     text: "It's a hot one, and the ice cream's three scoops high, a cherry on top 🍒. The cherry's free from the start, but save it for last: take it in the very last pair, after every other tile, for 50 points. Take it any sooner and it's just a tile.",
+  },
+  {
+    name: 'The sixth chapter',
+    title: 'A beach ball',
+    layout: BEACHBALL,
+    rules: { treats: false, ghostsFloat: false, sunburn: 6 },
+    look: ballPart,
+    sky: ['#4ea2f5', '#0c3466'],
+    text: "The sun's at its height, and the beach ball's out, bouncing on the sand. A tile that's free is out in the sun, and goes a little pinker with every match: left there six matches, it burns, going red. Take a pair before either of its tiles burns, a cool pair 😎, for 5 points. A sunburnt tile can still be taken, but only ever in a pair that's just a pair.",
   },
 ];
 

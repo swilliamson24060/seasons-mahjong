@@ -1730,6 +1730,21 @@ export class Sound {
     this.ping(220, this.now + 0.1, { type: 'triangle', gain: 0.05, fall: 0.35 });
   }
 
+  // On its beach ball, a cool pair, taken before either tile burnt: ice
+  // clinking in a cold drink, two light, glassy notes.
+  coolPair() {
+    if (!this.on) return;
+    this.ping(2794, this.now, { gain: 0.05, attack: 0.002, fall: 0.25, into: this.master });
+    this.ping(3729, this.now + 0.07, { gain: 0.04, attack: 0.002, fall: 0.3, into: this.master });
+  }
+
+  // Tiles left in the sun too long burning: a sizzle, crackling as it goes.
+  sunburn() {
+    if (!this.on) return;
+    this.rustle(this.now, 0.7, 6000, 3500, 0.1);
+    for (let k = 0; k < 6; k++) this.rustle(this.now + 0.05 + k * 0.08 + Math.random() * 0.04, 0.025, 4200, 2600, 0.08);
+  }
+
   // On its sailing, a wave rolling in along the foot of the board: its swell
   // rising, breaking, and its foam hissing away.
   waveRolls() {

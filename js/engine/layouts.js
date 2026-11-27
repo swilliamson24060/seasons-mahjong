@@ -3553,3 +3553,41 @@ export const ICECREAM = parseLayout('Ice cream', [
   ...###...
   `,
 ]);
+
+// The Summer Beach Season's sixth board: a beach ball, bouncing on the
+// sand, two layers thick, its panels blue, yellow and green with white
+// between them round the white cap on top, the cap four tiles raised over
+// the ball's middle; and under it, clear of it as it bounces, two rows of
+// sand with the ball's shadow on them (summer.js has their parts, for
+// their look). The upper layer covers the ends of the rows under it, so
+// that few tiles are free at once, out in the sun. 124 tiles on three
+// layers, nine across and ten down.
+export const BEACHBALL = parseLayout('Beach ball', [
+  `
+  ..#####..
+  .#######.
+  #########
+  #########
+  #########
+  .#######.
+  ..#####..
+  .........
+  #########
+  #########
+  `,
+  `
+  ..#####..
+  .#######.
+  #########
+  #########
+  #########
+  .#######.
+  ..#####..
+  `,
+  `
+  .........
+  .........
+  ...++....
+  ...++....
+  `,
+]);

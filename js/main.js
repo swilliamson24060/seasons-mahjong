@@ -765,6 +765,19 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     if (!wave) toast('A wave rolls in, but falls short: the tiles along the foot stay as they are.');
     else if (game.wavesRolled === 1) toast('A wave rolls in along the foot of the board, and the tiles it reaches turn round among themselves, a place along.');
   });
+  // On its beach ball: a cool pair, neither of its tiles burnt, and tiles
+  // left in the sun too long burning.
+  game.on('sun', ({ b, coolPair, sunburnt }) => {
+    if (coolPair) {
+      sound.coolPair();
+      setTimeout(() => board.float(`+${POINTS.cool} 😎`, b), 450); // after the pair's own points
+      if (game.coolPairs === 1 && !sunburnt.length) toast(`A cool pair, taken before either tile burnt: ${POINTS.cool} points.`);
+    }
+    if (sunburnt.length) {
+      setTimeout(() => sound.sunburn(), coolPair ? 250 : 0);
+      if (game.sunburns === 1) toast(`Ouch! ${sunburnt.length === 1 ? 'A tile' : `${sunburnt.length} tiles`} left out in the sun for ${game.burnAfter} matches got sunburnt. A pair with a sunburnt tile is just a pair: take tiles soon after they come free to keep them cool.`);
+    }
+  });
   game.on('treat', ({ treat }) => {
     sound.treat();
     toast(gifts.came(gifts.names[treat]));
@@ -1847,6 +1860,12 @@ function update() {
   if (g.cherry >= 0) {
     $('cherry').innerHTML = g.cherryAt < 0 ? '🍒 last' : g.cherrySaved ? '🍒 ✓' : '🍒 ✗';
     $('cherry').setAttribute('aria-label', g.cherryAt < 0 ? 'The cherry on top: save it for the last pair' : g.cherrySaved ? 'The cherry on top, saved for last' : 'The cherry, eaten too soon');
+  }
+  // On its beach ball, the cool pairs taken, neither of their tiles burnt.
+  $('sun').hidden = !g.sunAt;
+  if (g.sunAt) {
+    $('sun').innerHTML = `😎 <b>${g.coolPairs}</b>`;
+    $('sun').setAttribute('aria-label', `${g.coolPairs} cool ${g.coolPairs === 1 ? 'pair' : 'pairs'}, taken before either tile burnt in the sun`);
   }
   // On its watering can, how full it is, and the pours made.
   $('can').hidden = !g.can;

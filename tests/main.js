@@ -54,6 +54,7 @@ import './tide.test.js';
 import './crab.test.js';
 import './waves.test.js';
 import './cherry.test.js';
+import './sunburn.test.js';
 import './raindrops.test.js';
 import './splash.test.js';
 import './colours.test.js';

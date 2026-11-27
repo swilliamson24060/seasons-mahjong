@@ -1,9 +1,9 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM } from '../js/engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM, BEACHBALL } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
-import { SUMMER, summerOf, pailPart, castlePart, printPart, sailPart, scoopPart } from '../js/summer.js';
+import { SUMMER, summerOf, pailPart, castlePart, printPart, sailPart, scoopPart, ballPart } from '../js/summer.js';
 import { theme } from '../js/themes.js';
 
 const FIRST = SUMMER[0];
@@ -11,6 +11,7 @@ const SECOND = SUMMER[1];
 const THIRD = SUMMER[2];
 const FOURTH = SUMMER[3];
 const FIFTH = SUMMER[4];
+const SIXTH = SUMMER[5];
 
 // The tiles on a layer in a row, given in half tiles, by where each starts
 // across.
@@ -190,4 +191,40 @@ test('the ice cream reads as an ice cream: the cherry on top, three scoops, stra
   }
   equal(['cherry', 'strawberry', 'vanilla', 'chocolate', 'cone-rim', 'cone', 'drip'].map((p) => `${p} ${parts[p]}`).join(', '), 'cherry 1, strawberry 12, vanilla 30, chocolate 48, cone-rim 10, cone 11, drip 4', 'its parts, for its look');
   equal(FIFTH.look, scoopPart, 'the ice cream not tinted as its parts are');
+});
+
+test('the sixth chapter is a beach ball: 124 tiles on three layers, nine across, and a tile left free in the sun for six matches burning', () => {
+  equal(SIXTH.name, 'The sixth chapter', "the sixth chapter's name");
+  equal(SIXTH.title, 'A beach ball', "the sixth chapter's title");
+  equal(summerOf(BEACHBALL), SIXTH, "the beach ball's chapter");
+  check(Object.keys(layouts).includes('BEACHBALL'), 'the beach ball plays by its address, #play/beachball');
+  equal(BEACHBALL.count, 124, 'tiles');
+  equal(BEACHBALL.width / 2, 9, 'tiles across');
+  equal(BEACHBALL.height / 2, 10, 'tiles down');
+  equal(BEACHBALL.depth, 3, 'layers');
+  check(BEACHBALL.count > ICECREAM.count, 'no more tiles than the ice cream');
+  equal(JSON.stringify(dayOptions(SIXTH)), JSON.stringify({ treats: false, ghostsFloat: false, sunburn: 6 }), 'the sunburn');
+  check(['out in the sun', 'six matches', 'cool pair', 'just a pair'].every((w) => SIXTH.text.includes(w)), "the card doesn't tell the sunburn");
+});
+
+test('the beach ball reads as a beach ball: round, two layers thick, its panels blue, yellow and green with white between them round the white cap raised on top, clear of the sand as it bounces, its shadow on the sand', () => {
+  equal(['0', '2', '6', '12'].map((y) => at(BEACHBALL, 0, Number(y))).join(' | '), '4,6,8,10,12 | 2,4,6,8,10,12,14 | 0,2,4,6,8,10,12,14,16 | 4,6,8,10,12', 'the ball, round');
+  for (let y = 0; y <= 12; y += 2) equal(at(BEACHBALL, 1, y), at(BEACHBALL, 0, y), `the ball's row ${y / 2 + 1}, two layers thick`);
+  equal(at(BEACHBALL, 0, 14), '', 'the ball, clear of the sand');
+  equal([5, 7].map((y) => at(BEACHBALL, 2, y)).join(' | '), '7,9 | 7,9', 'the cap, raised over the middle');
+  equal([16, 18].map((y) => at(BEACHBALL, 0, y)).join(' | '), '0,2,4,6,8,10,12,14,16 | 0,2,4,6,8,10,12,14,16', 'the sand');
+  const parts = {};
+  for (let i = 0; i < BEACHBALL.count; i++) {
+    const p = ballPart(BEACHBALL, i);
+    parts[p] = (parts[p] || 0) + 1;
+  }
+  equal(['panel-blue', 'panel-yellow', 'panel-green', 'panel-white', 'ball-cap', 'sand', 'ball-shadow'].map((p) => `${p} ${parts[p]}`).join(', '), 'panel-blue 20, panel-yellow 14, panel-green 16, panel-white 52, ball-cap 4, sand 13, ball-shadow 5', 'its parts, for its look');
+  equal(SIXTH.look, ballPart, 'the beach ball not tinted as its parts are');
+});
+
+test("the beach ball's upper layer covers the ends of the rows under it, so that few tiles are out in the sun at once: the upper layer's row ends, the cap's and the sand's", () => {
+  const g = new Game(BEACHBALL, { seed: 1, ...dayOptions(SIXTH) });
+  const free = g.freeTiles();
+  equal([0, 1, 2].map((z) => free.filter((t) => BEACHBALL.z[t] === z).length).join(), '4,14,4', 'free from the start, on each layer');
+  equal(free.filter((t) => BEACHBALL.z[t] === 0).map((t) => BEACHBALL.y[t]).join(), '16,16,18,18', 'free on the bottom layer, the sand');
 });

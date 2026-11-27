@@ -42,6 +42,7 @@ import { tideAt, comingIn, rowsUp, covered, ebbing } from './tide.js';
 import { firstCrab, afterPair, goBack, scuttling, startles } from './crab.js';
 import { waveTiles, rollIn } from './waves.js';
 import { cherryOf, savingCherry } from './cherry.js';
+import { sunLeft, isCool, keepingCool, coolIn } from './sunburn.js';
 import { SOON, RESTLESS, hidingPlaces, hidingOf } from './clover.js';
 import { rowsOf, nextRow, emptied, sweptIn, cleaning } from './sweep.js';
 import { isEquinox, balancing } from './equinox.js';
@@ -59,15 +60,16 @@ export const TREATS = ['candle', 'key', 'cat'];
 // roses in bloom, candlelight, a box of chocolates, hugs and kisses,
 // raindrops, the splash zone, chasing colours, watering, the watering can,
 // busy bees, snowballs, the robin's song, the March wind, the four-leaf
-// clover, the clean sweep and day meeting night. Nothing here touches the
-// page; the board
-// listens with on() for what happens: 'match', 'thaw', 'list', 'checkout',
+// clover, the clean sweep, day meeting night, the tide, the sand crab, the
+// waves, the cherry on top and sunburn. Nothing here touches the page; the
+// board listens with on() for what happens: 'match', 'thaw', 'list', 'checkout',
 // 'bought', 'grab', 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold',
 // 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe', 'firework',
 // 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti', 'star', 'toast',
 // 'arrow', 'message', 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain',
-// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'song', 'wind', 'clover', 'sweep', 'equinox', 'save', 'turn', 'treat',
-// 'key', 'shuffle', 'undo', 'win' and 'stuck'.
+// 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'song', 'wind',
+// 'clover', 'sweep', 'equinox', 'tide', 'crab', 'wave', 'cherry', 'sun',
+// 'save', 'turn', 'treat', 'key', 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
@@ -194,7 +196,10 @@ export const TREATS = ['candle', 'key', 'cat'];
 // its tiles turning round among themselves a place along, so long as the
 // board can still be won so (waves.js); and on its ice cream, cherry:
 // whether a cherry sits on the top scoop, the board's top tile, to be
-// saved for the last pair, for points (cherry.js).
+// saved for the last pair, for points (cherry.js); and on its beach ball,
+// sunburn: how many matches a tile can be left free in the sun before it
+// burns, going red, a pair taken while neither of its tiles is burnt a
+// cool pair, for points (sunburn.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -202,7 +207,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null, crab = null, waves = null, cherry = false } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null, crab = null, waves = null, cherry = false, sunburn = 0 } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -342,7 +347,9 @@ export class Game {
                                         ? scuttling(table, crab.every, seed)
                                         : cherry
                                           ? savingCherry(cherryOf(table))
-                                          : null;
+                                          : sunburn
+                                            ? keepingCool(table, sunburn)
+                                            : null;
     // On New Year's 9, the rockets, 1 for a tile that is one, chosen by
     // where they lie, before the deal, so that it can be made with them.
     this.rockets = null;
@@ -688,6 +695,17 @@ export class Game {
     // out of turn, and 0 till then (sweep.js).
     this.rowsSwept = this.sweepRows ? new Int8Array(this.sweepRows.rows.length) : null;
     this.equinoxPairs = 0; // on its day and night, the equinox pairs taken (equinox.js)
+    // On the beach season's beach ball, how many matches a tile can be left
+    // free in the sun before it burns; the match after which each tile came
+    // free, into the sun, or -1 while it's still in the shade; and the cool
+    // pairs taken, neither of their tiles burnt, and the matches after which
+    // tiles burnt (sunburn.js). The tiles free from the start are in the sun
+    // from the start.
+    this.burnAfter = sunburn;
+    this.sunAt = sunburn ? new Int16Array(layout.count).fill(-1) : null;
+    this.coolPairs = 0;
+    this.sunburns = 0;
+    if (sunburn) this.sunUp();
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -1231,6 +1249,58 @@ export class Game {
       }
     }
     return way;
+  }
+
+  // On the beach season's beach ball, the tiles come free since the sun
+  // was last looked at, out in it from now on. Returns them.
+  sunUp() {
+    const out = [];
+    for (let i = 0; i < this.layout.count; i++) {
+      if (this.sunAt[i] >= 0 || !this.isFree(i)) continue;
+      this.sunAt[i] = this.matches;
+      out.push(i);
+    }
+    return out;
+  }
+
+  // The matches a tile still on the board has left in the sun before it
+  // burns: Infinity in the shade, and 0 or less once it's burnt.
+  untilBurnt(i) {
+    return this.sunAt ? sunLeft(this.sunAt, i, this.matches, this.burnAfter) : Infinity;
+  }
+
+  // Whether a tile still on the board is sunburnt.
+  isBurnt(i) {
+    return this.present[i] === 1 && this.untilBurnt(i) <= 0;
+  }
+
+  // The tiles still on the board that burnt with the last match, left in
+  // the sun as long as they could be.
+  burning() {
+    const out = [];
+    for (let i = 0; i < this.layout.count; i++) if (this.present[i] && this.sunAt[i] >= 0 && this.sunAt[i] + this.burnAfter === this.matches) out.push(i);
+    return out;
+  }
+
+  // On its beach ball, the way mended to keep cool: a pair of it that's
+  // free and cool now taken first, from further down the way, where that
+  // makes for more cool pairs all told, the most it can; or else the way as
+  // it is.
+  keepCool(way) {
+    const cool = (w) => coolIn(this.layout, this.present, this.sunAt, this.matches, this.burnAfter, w);
+    let best = way;
+    let most = cool(way);
+    for (let k = 1; k < way.length; k++) {
+      const [a, b] = way[k];
+      if (!this.isFree(a) || !this.isFree(b) || !isCool(this.sunAt, a, b, this.matches, this.burnAfter)) continue;
+      const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+      const n = cool(tried);
+      if (n > most && this.holds(tried)) {
+        best = tried;
+        most = n;
+      }
+    }
+    return best;
   }
 
   // On the beach season's footprints, the way mended to startle the crab
@@ -2184,8 +2254,10 @@ export class Game {
   // of one blown away after it, and the tile of one showing after it, each
   // -1 with none; on its spring cleaning, the rows it swept clean in turn
   // and those it cleared out of turn; and on its day and night, whether it
-  // was an equinox pair, a tile from each half of the board. Null if the
-  // pair cannot be taken.
+  // was an equinox pair, a tile from each half of the board; and on the
+  // beach season's beach ball, whether it was a cool pair, neither of its
+  // tiles burnt, the tiles it left free, out in the sun, and the tiles that
+  // burnt after it. Null if the pair cannot be taken.
   match(a, b) {
     if (!this.canMatch(a, b)) return null;
     const giving = this.treatFaces.includes(this.faces[a]);
@@ -2492,6 +2564,14 @@ export class Game {
     if (this.crab) entry.crab = this.crab; // as it was, for an undo
     const cherryTaken = this.cherry >= 0 && (a === this.cherry || b === this.cherry);
     if (cherryTaken) entry.cherry = true;
+    // On its beach ball, a pair taken while neither of its tiles is burnt is
+    // a cool pair.
+    const coolPair = this.sunAt !== null && isCool(this.sunAt, a, b, this.matches, this.burnAfter);
+    if (this.sunAt) entry.sunAt = Int16Array.from(this.sunAt); // as it was, for an undo
+    if (coolPair) {
+      this.coolPairs++;
+      entry.cool = true;
+    }
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
@@ -2680,6 +2760,14 @@ export class Game {
     if (this.ice) for (let i = 0; i < this.layout.count; i++) if (this.present[i] && this.ice[i] === this.matches && !knocked.includes(i)) thawed.push(i);
     const checkout = Boolean(this.list) && this.matches === this.list.checkout;
     const hatched = this.hatch();
+    // And on the beach ball, the tiles the pair left free come out into the
+    // sun, and those left in it long enough burn.
+    const sunned = this.sunAt ? this.sunUp() : [];
+    const sunburnt = this.sunAt ? this.burning() : [];
+    if (sunburnt.length) {
+      this.sunburns++;
+      entry.sunburnt = true;
+    }
     const result = {
       a,
       b,
@@ -2781,6 +2869,9 @@ export class Game {
       swept: cleaned ? cleaned.swept : [],
       sweptOut: cleaned ? cleaned.out : [],
       equinoxPair,
+      coolPair,
+      sunned,
+      sunburnt,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -2829,6 +2920,7 @@ export class Game {
     if (cloverFound >= 0 || cloverLost >= 0 || cloverShown >= 0) this.emit('clover', result);
     if (cleaned && (cleaned.swept.length || cleaned.out.length)) this.emit('sweep', result);
     if (equinoxPair) this.emit('equinox', result);
+    if (coolPair || sunburnt.length) this.emit('sun', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -2920,6 +3012,9 @@ export class Game {
       if (last.clover) Object.assign(this, { clover: last.clover.clover, cloversHidden: last.clover.hidden, cloversFound: last.clover.found, cloversLost: last.clover.lost });
       if (last.rows) this.rowsSwept = last.rows;
       if (last.equinox) this.equinoxPairs--;
+      if (last.sunAt) this.sunAt = last.sunAt;
+      if (last.cool) this.coolPairs--;
+      if (last.sunburnt) this.sunburns--;
       if (last.tideFrom !== undefined) this.tideFrom = last.tideFrom;
       if (last.crab) this.crab = last.crab;
       if (last.startled) this.crabsStartled--;
@@ -3018,6 +3113,7 @@ export class Game {
     if (this.line && this.rules.equinox) this.line = this.meetHalfway(this.line);
     if (this.line && this.crab) this.line = this.startleCrab(this.line);
     if (this.line && this.cherry >= 0 && this.present[this.cherry]) this.line = this.saveCherry(this.line);
+    if (this.line && this.sunAt) this.line = this.keepCool(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
@@ -3106,7 +3202,9 @@ export class Game {
                                 ? scuttling(this.layout, this.crabEvery, this.seed, this.crab)
                                 : this.cherry >= 0 && this.present[this.cherry]
                                   ? savingCherry(this.cherry)
-                                  : this.prefer;
+                                  : this.sunAt
+                                    ? keepingCool(this.layout, this.burnAfter, this.sunAt, this.matches)
+                                    : this.prefer;
       dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead(), prefer);
       const fine = (d) =>
         (!this.mirror || swansIn(this.layout, this.mirror, d.sides[this.side], this.present).length === swans) &&

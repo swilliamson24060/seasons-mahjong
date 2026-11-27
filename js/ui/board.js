@@ -142,6 +142,7 @@ export class Board {
     game.on('gold', ({ gold }) => this.gild(gold));
     game.on('dance', ({ dance }) => dance && this.danced(dance));
     game.on('wave', ({ wave }) => wave && this.washed(wave));
+    game.on('sun', ({ sunburnt }) => sunburnt.length && this.sizzled(sunburnt));
     game.on('save', ({ slot }) => {
       this.selected = -1;
       this.paint(slot);
@@ -605,6 +606,17 @@ export class Board {
     }, tiles.length * 60 + 600);
   }
 
+  // On the beach ball, tiles left in the sun too long burn: each flushes
+  // red with a sizzle, one after another.
+  sizzled(tiles) {
+    this.refresh();
+    tiles.forEach((i, k) => {
+      const el = this.tiles[i].el;
+      el.style.animationDelay = `${k * 40}ms`;
+      this.restart(el, 'sizzling');
+    });
+  }
+
   // A net of balloons opens: the balloons left float up and away from their
   // tiles, and the new ones drop on to theirs.
   netOpened({ landed, floated }) {
@@ -721,6 +733,9 @@ export class Board {
     if (g.underWater(i)) return `${name}, under the water: it can't be taken until the tide goes out`;
     if (g.waveEvery && g.layout.y[i] === g.layout.height - 2) return `${name}, along the foot of the board, where the waves roll in: the next turns these tiles round in ${g.untilWave} ${g.untilWave === 1 ? 'match' : 'matches'}`;
     if (i === g.cherry && g.cherryAt < 0) return `${name}, the cherry on top: save it for the very last pair, for points`;
+    const sun = g.present[i] ? g.untilBurnt(i) : Infinity;
+    if (sun <= 0) return `${name}, sunburnt: a pair with it is just a pair`;
+    if (sun !== Infinity) return `${name}, out in the sun: it burns in ${sun} ${sun === 1 ? 'match' : 'matches'}; take it with a tile of its kind that isn't burnt, for a cool pair`;
     if (g.crabOn(i)) return `${name}, with a sand crab on it: it can't be taken while the crab is there; take a pair right beside it to send the crab back into its burrow`;
     if (g.rules.equinox) {
       const side = sideOf(g.layout, i);
@@ -910,6 +925,15 @@ export class Board {
       el.classList.toggle('crabbed', g.crabOn(i));
       // On its ice cream, the cherry on top, while it's still to take.
       el.classList.toggle('cherry-top', i === g.cherry && g.cherryAt < 0);
+      // On its beach ball, a tile out in the sun warms, a little pinker with
+      // every match and glowing at the last, until it burns, going red.
+      const sun = here ? g.untilBurnt(i) : Infinity;
+      const inSun = sun > 0 && sun !== Infinity;
+      el.classList.toggle('in-sun', inSun);
+      el.classList.toggle('scorching', sun === 1);
+      el.classList.toggle('sunburnt', sun <= 0);
+      if (inSun) el.style.setProperty('--sun', ((g.burnAfter - sun) / g.burnAfter).toFixed(2));
+      else el.style.removeProperty('--sun');
       // On its luck of the Irish, the tile a four-leaf clover shows on
       // carries it, with the matches it keeps for, deeper at the last.
       const lucky = g.hasClover(i);
@@ -933,7 +957,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips || g.snowEvery || g.robin || g.windEvery || g.cloverWithin || g.sweepRows || g.rules.equinox) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips || g.snowEvery || g.robin || g.windEvery || g.cloverWithin || g.sweepRows || g.rules.equinox || g.tideEvery || g.crabEvery || g.waveEvery || g.cherry >= 0 || g.sunAt) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }
