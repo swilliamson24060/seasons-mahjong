@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER, LIEBESTRAUM, SECOND_TIME, DREAM_LINE, DREAM_HARMONY, PRELUDE, PRELUDE_LEFT, SECOND_PHRASE, RAINDROP, GYMNOPEDIE, GYMNOPEDIE_LEFT, SPRING_SONG, SPRING_SONG_LEFT, THEME_AGAIN } from '../js/ui/sound.js';
+import { Sound, RIVER, LAST_LINE, GATHER, TWELVE_DAYS, verse, AULD, CHORUS, LAST_TOAST, SPRING, WINTER, LIEBESTRAUM, SECOND_TIME, DREAM_LINE, DREAM_HARMONY, PRELUDE, PRELUDE_LEFT, SECOND_PHRASE, RAINDROP, GYMNOPEDIE, GYMNOPEDIE_LEFT, SPRING_SONG, SPRING_SONG_LEFT, THEME_AGAIN, BARCAROLLE, BARCAROLLE_LEFT, BARCAROLLE_FROM } from '../js/ui/sound.js';
 
 // A Sound playing into an offline context, `seconds` long, for Thanksgiving
 // or another holiday: what it plays is rendered, to be measured as numbers.
@@ -53,11 +53,11 @@ test("We Gather Together's four voices keep time together, sixteen bars of 3/4 f
 
 test("each holiday's music goes with its tiles, every one made having its own, and Halloween's the rest until theirs come", () => {
   const s = new Sound();
-  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'spring', 'showers', 'turtle', 'halloween']) {
+  for (const set of ['thanksgiving', 'christmas', 'new-year', 'groundhog', 'valentines', 'spring', 'showers', 'summer', 'turtle', 'halloween']) {
     s.use(set);
     equal(s.set, set, set);
   }
-  s.use('summer');
+  s.use('independence');
   equal(s.set, 'halloween', 'a holiday whose music is still to come');
 });
 
@@ -88,6 +88,46 @@ test("Mendelssohn's Spring Song keeps time: fifteen bars of 2/4, the theme to it
   equal(SPRING_SONG_LEFT.length, 15, "the left hand's bars");
   check(SPRING_SONG_LEFT.every(([, chord]) => chord.length >= 3), 'a bar without its chord');
   equal(SPRING_SONG_LEFT.map(([bass]) => 'C C# D D# E F F# G G# A A# B'.split(' ')[bass % 12]).join(' '), 'A C# D B G# A F# E A C# D A# B E A', 'the bass, bar by bar');
+});
+
+test("Offenbach's Barcarolle keeps time: two bars rocking on D, then sixteen of the tune in 6/8, the first phrase twice to its close on F sharp and the second, in thirds, twice to its close on A", () => {
+  const eighths = (notes) => notes.reduce((n, [, e]) => n + e, 0);
+  equal(BARCAROLLE_FROM, 3, 'the bar the tune begins in');
+  equal(eighths(BARCAROLLE), 16 * 6, 'eighths: sixteen bars');
+  equal(BARCAROLLE_LEFT.length, 18, "the left hand's bars, the two rocking on D among them");
+  equal(BARCAROLLE.slice(0, 9).map(([note]) => note).join(' '), '66 67 67 66 66 64 67 67 66', 'the opening: F sharp, G, G, F sharp, and F sharp, E, G, G, F sharp');
+  let bar = 0;
+  const starts = [];
+  for (let k = 0, e = 0; k < BARCAROLLE.length; e += BARCAROLLE[k++][1]) if (e === bar * 6) starts[bar++] = k;
+  equal(starts.length, 16, 'the tune starting each of its bars on a note');
+  const phrase = (from, to) => BARCAROLLE.slice(starts[from - BARCAROLLE_FROM], to < 18 ? starts[to + 1 - BARCAROLLE_FROM] : undefined).join(' ');
+  equal(phrase(3, 6).split(' ').slice(0, 14).join(' '), phrase(7, 10).split(' ').slice(0, 14).join(' '), 'the first phrase the second time opening as the first does');
+  equal(phrase(11, 14), phrase(15, 18), 'the second phrase twice');
+  equal(BARCAROLLE[starts[10 - BARCAROLLE_FROM]].join(), '66,6', 'the first phrase closing on F sharp');
+  equal(BARCAROLLE.at(-1).join(), '69,6', 'the second closing on A');
+  check(BARCAROLLE.every(([note]) => [2, 4, 6, 7, 9, 11, 1].includes(note % 12)), "a note outside D major's scale");
+  equal(BARCAROLLE_LEFT.map(([bass]) => 'C C# D D# E F F# G G# A A# B'.split(' ')[bass % 12]).join(' '), 'D D D D D D D D D D D A A D D A A D', 'the bass, bar by bar: D, and A under the second phrase');
+  check(BARCAROLLE_LEFT.every(([, chord]) => chord.length >= 2), 'a bar without its chord');
+});
+
+test("the beach season's music is all heard, and none too loud", async () => {
+  const sounds = {
+    'a match': [2, (s) => s.match()],
+    'a chapter cleared': [11, (s) => s.win()],
+    'the beach season seen through, at sunset': [24, (s) => s.win({ day: 7, last: true })],
+    'the waves washing in, for a shuffle': [2, (s) => s.shuffle()],
+    "a seagull's cry, for a hint": [1.2, (s) => s.hint()],
+    "an ice cream van's chime, for a treat": [2, (s) => s.treat()],
+    'a wave washing a sandcastle away, with no pairs left': [2.6, (s) => s.stuck()],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('summer', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
 test("Satie's first Gymnopédie keeps time: four bars of chords, then the tune's two phrases, twenty-one bars of 3/4, a bass and a chord to each", () => {
@@ -399,7 +439,7 @@ test("the Start of Spring is heard, and not too loud: a snowball landing and sno
   return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
-test("the beach season's tide, sand crab, waves, cherry, sun, stairs and sunset are heard, and not too loud: the tide coming in a row and going out one, a crab coming out, startled home and going home on its own, a wave rolling in, the cherry saved or eaten too soon, a cool pair, tiles burning in the sun, footsteps on the lighthouse's stairs, and the sun setting into the sea", async () => {
+test("the beach season's tide, sand crab, waves, cherry, sun, stairs, sunset and sounds are heard, and not too loud: the tide coming in a row and going out one, a crab coming out, startled home and going home on its own, a wave rolling in, the cherry saved or eaten too soon, a cool pair, tiles burning in the sun, footsteps on the lighthouse's stairs, the sun setting into the sea, and its shuffle, hint, treat and no pairs left: the waves washing in, a seagull's cry, an ice cream van's chime and a wave washing a sandcastle away", async () => {
   const peaks = [];
   const sounds = {
     'the tide coming in': [1.8, (s) => s.tideIn()],
@@ -414,6 +454,10 @@ test("the beach season's tide, sand crab, waves, cherry, sun, stairs and sunset 
     'tiles burning in the sun': [1, (s) => s.sunburn()],
     "footsteps on the lighthouse's stairs": [0.8, (s) => s.stairs()],
     'the sun setting into the sea': [3.6, (s) => s.sunset()],
+    'the waves washing in, for a shuffle': [2, (s) => s.washIn()],
+    "a seagull's cry, for a hint": [1.2, (s) => s.gullCry()],
+    "an ice cream van's chime, for a treat": [2, (s) => s.iceCreamVan()],
+    'a wave washing a sandcastle away, with no pairs left': [2.6, (s) => s.washedAway()],
   };
   for (const [name, [seconds, play]] of Object.entries(sounds)) {
     const peak = peakOf(await render('halloween', seconds, play));

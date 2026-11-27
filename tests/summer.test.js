@@ -21,14 +21,14 @@ const at = (L, z, y) => [...L.x.keys()].filter((i) => L.z[i] === z && L.y[i] ===
 // The spade's handle, standing on its own between its grip and its blade.
 const spadeHandle = () => [...SANDPAIL.x.keys()].filter((i) => SANDPAIL.z[i] === 0 && SANDPAIL.x[i] === 15);
 
-test('the beach season is told in chapters, each its own board, none more than nine tiles across, and not ready while they are being made', () => {
+test('the beach season is told in eight chapters, each its own board, none more than nine tiles across, and ready to play, all eight made', () => {
   for (const d of SUMMER) {
     check(d.layout && d.title && d.text && d.sky, `${d.name} is not made`);
     check(d.layout.width / 2 <= 9, `${d.name}'s board is ${d.layout.width / 2} tiles across`);
   }
   equal(new Set(SUMMER.map((d) => d.layout)).size, SUMMER.length, 'boards, one a chapter');
-  check(SUMMER.length <= 8, `${SUMMER.length} chapters, more than eight`);
-  check(!theme('summer').ready, 'the beach season ready, with its boards still being made');
+  equal(SUMMER.length, 8, 'chapters');
+  check(theme('summer').ready, 'the beach season not ready, with all eight of its boards made');
 });
 
 test('the first chapter is a pail and spade, the gentle start: 84 tiles on three layers, nine across, and no twist', () => {

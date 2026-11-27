@@ -1,13 +1,13 @@
 // The holidays and seasons of the year, each a theme of the game: its name,
 // its icon, when it falls, and the colour it brings (the night sky behind
 // its boards, and an accent), and when its boards open. The menu lists them
-// all, to choose one to play, those not open greyed out. Eight are ready
+// all, to choose one to play, those not open greyed out. Nine are ready
 // to play: Halloween's Long Night, Thanksgiving week, Christmas's twelve
 // days, New Year's countdown, with New Year's Day after it, Groundhog Day's
 // board of the day, Valentine's Day's love story, the Start of Spring, in
-// like a lion, out like a lamb, and April Showers, from showers to
-// flowers; the others are listed, to say when they come, and their boards
-// come next.
+// like a lion, out like a lamb, April Showers, from showers to flowers, and
+// the Summer Beach Season, a day at the beach; the others are listed, to
+// say when they come, and their boards come next.
 
 // When each falls, worked out for any year, as some move: a fixed day, or
 // the nth weekday of a month, counting -1 for the last.
@@ -38,7 +38,7 @@ export const THEMES = [
   { id: 'valentines', name: "Valentine's Day", icon: '💘', on: fixed(2, 14), opens: fixed(2, 1), accent: '#ff6b9a', sky: ['#5c2042', '#1c0913'], ready: true },
   { id: 'spring', name: 'Start of Spring', icon: '🌷', on: fixed(3, 20), opens: fixed(3, 1), accent: '#8ad66d', sky: ['#2f6650', '#0e221b'], ready: true },
   { id: 'showers', name: 'April Showers', icon: '☔', on: fixed(4, 1), until: fixed(5, 31), opens: fixed(3, 1), accent: '#b79cff', sky: ['#4b5866', '#12171c'], ready: true },
-  { id: 'summer', name: 'Summer Beach Season', icon: '🏖️', on: nth(-1, MONDAY, 5), until: nth(1, MONDAY, 9), opens: fixed(5, 1), accent: '#ffc857', sky: ['#1c6a9e', '#082338'] },
+  { id: 'summer', name: 'Summer Beach Season', icon: '🏖️', on: nth(-1, MONDAY, 5), until: nth(1, MONDAY, 9), opens: fixed(5, 1), accent: '#ffc857', sky: ['#1c6a9e', '#082338'], ready: true },
   { id: 'independence', name: 'Independence Day', icon: '🎆', on: fixed(7, 4), opens: fixed(6, 1), accent: '#ff5a5f', sky: ['#1d2f6e', '#060a21'] },
   { id: 'labor', name: 'Labor Day', icon: '🛠️', on: nth(1, MONDAY, 9), opens: fixed(8, 1), accent: '#f2a03d', sky: ['#3f4a6e', '#11141f'] },
   { id: 'fall', name: 'Start of Fall', icon: '🍂', on: fixed(9, 22), opens: fixed(8, 1), accent: '#e8833a', sky: ['#69381f', '#1d0f08'] },

@@ -361,6 +361,61 @@ export const SPRING_SONG_LEFT = [
 const SONG_NOTES = [];
 for (let k = 0, beat = 0; k < SPRING_SONG.length; beat += SPRING_SONG[k++][1]) SONG_NOTES.push([SPRING_SONG[k][0], SPRING_SONG_LEFT[Math.floor(beat / 2)][0]]);
 
+// The beach season's music, Offenbach's Barcarolle, Belle nuit, ô nuit
+// d'amour, from The Tales of Hoffmann, of 1881, in D major and 6/8,
+// Moderato, as Auguste Bazille's piano arrangement gives it (New York: G.
+// Schirmer, 1911, public domain): its opening eighteen bars, two rocking on
+// D major's chord, then the first phrase twice, closing on F sharp, and the
+// second, rising in thirds, twice, closing on A. The tune from the third
+// bar, as [note, eighths], the second phrase by its top voice; where the
+// right hand takes up the opening's chords at a phrase's close, the tune's
+// last note held instead. A note of it for each match, on the mandolin,
+// over its bar's bass on the guitar; for a chapter cleared, the second
+// phrase, from the eleventh bar; and for the beach season seen through,
+// the opening ten bars.
+export const BARCAROLLE = [
+  [66, 2], [67, 1], [67, 2], [66, 1],
+  [66, 1], [64, 1], [67, 1], [67, 2], [66, 1],
+  [66, 1], [64, 1], [67, 1], [67, 2], [66, 1],
+  [66, 2], [71, 1], [71, 2], [69, 1],
+  [66, 2], [67, 1], [67, 2], [66, 1],
+  [66, 1], [64, 1], [67, 1], [67, 2], [66, 1],
+  [66, 1], [64, 1], [67, 1], [67, 2], [66, 1],
+  [66, 6],
+  [69, 2], [71, 1], [71, 2], [73, 1],
+  [73, 2], [74, 1], [74, 2], [73, 1],
+  [73, 2], [71, 1], [71, 2], [69, 1],
+  [69, 6],
+  [69, 2], [71, 1], [71, 2], [73, 1],
+  [73, 2], [74, 1], [74, 2], [73, 1],
+  [73, 2], [71, 1], [71, 2], [69, 1],
+  [69, 6],
+];
+export const BARCAROLLE_FROM = 3; // the bar the tune begins in, after the two rocking on D
+
+// Its left hand, a bar each from the first, as [bass, chord]: the bass on
+// the bar's first eighth, A below middle C on its third and sixth, rocking
+// like a boat, and the chord on its fourth: D and A, A's seventh over the
+// D, D major, and A's seventh over the low A. In the two opening bars, D
+// major's chord in the right hand, on the first and third eighths of each
+// half.
+const D_FIFTH = [50, 57];
+const A_OVER_D = [49, 55, 57];
+const D_TRIAD = [50, 54, 57];
+const A_SEVENTH = [52, 55, 57];
+export const BARCAROLLE_LEFT = [
+  [38, [57, 62, 66]], [38, [57, 62, 66]],
+  [38, D_FIFTH], [38, A_OVER_D], [38, A_OVER_D], [38, D_FIFTH],
+  [38, D_FIFTH], [38, A_OVER_D], [38, A_OVER_D], [38, D_FIFTH],
+  [38, D_TRIAD], [33, A_SEVENTH], [33, A_SEVENTH], [38, D_TRIAD],
+  [38, D_TRIAD], [33, A_SEVENTH], [33, A_SEVENTH], [38, D_TRIAD],
+];
+const ROCKING = 45; // the A on each bar's third and sixth eighths
+
+// The tune's notes, each with its bar's bass, for the matches.
+const BOAT_NOTES = [];
+for (let k = 0, eighth = 0; k < BARCAROLLE.length; eighth += BARCAROLLE[k++][1]) BOAT_NOTES.push([BARCAROLLE[k][0], BARCAROLLE_LEFT[BARCAROLLE_FROM - 1 + Math.floor(eighth / 6)][0]]);
+
 // The harp swept up, two octaves of A flat's scale, for the question
 // answered.
 const GLISSANDO = [68, 70, 72, 73, 75, 77, 79, 80, 82, 84, 85, 87, 89, 91, 92];
@@ -376,6 +431,7 @@ const MUSIC = {
   valentines: { room: 'drawing' },
   showers: { room: 'sunroom' },
   spring: { room: 'garden' },
+  summer: { room: 'seaside' },
   turtle: { room: 'lakeside' },
 };
 
@@ -385,8 +441,9 @@ const MUSIC = {
 // music room's for the harpsichord, a drawing room's, soft, for the harp,
 // a sunroom's, bright, its glass ringing a little, for the piano by the
 // rain, a garden room's, light and airy, its windows open to the spring,
-// for the Spring Song, and a lakeside's, wide and soft, carrying over the
-// water, for the turtle's.
+// for the Spring Song, a seaside's, open to the sky, the sound carrying out
+// over the water, for the Barcarolle, and a lakeside's, wide and soft,
+// carrying over the water, for the turtle's.
 const ROOMS = {
   stone: { seconds: 2.8, fall: 3.2, wet: 0.35 },
   farmhouse: { seconds: 0.8, fall: 3.6, wet: 0.22 },
@@ -396,6 +453,7 @@ const ROOMS = {
   drawing: { seconds: 1.8, fall: 3, wet: 0.28 },
   sunroom: { seconds: 1.5, fall: 3.3, wet: 0.26 },
   garden: { seconds: 1.2, fall: 3.5, wet: 0.22 },
+  seaside: { seconds: 2.4, fall: 2.8, wet: 0.24 },
   lakeside: { seconds: 2.2, fall: 2.9, wet: 0.3 },
 };
 
@@ -660,6 +718,20 @@ export class Sound {
     this.string(midi, at, gain, { bright: 0.45, keep: 0.998, pick: 0.2, seconds: 2 }, into);
   }
 
+  // A mandolin: its pair of strings for each note, a hair apart, plucked
+  // with a pick, bright and short-lived; a note held, `length` seconds, is
+  // played in tremolo, the pick going back and forth, as a mandolin holds
+  // a note.
+  mandolin(midi, at, length = 0, gain = 0.11, into = this.bus) {
+    const shape = { bright: 0.8, keep: 0.993, pick: 0.12, seconds: 0.9 };
+    const strokes = Math.max(1, Math.floor(length / 0.09));
+    for (let k = 0; k < strokes; k++) {
+      const g = gain * (k ? 0.62 : 1);
+      this.string(midi, at + k * 0.09, g, shape, into);
+      this.string(midi + 0.07, at + k * 0.09 + 0.004, g * 0.7, shape, into);
+    }
+  }
+
   // A parlour reed organ, as a farmhouse had: two reeds a note, a hair
   // apart, buzzing through a soft filter, swelling in as the bellows push.
   reed(midi, at, length, gain = 0.045, into = this.bus) {
@@ -831,6 +903,12 @@ export class Sound {
       const [note, bass] = SONG_NOTES[this.next % SONG_NOTES.length];
       this.piano(note, this.now, 0.17);
       this.piano(bass, this.now, 0.08);
+    } else if (this.set === 'summer') {
+      // the Barcarolle's next note on the mandolin, over its bar's bass on
+      // the guitar
+      const [note, bass] = BOAT_NOTES[this.next % BOAT_NOTES.length];
+      this.mandolin(note, this.now, 0, 0.13);
+      this.guitar(bass, this.now, 0.1);
     } else if (this.set === 'turtle') {
       // the tune's next note on the piano, over its bar's bass
       const [note, bass] = POND_NOTES[this.next % POND_NOTES.length];
@@ -868,6 +946,7 @@ export class Sound {
       return;
     }
     if (this.set === 'spring') return this.marchGust();
+    if (this.set === 'summer') return this.washIn();
     if (this.set === 'turtle') {
       // the pond stirred: the water swirled round, and its ripples
       this.rustle(this.now, 0.6, 500, 1500, 0.1);
@@ -910,6 +989,7 @@ export class Sound {
       return this.plip(this.now + 0.17, 1500, 3000, 0.07, 0.06);
     }
     if (this.set === 'spring') return this.chirp();
+    if (this.set === 'summer') return this.gullCry();
     if (this.set === 'turtle') return this.croak(this.now); // a frog by the pond: ribbit
     this.ping(1318.5, this.now, { gain: 0.06, fall: 0.5 });
     this.ping(1975.5, this.now + 0.09, { gain: 0.05, fall: 0.6 });
@@ -950,6 +1030,7 @@ export class Sound {
       return [49, 56, 61, 65].forEach((note, k) => this.piano(note, this.now + 0.5 + k * 0.03, 0.05));
     }
     if (this.set === 'spring') return this.kiteString();
+    if (this.set === 'summer') return this.iceCreamVan();
     if (this.set === 'turtle') {
       // a koi leaping: it breaks the water and splashes back, and the piano
       // spreads D's chord
@@ -1298,6 +1379,7 @@ export class Sound {
       return this.ping(52, this.now + 0.1, { gain: 0.14, attack: 0.3, fall: 1.6, into: this.master });
     }
     if (this.set === 'spring') return this.roar();
+    if (this.set === 'summer') return this.washedAway();
     if (this.set === 'turtle') {
       // the turtle tucks into his shell: a hollow knock, and another
       [0, 0.18].forEach((t, k) => {
@@ -1814,6 +1896,38 @@ export class Sound {
     [57, 64, 69, 73, 76].forEach((note, k) => this.piano(note, this.now + 0.8 + k * 0.04, 0.06));
   }
 
+  // The beach season's shuffle, the waves washing in: one wave and then
+  // another rolling up the sand, and the foam fizzing as they draw back.
+  washIn() {
+    this.rustle(this.now, 0.9, 280, 1200, 0.2);
+    this.rustle(this.now + 0.55, 0.95, 320, 1300, 0.17);
+    this.rustle(this.now + 0.95, 0.9, 4200, 1800, 0.06);
+  }
+
+  // Its hint, a seagull's cry: a long, falling kee-ow, and a laughing
+  // ha-ha-ha after it.
+  gullCry() {
+    this.whistle(this.now, 1500, 2300, 0.07, 0.04);
+    this.whistle(this.now + 0.07, 2300, 1300, 0.32, 0.045);
+    [0.5, 0.62, 0.74].forEach((t) => this.whistle(this.now + t, 1950, 1500, 0.08, 0.035));
+  }
+
+  // Its treat, an ice cream van's chime: a little tune on the music box,
+  // up and down C major's notes.
+  iceCreamVan() {
+    [[76, 0], [79, 0.13], [84, 0.26], [83, 0.39], [81, 0.52], [79, 0.65], [76, 0.78], [79, 0.98]].forEach(([note, t]) => this.musicBox(note, this.now + t, 0.14));
+  }
+
+  // With no pairs left, a wave washing a sandcastle away: the wave rolling
+  // up the beach and breaking over it, the sand slumping as it goes, and a
+  // low note.
+  washedAway() {
+    this.rustle(this.now, 1.2, 250, 1400, 0.3);
+    this.rustle(this.now + 0.5, 0.9, 1400, 300, 0.2);
+    for (let k = 0; k < 8; k++) this.rustle(this.now + 0.9 + k * 0.07 + Math.random() * 0.03, 0.06, 2200 - k * 150, 600, 0.09 * (1 - k / 10));
+    this.ping(98, this.now + 1.4, { gain: 0.1, attack: 0.01, fall: 0.6, into: this.master });
+  }
+
   // With no pairs left, the lion's roar: a growl swelling up from deep in
   // his chest, rough and fluttering, its pitch rising and falling away,
   // with his breath behind it.
@@ -1970,8 +2084,10 @@ export class Sound {
   // Showers', the Raindrop's theme the second time, and with the season
   // seen through on May Day, its first eight bars. The Start of Spring's,
   // the Spring Song's theme again, and with the season seen through, out
-  // like a lamb, its opening fifteen bars. The turtle's, the Gymnopédie's
-  // first phrase.
+  // like a lamb, its opening fifteen bars. The beach season's, the
+  // Barcarolle's second phrase, and with the season seen through, at
+  // sunset, its opening ten bars. The turtle's, the Gymnopédie's first
+  // phrase.
   win({ day = -1, last = false, spring = false } = {}) {
     if (!this.on) return;
     const into = this.newSong();
@@ -1983,6 +2099,7 @@ export class Sound {
     else if (this.set === 'valentines') this.dream(last ? SECOND_TIME : DREAM_LINE, last, into);
     else if (this.set === 'showers') this.prelude(last ? 0 : SECOND_PHRASE, into);
     else if (this.set === 'spring') this.springSong(last ? 0 : THEME_AGAIN, into);
+    else if (this.set === 'summer') this.barcarolle(last ? 1 : 11, last ? 10 : 14, into);
     else if (this.set === 'turtle') this.gymnopedie(into);
     else {
       const beat = 0.32;
@@ -2210,6 +2327,31 @@ export class Sound {
     });
     const end = start + t * beat + 0.15;
     [33, 45, 52, 57, 61, 64, 69, 76, 81].forEach((note, k) => this.piano(note, end + k * 0.05, k ? 0.06 : 0.09, into));
+  }
+
+  // The Barcarolle from bar `first` to bar `last`: the tune on the mandolin,
+  // its held notes in tremolo, over the guitar rocking on each bar's bass,
+  // the A and the chord, and D major's chord spread up the guitar to end on.
+  barcarolle(first, last, into) {
+    const eighth = 0.36;
+    const start = this.now + 0.1;
+    const from = (first - BARCAROLLE_FROM) * 6; // where the first bar played lies, in eighths from the tune's first
+    for (let k = 0, e = 0; k < BARCAROLLE.length; e += BARCAROLLE[k++][1]) {
+      const bar = BARCAROLLE_FROM + Math.floor(e / 6);
+      if (bar < first || bar > last) continue;
+      const [note, eighths] = BARCAROLLE[k];
+      this.mandolin(note, start + (e - from) * eighth, eighths > 1 ? eighths * eighth * 0.9 : 0, 0.12, into);
+    }
+    BARCAROLLE_LEFT.slice(first - 1, last).forEach(([bass, chord], k) => {
+      const at = start + k * 6 * eighth;
+      const opening = first + k < BARCAROLLE_FROM;
+      this.guitar(bass, at, 0.13, into);
+      if (!opening) [2, 5].forEach((e) => this.guitar(ROCKING, at + e * eighth, 0.07, into));
+      chord.forEach((note, j) => this.guitar(note, at + 3 * eighth + j * 0.015, 0.05, into));
+      if (opening) [0, 2, 3, 5].forEach((e) => [69, 74, 78].forEach((note, j) => this.guitar(note, at + e * eighth + j * 0.012, 0.04, into)));
+    });
+    const end = start + (last - first + 1) * 6 * eighth;
+    [38, 45, 50, 54, 57, 62, 66].forEach((note, k) => this.guitar(note, end + k * 0.04, k ? 0.06 : 0.1, into));
   }
 
   // We Gather Together on the reed organ, its four voices, for the week seen
