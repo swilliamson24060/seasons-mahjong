@@ -9,7 +9,7 @@
 // since other games on the same site share the browser's cache store.
 
 const PREFIX = 'seasons-';
-const CACHE = `${PREFIX}69`;
+const CACHE = `${PREFIX}71`;
 const SLOW = 3500; // ms to wait on the network before answering from the cache
 
 const FILES = [
@@ -52,6 +52,7 @@ const FILES = [
   'js/ui/showers-faces.js',
   'js/ui/turtle-faces.js',
   'js/ui/spring-faces.js',
+  'js/ui/summer-faces.js',
   'js/engine/deal.js',
   'js/engine/doorbusters.js',
   'js/engine/football.js',

@@ -8,7 +8,7 @@ import { GROUNDHOG_DAY, groundhogOf, dayKey, daySeed, streakOf, weekTo } from '.
 import { LOVE_STORY, chapterOf } from './valentines.js';
 import { SHOWERS, showerOf } from './showers.js';
 import { SPRING, springOf } from './spring.js';
-import { summerOf } from './summer.js';
+import { SUMMER, summerOf } from './summer.js';
 import { BANDS } from './engine/colours.js';
 import { WINDS } from './engine/wind.js';
 import { GIFTS, TURNS, wordsOf } from './words.js';
@@ -1039,7 +1039,7 @@ const named = (d) => d.called || d.name.replace(/^The /, 'the ');
 function dayPlay(d) {
   const options = { ...dayOptions(d) };
   const napFrom = d.nap ? Math.round((d.layout.count / 2) * d.nap.by) : 0;
-  const faces = DAYS.includes(d) ? 'thanksgiving' : TWELVE_DAYS.includes(d) ? 'christmas' : NEW_YEAR.includes(d) ? 'new-year' : d === GROUNDHOG_DAY ? 'groundhog' : LOVE_STORY.includes(d) ? 'valentines' : SHOWERS.includes(d) ? 'showers' : SPRING.includes(d) ? 'spring' : 'halloween';
+  const faces = DAYS.includes(d) ? 'thanksgiving' : TWELVE_DAYS.includes(d) ? 'christmas' : NEW_YEAR.includes(d) ? 'new-year' : d === GROUNDHOG_DAY ? 'groundhog' : LOVE_STORY.includes(d) ? 'valentines' : SHOWERS.includes(d) ? 'showers' : SPRING.includes(d) ? 'spring' : SUMMER.includes(d) ? 'summer' : 'halloween';
   return {
     options,
     treatSet: d.gifts || wordsOf(faces).treatSet,

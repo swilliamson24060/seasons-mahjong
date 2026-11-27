@@ -415,6 +415,13 @@ body.covered #board {
   --index-sp-monster: #4a6283;
   --index-sp-flower: #6b4fc8;
   --index-sp-moon: #c8611c;
+  /* The beach season's: the beach balls' red, the surfboards' teal, the sandcastles' sand, the sea's blue for the shore's four, the ice lolly's pink and the shells' coral. */
+  --index-su-eyes: #cf3a30;
+  --index-su-bones: #1f87a8;
+  --index-su-graves: #a8641e;
+  --index-su-monster: #2c5f9e;
+  --index-su-flower: #c2407a;
+  --index-su-moon: #c9542a;
   position: absolute;
   width: calc(var(--tile-w) - var(--gap));
   height: calc(var(--tile-h) - var(--gap));
@@ -1725,6 +1732,47 @@ body.covered #board {
   pointer-events: none;
 }
 
+/* On its sunset, the sunbeams a pale gold round the setting sun, the sun
+   a deep orange, brighter as it's raised, to its yellow core where it
+   meets the sea; the sea a deep evening blue, the horizon's row where the
+   sun touches it a dusky rose, and the sun's reflection gold on the
+   water. Once the sun has set, the tiles are the evening's, dark, as any
+   board's are on its night side (.tile.night, below). */
+.tile[data-look='sunbeam'] {
+  --face-1: #fffbe6;
+  --face-2: #f7d06a;
+}
+
+.tile[data-look='setting-sun'] {
+  --face-1: #ffe9cc;
+  --face-2: #f08a2c;
+}
+
+.tile[data-look='sun-glow'] {
+  --face-1: #fff2d6;
+  --face-2: #f7a83a;
+}
+
+.tile[data-look='sun-core'] {
+  --face-1: #fffbe8;
+  --face-2: #ffd04a;
+}
+
+.tile[data-look='horizon'] {
+  --face-1: #f6e7ef;
+  --face-2: #a8679c;
+}
+
+.tile[data-look='evening-sea'] {
+  --face-1: #e2ecfa;
+  --face-2: #3a5a9c;
+}
+
+.tile[data-look='glint'] {
+  --face-1: #fff6dc;
+  --face-2: #e9b04c;
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers
@@ -2345,6 +2393,12 @@ body.covered #board {
   --index-sp-monster: #b6c8e6;
   --index-sp-flower: #c6b6ff;
   --index-sp-moon: #ffb27a;
+  --index-su-eyes: #ff9a8a;
+  --index-su-bones: #8fe0f2;
+  --index-su-graves: #ffcf8a;
+  --index-su-monster: #a8c8ff;
+  --index-su-flower: #ffa6cc;
+  --index-su-moon: #ffb08a;
 }
 
 .tile.night svg {
@@ -2360,9 +2414,10 @@ body.covered #board {
    groundhog's shadow, glowing the pale blue of snow at dusk;
    Valentine's is a broken heart, glowing a tender pink; and April
    Showers' is a wilted flower, glowing a faded rose; the Start of
-   Spring's is a snowman, melted, glowing the clear blue of meltwater; and
-   the turtle's is a shy turtle, tucked into his shell, glowing a pond
-   green. */
+   Spring's is a snowman, melted, glowing the clear blue of meltwater; the
+   beach season's is a lost flip-flop, glowing the warm gold of the
+   sunset; and the turtle's is a shy turtle, tucked into his shell, glowing
+   a pond green. */
 [data-faces='christmas'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(255, 128, 48, 0.9));
 }
@@ -2385,6 +2440,10 @@ body.covered #board {
 
 [data-faces='spring'] .tile.soul svg {
   filter: drop-shadow(0 0 4px rgba(150, 218, 255, 0.95));
+}
+
+[data-faces='summer'] .tile.soul svg {
+  filter: drop-shadow(0 0 4px rgba(255, 196, 120, 0.95));
 }
 
 [data-faces='turtle'] .tile.soul svg {

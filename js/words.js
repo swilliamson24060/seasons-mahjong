@@ -125,6 +125,16 @@ export const GIFTS = {
     used: { candle: 'The kite spots you a match from up high, for free.', cat: 'A March gust blows the tiles about: a free shuffle.', key: 'Choose a blocked tile for the lamb to nudge free.' },
     keyName: 'lamb',
   },
+  summer: {
+    icons: { candle: '🛟', key: '🦀', cat: '🌊' },
+    names: { candle: 'a lifeguard, to spot you a match', key: 'a sand crab, to nudge a blocked tile free', cat: 'a wave, for a free shuffle' },
+    buttons: { key: 'Crab', cat: 'Wave' },
+    help: { candle: 'A lifeguard spots you a match from the tower, for free.', key: 'A sand crab nudges one blocked tile free.', cat: 'A wave washes the tiles about, for free.' },
+    came: (name) => `A gift of summer: ${name}.`,
+    from: () => 'Each pair of pails and spades brings a gift of summer.',
+    used: { candle: 'The lifeguard spots you a match from the tower, for free.', cat: 'A wave washes the tiles about: a free shuffle.', key: 'Choose a blocked tile for the sand crab to nudge free.' },
+    keyName: 'crab',
+  },
 };
 
 // How a board's turning over is told: Halloween's midnight, or its sunrise
@@ -252,6 +262,19 @@ export const TURNS = {
     score: { night: 'Out like a lamb', day: 'Out like a lamb', souls: 'Melted snowmen', none: 'no melted snowmen' },
     ring: () => 'lamb',
   },
+  sunset: {
+    ahead: (n) => `☀️ <b>${n}</b> to sunset`,
+    after: () => '🌅 the sun has set',
+    soul: '🩴',
+    soulsAhead: 'Lost flip-flops if the tiles turned over now',
+    soulsWoke: 'Lost flip-flops on the board',
+    turned: () => 'The sun sets into the sea, and the tiles turn over to the evening.',
+    woke: (n) => (n ? `${n} ${n === 1 ? 'flip-flop is' : 'flip-flops are'} lost: lost flip-flops match each other.` : 'Not one flip-flop lost.'),
+    prompt: "Three matches to sunset. Hold the moon to see the evening's side coming, and take pairs that match on both sides.",
+    moon: "Hold to see the evening's side (or hold Space)",
+    score: { night: 'Sunset', day: 'Sunset', souls: 'Lost flip-flops', none: 'no lost flip-flops' },
+    ring: () => 'sunset',
+  },
   forecast: {
     ahead: (n) => `⛅ <b>${n}</b> to the forecast`,
     after: () => '⛅ the forecast',
@@ -269,7 +292,7 @@ export const TURNS = {
 
 // The turning over each holiday's tiles are told in, on a board outside
 // its own that turns over.
-const TURN_OF = { halloween: 'midnight', thanksgiving: 'sundown', christmas: 'twelfth', 'new-year': 'newyear', groundhog: 'forecast', valentines: 'question', showers: 'may', turtle: 'dusk', spring: 'lamb' };
+const TURN_OF = { halloween: 'midnight', thanksgiving: 'sundown', christmas: 'twelfth', 'new-year': 'newyear', groundhog: 'forecast', valentines: 'question', showers: 'may', turtle: 'dusk', spring: 'lamb', summer: 'sunset' };
 
 // The words a board outside the holidays' own is told in: those of the
 // tiles it wears, or Halloween's for tiles with none of their own.

@@ -22,8 +22,8 @@ import { LION, SNOWMAN, ROBIN, KITE, SHAMROCK, WINDOW, SCALES, LAMB } from './en
 // without a partner melting into a snowman, as the Long Night's midnight
 // wakes lost souls.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
-// part is for), and PLAN.md has its boards and twists. Until the Start of
-// Spring's own tiles are drawn, its boards wear Halloween's.
+// part is for), and PLAN.md has its boards and twists. Its boards wear the
+// Start of Spring's own tiles (ui/spring-faces.js) wherever they're played.
 
 // The lion's look, each tile's part by where it is, in half tiles, for the
 // board to tint (board.js): his mane, its locks flying out on every side,

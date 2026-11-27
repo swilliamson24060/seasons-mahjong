@@ -1,4 +1,4 @@
-import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM, BEACHBALL, LIGHTHOUSE } from './engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM, BEACHBALL, LIGHTHOUSE, SUNSET } from './engine/layouts.js';
 
 // The Summer Beach Season: a day at the beach, eight boards from a pail and
 // spade in the morning to the sun setting into the sea, to be reached in
@@ -19,12 +19,14 @@ import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM, BEACHBALL, LIGHTH
 // cool pair, for points (engine/sunburn.js); on the seventh, the
 // lighthouse, the stairs in its tower run up and down, so that a tile there
 // is free when there's no tile above it or none below it, rather than to
-// its left or right (engine/stairs.js); the last, sunset, is planned to
-// turn over halfway as the sun sets into the sea, a tile left without a
-// partner a lost flip-flop.
+// its left or right (engine/stairs.js); and the last, the sunset, turns
+// over halfway as the sun sets into the sea, from the day's side to the
+// evening's, a tile left without a partner there a lost flip-flop, held
+// where it's left, as the Long Night's lost souls are, told in its own
+// words (words.js).
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
-// part is for), and PLAN.md has its boards and twists. Until the beach
-// season's own tiles are drawn, its boards wear Halloween's.
+// part is for), and PLAN.md has its boards and twists. Its boards wear the
+// beach season's own tiles (ui/summer-faces.js) wherever they're played.
 
 // The pail and spade's look, each tile's part by where it is, in half
 // tiles: the spade, its grip at the top of its handle and its blade sunk in
@@ -129,6 +131,21 @@ export function lightPart(L, i) {
   return 'rocks';
 }
 
+// The sunset's look, each tile's part by where it is, in half tiles: the
+// sunbeams standing out round the sun, the setting sun, brighter as it's
+// raised, to its core where it meets the sea; and the sea, the horizon's
+// row where the sun touches it, and the sun's reflection raised on it.
+// Once the sun has set, every tile is the evening's, dark.
+export function sunsetPart(L, i) {
+  const [x, y, z] = [L.x[i], L.y[i], L.z[i]];
+  if (y >= 12) {
+    if (z >= 2) return 'glint';
+    return y === 12 ? 'horizon' : 'evening-sea';
+  }
+  if (y < 6 || x < 2 || x > 14) return 'sunbeam';
+  return z <= 1 ? 'setting-sun' : z === 2 ? 'sun-glow' : 'sun-core';
+}
+
 export const SUMMER = [
   {
     name: 'The first chapter',
@@ -192,6 +209,16 @@ export const SUMMER = [
     look: lightPart,
     sky: ['#7ea5d4', '#1b2e57'],
     text: "The afternoon's drawing on, and the lighthouse stands on the rocks, its lamp ready for the night. In its tower the stairs run up and down: a tile in the tower, red or white, is free when there's no tile above it or none below it, and nothing lies on it, whatever's to its left and right. The lantern, the gallery, the rocks and the sea keep the usual rule.",
+  },
+  {
+    name: 'The eighth chapter',
+    title: 'Sunset',
+    layout: SUNSET,
+    rules: { treats: false, ghostsFloat: false, turn: 1 / 2 },
+    words: 'sunset',
+    look: sunsetPart,
+    sky: ['#e8925c', '#5a2650'],
+    text: "The day at the beach is nearly done, and the sun's going down into the sea. Halfway through, it sets, and every tile turns over to the evening's side. Hold the moon, or Space, to see it coming, and before then, take pairs that match on both sides. A tile left without a partner is a lost flip-flop 🩴: lost flip-flops match each other, and stay where they were left.",
   },
 ];
 

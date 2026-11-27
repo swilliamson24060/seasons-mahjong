@@ -2167,6 +2167,18 @@ export class Sound {
     });
   }
 
+  // The beach season's sunset, the sun going down into the sea: a long,
+  // slow wave washing up the sand and drawing back, a gull crying far off,
+  // twice, and a low, warm bell ringing on into the evening.
+  sunset() {
+    if (!this.on) return;
+    this.rustle(this.now, 1.6, 280, 950, 0.2);
+    this.rustle(this.now + 1.1, 1.5, 950, 240, 0.15);
+    [0.8, 1.25].forEach((t, k) => this.whistle(this.now + t, 1750 - k * 100, 1150 - k * 80, 0.38, 0.03 - k * 0.006));
+    this.bell(165, this.now + 1.7, 0.08, 3);
+    this.bell(247, this.now + 1.85, 0.04, 2.6);
+  }
+
   // Dusk on the turtle's pond, as its tiles turn over: the frogs croaking,
   // one and then another, and a low bell across the water.
   dusk() {
