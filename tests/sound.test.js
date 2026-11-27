@@ -399,7 +399,7 @@ test("the Start of Spring is heard, and not too loud: a snowball landing and sno
   return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
-test("the beach season's tide, sand crab and waves are heard, and not too loud: the tide coming in a row and going out one, a crab coming out, startled home and going home on its own, and a wave rolling in", async () => {
+test("the beach season's tide, sand crab, waves and cherry are heard, and not too loud: the tide coming in a row and going out one, a crab coming out, startled home and going home on its own, a wave rolling in, and the cherry saved or eaten too soon", async () => {
   const peaks = [];
   const sounds = {
     'the tide coming in': [1.8, (s) => s.tideIn()],
@@ -408,6 +408,8 @@ test("the beach season's tide, sand crab and waves are heard, and not too loud: 
     'a crab startled home': [1.6, (s) => s.crabStartled()],
     'a crab going home': [0.8, (s) => s.crabHome()],
     'a wave rolling in': [2, (s) => s.waveRolls()],
+    'the cherry saved': [2.4, (s) => s.cherrySaved()],
+    'the cherry eaten too soon': [0.8, (s) => s.cherryLost()],
   };
   for (const [name, [seconds, play]] of Object.entries(sounds)) {
     const peak = peakOf(await render('halloween', seconds, play));

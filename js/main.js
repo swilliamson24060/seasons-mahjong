@@ -747,6 +747,17 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
     sound.waltz();
     toast(dance ? 'The music changes, and the free tiles change partners with tiles held down.' : 'The music changes, but the dancers keep their partners this time.');
   });
+  // On the beach season's ice cream: the cherry on top, saved for the last
+  // pair, or eaten too soon.
+  game.on('cherry', ({ b, cherrySaved }) => {
+    if (cherrySaved) {
+      sound.cherrySaved();
+      setTimeout(() => board.float(`+${POINTS.cherry} 🍒`, b), 450); // after the pair's own points
+    } else {
+      sound.cherryLost();
+      toast("You ate the cherry too soon: it's just a tile now. Save it for the very last pair.");
+    }
+  });
   // On the beach season's sailing: every six matches a wave rolls in along
   // the foot of the board and turns its tiles round, or falls short.
   game.on('wave', ({ wave }) => {
@@ -1829,6 +1840,13 @@ function update() {
   if (g.waveEvery) {
     $('waves').innerHTML = `🌊 <b>${g.wavesRolled}</b> · ⏳ ${g.untilWave}`;
     $('waves').setAttribute('aria-label', `${g.wavesRolled} ${g.wavesRolled === 1 ? 'wave has' : 'waves have'} rolled in; the next comes in ${matchWords(g.untilWave)}`);
+  }
+  // On its ice cream, the cherry on top: still to save for the last pair,
+  // saved, or eaten too soon.
+  $('cherry').hidden = g.cherry < 0;
+  if (g.cherry >= 0) {
+    $('cherry').innerHTML = g.cherryAt < 0 ? '🍒 last' : g.cherrySaved ? '🍒 ✓' : '🍒 ✗';
+    $('cherry').setAttribute('aria-label', g.cherryAt < 0 ? 'The cherry on top: save it for the last pair' : g.cherrySaved ? 'The cherry on top, saved for last' : 'The cherry, eaten too soon');
   }
   // On its watering can, how full it is, and the pours made.
   $('can').hidden = !g.can;

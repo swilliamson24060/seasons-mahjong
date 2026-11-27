@@ -1497,6 +1497,61 @@ body.covered #board {
   }
 }
 
+/* On its ice cream, the cherry on top is a glossy red, the scoops
+   strawberry pink, vanilla cream and chocolate brown from the top down,
+   the cone a toasted waffle gold, its rim darker, and the chocolate
+   dripping down its sides; and the cherry, still to take, carries a 🍒 on
+   its corner. */
+.tile[data-look='cherry'] {
+  --face-1: #ffd6d6;
+  --face-2: #d4202c;
+}
+
+.tile[data-look='strawberry'] {
+  --face-1: #ffe8ef;
+  --face-2: #f28aa6;
+}
+
+.tile[data-look='vanilla'] {
+  --face-1: #fffdf3;
+  --face-2: #f3e2b0;
+}
+
+.tile[data-look='chocolate'] {
+  --face-1: #f1d9c4;
+  --face-2: #7a4a2a;
+}
+
+.tile[data-look='cone-rim'] {
+  --face-1: #f8e2b8;
+  --face-2: #c98f45;
+}
+
+.tile[data-look='cone'] {
+  --face-1: #f6dcab;
+  --face-2: #d29b52;
+}
+
+.tile[data-look='drip'] {
+  --face-1: #ecd1bb;
+  --face-2: #6f3f22;
+}
+
+.tile.cherry-top::after {
+  content: '🍒';
+  position: absolute;
+  top: -12%;
+  left: 6%;
+  padding: 0.08em 0.18em;
+  border-radius: 9px;
+  background: #fff4f4;
+  box-shadow:
+    0 0 5px rgba(212, 32, 44, 0.6),
+    inset 0 0 0 1px #f0a0a6;
+  font: max(11px, calc(var(--tile-w) * 0.34)) / 1 system-ui, -apple-system, sans-serif;
+  pointer-events: none;
+}
+
 /* The tile the sand crab sits on: ringed in a crab's red, the crab on its
    top left corner, as the twists' badges are, clear of the tile's number. */
 .tile.crabbed::before {

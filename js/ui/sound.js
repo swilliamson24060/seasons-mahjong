@@ -1715,6 +1715,21 @@ export class Sound {
     for (let k = 0; k < 8; k++) this.rustle(this.now + 0.35 + k * 0.06 + Math.random() * 0.03, 0.03, 3000, 2000, 0.08);
   }
 
+  // On its ice cream, the cherry on top saved for the last pair: a sweet
+  // run up the glockenspiel, and a bright chord.
+  cherrySaved() {
+    if (!this.on) return;
+    [1568, 1760, 2093, 2349, 2637].forEach((f, k) => this.bell(f, this.now + k * 0.07, 0.04, 1.3));
+    [2093, 2637, 3136].forEach((f) => this.bell(f, this.now + 0.45, 0.03, 1.8));
+  }
+
+  // The cherry eaten too soon: it drops with a soft plop, and a low note.
+  cherryLost() {
+    if (!this.on) return;
+    this.plip(this.now, 900, 300, 0.1, 0.12);
+    this.ping(220, this.now + 0.1, { type: 'triangle', gain: 0.05, fall: 0.35 });
+  }
+
   // On its sailing, a wave rolling in along the foot of the board: its swell
   // rising, breaking, and its foam hissing away.
   waveRolls() {

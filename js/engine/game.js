@@ -41,6 +41,7 @@ import { windAt, upwindOf, inWind, windswept, catches } from './wind.js';
 import { tideAt, comingIn, rowsUp, covered, ebbing } from './tide.js';
 import { firstCrab, afterPair, goBack, scuttling, startles } from './crab.js';
 import { waveTiles, rollIn } from './waves.js';
+import { cherryOf, savingCherry } from './cherry.js';
 import { SOON, RESTLESS, hidingPlaces, hidingOf } from './clover.js';
 import { rowsOf, nextRow, emptied, sweptIn, cleaning } from './sweep.js';
 import { isEquinox, balancing } from './equinox.js';
@@ -191,7 +192,9 @@ export const TREATS = ['candle', 'key', 'cat'];
 // coming out `every` matches later (crab.js); and on its sailing, waves:
 // { every }, a wave rolling in over the bottom row every so many matches,
 // its tiles turning round among themselves a place along, so long as the
-// board can still be won so (waves.js).
+// board can still be won so (waves.js); and on its ice cream, cherry:
+// whether a cherry sits on the top scoop, the board's top tile, to be
+// saved for the last pair, for points (cherry.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -199,7 +202,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null, crab = null, waves = null } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null, crab = null, waves = null, cherry = false } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -337,7 +340,9 @@ export class Game {
                                       ? ebbing(table, tide.every, tide.high)
                                       : crab
                                         ? scuttling(table, crab.every, seed)
-                                        : null;
+                                        : cherry
+                                          ? savingCherry(cherryOf(table))
+                                          : null;
     // On New Year's 9, the rockets, 1 for a tile that is one, chosen by
     // where they lie, before the deal, so that it can be made with them.
     this.rockets = null;
@@ -657,6 +662,12 @@ export class Game {
     // the bottom row (waves.js).
     this.waveEvery = waves ? waves.every : 0;
     this.wavesRolled = 0;
+    // On its ice cream, the cherry's tile, or -1; the match it was taken in,
+    // or -1 while it's still on top; and whether it was saved for the last
+    // pair (cherry.js).
+    this.cherry = cherry ? cherryOf(layout) : -1;
+    this.cherryAt = -1;
+    this.cherrySaved = false;
     this.crabEvery = crab ? crab.every : 0;
     this.crab = crab ? firstCrab(layout, this.present, seed) : null;
     this.crabsStartled = 0;
@@ -1194,6 +1205,29 @@ export class Game {
         if (u === t || MATCH[this.faces[u]] !== MATCH[this.faces[t]]) continue;
         const made = wayWith(way, [t, u], 1, (l) => this.holds(l));
         if (made) return made;
+      }
+    }
+    return way;
+  }
+
+  // On the beach season's ice cream, the way mended to save the cherry for
+  // last, if it can be: the cherry's pair moved to the end of the way, or
+  // else its partner swapped for another tile of its kind further down the
+  // way, that one taken with the cherry at the end.
+  saveCherry(way) {
+    const c = this.cherry;
+    const k = way.findIndex((p) => p.includes(c));
+    if (k < 0 || k === way.length - 1) return way;
+    const moved = [...way.slice(0, k), ...way.slice(k + 1), way[k]];
+    if (this.holds(moved)) return moved;
+    const mate = way[k][0] === c ? way[k][1] : way[k][0];
+    for (let j = 0; j < way.length; j++) {
+      if (j === k) continue;
+      for (const [v, w] of [way[j], [way[j][1], way[j][0]]]) {
+        if (MATCH[this.faces[v]] !== MATCH[this.faces[c]]) continue;
+        const tried = way.map((p, i) => (i === j ? [mate, w] : p)).filter((_, i) => i !== k);
+        tried.push([c, v]);
+        if (this.holds(tried)) return tried;
       }
     }
     return way;
@@ -2456,6 +2490,8 @@ export class Game {
     if (this.cloverWithin) entry.clover = { clover: this.clover, hidden: this.cloversHidden, found: this.cloversFound, lost: this.cloversLost }; // as it was, for an undo
     if (this.tideEvery) entry.tideFrom = this.tideFrom; // as it was, for an undo
     if (this.crab) entry.crab = this.crab; // as it was, for an undo
+    const cherryTaken = this.cherry >= 0 && (a === this.cherry || b === this.cherry);
+    if (cherryTaken) entry.cherry = true;
     this.present[a] = this.present[b] = 0;
     this.left -= 2;
     this.matches++;
@@ -2478,6 +2514,12 @@ export class Game {
     // out one.
     const tideWas = this.tideEvery ? tideAt(this.matches - 1 - this.tideFrom, this.tideEvery, this.tideHigh) : 0;
     const tideMoved = this.tideEvery > 0 && this.left > 0 && this.tideLevel !== tideWas ? (this.tideLevel > tideWas ? 'in' : 'out') : null;
+    // On its ice cream, the cherry taken: saved for the last pair, or eaten
+    // too soon.
+    if (cherryTaken) {
+      this.cherryAt = this.matches;
+      this.cherrySaved = this.left === 0;
+    }
     // On its footprints in the sand, the crab startled back into its
     // burrow by the pair, or scuttling on, or coming out.
     const crabWas = this.crab ? this.crab.tile : -1;
@@ -2731,6 +2773,8 @@ export class Game {
       crabStartled: crabbed && crabbed.startled ? crabWas : -1,
       crabCameOut: crabbed && crabbed.cameOut ? this.crab.tile : -1,
       crabWentHome: Boolean(crabbed && !crabbed.startled && crabWas >= 0 && this.crab.tile < 0),
+      cherryTaken,
+      cherrySaved: cherryTaken && this.cherrySaved,
       cloverFound,
       cloverLost,
       cloverShown,
@@ -2781,6 +2825,7 @@ export class Game {
     if (caughtWind || windTurned >= 0) this.emit('wind', result);
     if (tideMoved) this.emit('tide', result);
     if (crabbed && (crabbed.startled || crabbed.cameOut || result.crabWentHome)) this.emit('crab', result);
+    if (cherryTaken) this.emit('cherry', result);
     if (cloverFound >= 0 || cloverLost >= 0 || cloverShown >= 0) this.emit('clover', result);
     if (cleaned && (cleaned.swept.length || cleaned.out.length)) this.emit('sweep', result);
     if (equinoxPair) this.emit('equinox', result);
@@ -2878,6 +2923,10 @@ export class Game {
       if (last.tideFrom !== undefined) this.tideFrom = last.tideFrom;
       if (last.crab) this.crab = last.crab;
       if (last.startled) this.crabsStartled--;
+      if (last.cherry) {
+        this.cherryAt = -1;
+        this.cherrySaved = false;
+      }
       if (last.snow) {
         this.ice.set(last.snow.ice);
         this.snowLanded = last.snow.landed;
@@ -2968,6 +3017,7 @@ export class Game {
     if (this.line && this.sweepRows) this.line = this.sweepDown(this.line);
     if (this.line && this.rules.equinox) this.line = this.meetHalfway(this.line);
     if (this.line && this.crab) this.line = this.startleCrab(this.line);
+    if (this.line && this.cherry >= 0 && this.present[this.cherry]) this.line = this.saveCherry(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
@@ -3054,7 +3104,9 @@ export class Game {
                               ? ebbing(this.layout, this.tideEvery, this.tideHigh, this.matches - this.tideFrom)
                               : this.crab
                                 ? scuttling(this.layout, this.crabEvery, this.seed, this.crab)
-                                : this.prefer;
+                                : this.cherry >= 0 && this.present[this.cherry]
+                                  ? savingCherry(this.cherry)
+                                  : this.prefer;
       dealt = redeal(this.layout, this.sides, this.side, this.turnAt - this.matches, this.present, this.r, this.iceAhead(), prefer);
       const fine = (d) =>
         (!this.mirror || swansIn(this.layout, this.mirror, d.sides[this.side], this.present).length === swans) &&

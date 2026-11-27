@@ -720,6 +720,7 @@ export class Board {
     }
     if (g.underWater(i)) return `${name}, under the water: it can't be taken until the tide goes out`;
     if (g.waveEvery && g.layout.y[i] === g.layout.height - 2) return `${name}, along the foot of the board, where the waves roll in: the next turns these tiles round in ${g.untilWave} ${g.untilWave === 1 ? 'match' : 'matches'}`;
+    if (i === g.cherry && g.cherryAt < 0) return `${name}, the cherry on top: save it for the very last pair, for points`;
     if (g.crabOn(i)) return `${name}, with a sand crab on it: it can't be taken while the crab is there; take a pair right beside it to send the crab back into its burrow`;
     if (g.rules.equinox) {
       const side = sideOf(g.layout, i);
@@ -907,6 +908,8 @@ export class Board {
       el.classList.toggle('underwater', g.underWater(i));
       // On its footprints in the sand, the tile the sand crab sits on.
       el.classList.toggle('crabbed', g.crabOn(i));
+      // On its ice cream, the cherry on top, while it's still to take.
+      el.classList.toggle('cherry-top', i === g.cherry && g.cherryAt < 0);
       // On its luck of the Irish, the tile a four-leaf clover shows on
       // carries it, with the matches it keeps for, deeper at the last.
       const lucky = g.hasClover(i);

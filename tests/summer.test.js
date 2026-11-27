@@ -1,15 +1,16 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT } from '../js/engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
-import { SUMMER, summerOf, pailPart, castlePart, printPart, sailPart } from '../js/summer.js';
+import { SUMMER, summerOf, pailPart, castlePart, printPart, sailPart, scoopPart } from '../js/summer.js';
 import { theme } from '../js/themes.js';
 
 const FIRST = SUMMER[0];
 const SECOND = SUMMER[1];
 const THIRD = SUMMER[2];
 const FOURTH = SUMMER[3];
+const FIFTH = SUMMER[4];
 
 // The tiles on a layer in a row, given in half tiles, by where each starts
 // across.
@@ -161,4 +162,32 @@ test('the sailboat reads as a sailboat: the pennant at the masthead, the mast, t
   }
   equal(['pennant', 'mast', 'sail', 'jib', 'sail-full', 'deck', 'hull', 'hull-top', 'sea', 'wave'].map((p) => `${p} ${parts[p]}`).join(', '), 'pennant 1, mast 5, sail 14, jib 10, sail-full 25, deck 18, hull 7, hull-top 10, sea 9, wave 9', 'its parts, for its look');
   equal(FOURTH.look, sailPart, 'the sailboat not tinted as its parts are');
+});
+
+test('the fifth chapter is an ice cream: 116 tiles on four layers, nine across, and the cherry on top saved for the last pair', () => {
+  equal(FIFTH.name, 'The fifth chapter', "the fifth chapter's name");
+  equal(FIFTH.title, 'An ice cream', "the fifth chapter's title");
+  equal(summerOf(ICECREAM), FIFTH, "the ice cream's chapter");
+  check(Object.keys(layouts).includes('ICECREAM'), 'the ice cream plays by its address, #play/icecream');
+  equal(ICECREAM.count, 116, 'tiles');
+  equal(ICECREAM.width / 2, 9, 'tiles across');
+  equal(ICECREAM.height / 2, 11, 'tiles down');
+  equal(ICECREAM.depth, 4, 'layers');
+  check(ICECREAM.count > SAILBOAT.count, 'no more tiles than the sailboat');
+  equal(JSON.stringify(dayOptions(FIFTH)), JSON.stringify({ treats: false, ghostsFloat: false, cherry: true }), 'the cherry');
+  check(['save it for last', 'the very last pair', 'just a tile'].every((w) => FIFTH.text.includes(w)), "the card doesn't tell the cherry");
+});
+
+test('the ice cream reads as an ice cream: the cherry on top, three scoops, strawberry, vanilla and chocolate, domed, and the cone narrowing to its tip, the chocolate dripping down it', () => {
+  equal(at(ICECREAM, 0, 0), '8', 'the cherry on top, on its own');
+  equal(['2', '6', '10'].map((y) => at(ICECREAM, 0, Number(y))).join(' | '), '6,8,10 | 2,4,6,8,10,12,14 | 0,2,4,6,8,10,12,14,16', 'the scoops, wider down');
+  equal(at(ICECREAM, 3, 10), '6,8,10', 'the chocolate scoop, domed highest');
+  equal(['16', '18', '20'].map((y) => at(ICECREAM, 0, Number(y))).join(' | '), '2,4,6,8,10,12,14 | 4,6,8,10,12 | 6,8,10', 'the cone narrowing to its tip');
+  const parts = {};
+  for (let i = 0; i < ICECREAM.count; i++) {
+    const p = scoopPart(ICECREAM, i);
+    parts[p] = (parts[p] || 0) + 1;
+  }
+  equal(['cherry', 'strawberry', 'vanilla', 'chocolate', 'cone-rim', 'cone', 'drip'].map((p) => `${p} ${parts[p]}`).join(', '), 'cherry 1, strawberry 12, vanilla 30, chocolate 48, cone-rim 10, cone 11, drip 4', 'its parts, for its look');
+  equal(FIFTH.look, scoopPart, 'the ice cream not tinted as its parts are');
 });

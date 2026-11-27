@@ -1,4 +1,4 @@
-import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT } from './engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM } from './engine/layouts.js';
 
 // The Summer Beach Season: a day at the beach, eight boards from a pail and
 // spade in the morning to the sun setting into the sea, to be reached in
@@ -12,9 +12,10 @@ import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT } from './engine/layouts.js'
 // taken, until a pair taken right beside it sends it back into its burrow
 // (engine/crab.js); on the fourth, sailing, every six matches a wave rolls
 // in over the bottom row and its tiles turn round among themselves, so long
-// as the board can still be won (engine/waves.js); the last, sunset, is
-// planned to turn over halfway as the sun sets into the sea, a tile left
-// without a partner a lost flip-flop.
+// as the board can still be won (engine/waves.js); on the fifth, an ice
+// cream, the cherry on top, saved for the last pair, scores (engine/
+// cherry.js); the last, sunset, is planned to turn over halfway as the sun
+// sets into the sea, a tile left without a partner a lost flip-flop.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), and PLAN.md has its boards and twists. Until the beach
 // season's own tiles are drawn, its boards wear Halloween's.
@@ -77,6 +78,21 @@ export function sailPart(L, i) {
   return x < 8 ? 'sail' : 'jib';
 }
 
+// The ice cream's look, each tile's part by where it is, in half tiles: the
+// cherry on top, the three scoops, strawberry, vanilla and chocolate from
+// the top down, the cone's rim, the cone, and the chocolate dripping down
+// its sides.
+export function scoopPart(L, i) {
+  const [x, y] = [L.x[i], L.y[i]];
+  if (y === 0) return 'cherry';
+  if (y <= 4) return 'strawberry';
+  if (y <= 8) return 'vanilla';
+  if (y <= 12) return 'chocolate';
+  if (y === 14) return 'cone-rim';
+  if ((y === 16 && (x === 2 || x === 14)) || (y === 18 && (x === 4 || x === 12))) return 'drip';
+  return 'cone';
+}
+
 export const SUMMER = [
   {
     name: 'The first chapter',
@@ -113,6 +129,15 @@ export const SUMMER = [
     look: sailPart,
     sky: ['#5aa8f0', '#0f3560'],
     text: "The wind's up and the boat's out on the water, her sails full. Every six matches a wave rolls in along the foot of the board 🌊, and the tiles it reaches turn round among themselves: each takes the face of the one beside it, a place along, the end one's going round to the other end. A wave never leaves a board that can't be won: with no way to turn the tiles that would, it falls short.",
+  },
+  {
+    name: 'The fifth chapter',
+    title: 'An ice cream',
+    layout: ICECREAM,
+    rules: { treats: false, ghostsFloat: false, cherry: true },
+    look: scoopPart,
+    sky: ['#58a6f2', '#0e3562'],
+    text: "It's a hot one, and the ice cream's three scoops high, a cherry on top 🍒. The cherry's free from the start, but save it for last: take it in the very last pair, after every other tile, for 50 points. Take it any sooner and it's just a tile.",
   },
 ];
 
