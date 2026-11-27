@@ -1668,6 +1668,63 @@ body.covered #board {
   }
 }
 
+/* On its lighthouse, the roof a deep red, the lantern's glass glowing gold
+   round the lamp, brightest at its middle, the gallery's railing dark iron,
+   the tower in bands of red and white, its door dark wood, and the rocks
+   grey, the sea about them blue. A tile on the stairs is walled in at its
+   left and right, as the stairs are, free only by the tiles above and
+   below it. */
+.tile[data-look='light-roof'] {
+  --face-1: #f6dada;
+  --face-2: #9c2a2a;
+}
+
+.tile[data-look='lantern'] {
+  --face-1: #fffbe0;
+  --face-2: #f2d36b;
+}
+
+.tile[data-look='lamp'] {
+  --face-1: #fffdf0;
+  --face-2: #ffc928;
+}
+
+.tile[data-look='gallery'] {
+  --face-1: #e8ebf0;
+  --face-2: #46505c;
+}
+
+.tile[data-look='tower-red'] {
+  --face-1: #ffe4e0;
+  --face-2: #d4372f;
+}
+
+.tile[data-look='tower-white'] {
+  --face-1: #ffffff;
+  --face-2: #e3e7ec;
+}
+
+.tile[data-look='tower-door'] {
+  --face-1: #f2e3d0;
+  --face-2: #6b4423;
+}
+
+.tile[data-look='rocks'] {
+  --face-1: #efede9;
+  --face-2: #80848b;
+}
+
+.tile.stair::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset calc(var(--tile-w) * 0.07) 0 0 rgba(70, 50, 40, 0.3),
+    inset calc(var(--tile-w) * -0.07) 0 0 rgba(70, 50, 40, 0.3);
+  pointer-events: none;
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers

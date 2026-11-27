@@ -778,6 +778,12 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       if (game.sunburns === 1) toast(`Ouch! ${sunburnt.length === 1 ? 'A tile' : `${sunburnt.length} tiles`} left out in the sun for ${game.burnAfter} matches got sunburnt. A pair with a sunburnt tile is just a pair: take tiles soon after they come free to keep them cool.`);
     }
   });
+  // On its lighthouse: footsteps on the stairs, for a pair with a tile from
+  // them.
+  game.on('match', ({ a, b }) => {
+    const stairs = game.layout.stairs;
+    if (stairs && (stairs[a] || stairs[b])) setTimeout(() => sound.stairs(), 120);
+  });
   game.on('treat', ({ treat }) => {
     sound.treat();
     toast(gifts.came(gifts.names[treat]));

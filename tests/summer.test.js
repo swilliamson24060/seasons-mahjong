@@ -1,9 +1,9 @@
 import { test, check, equal } from './run.js';
 import * as layouts from '../js/engine/layouts.js';
-import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM, BEACHBALL } from '../js/engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM, BEACHBALL, LIGHTHOUSE } from '../js/engine/layouts.js';
 import { Game } from '../js/engine/game.js';
 import { dayOptions } from '../js/thanksgiving.js';
-import { SUMMER, summerOf, pailPart, castlePart, printPart, sailPart, scoopPart, ballPart } from '../js/summer.js';
+import { SUMMER, summerOf, pailPart, castlePart, printPart, sailPart, scoopPart, ballPart, lightPart } from '../js/summer.js';
 import { theme } from '../js/themes.js';
 
 const FIRST = SUMMER[0];
@@ -12,6 +12,7 @@ const THIRD = SUMMER[2];
 const FOURTH = SUMMER[3];
 const FIFTH = SUMMER[4];
 const SIXTH = SUMMER[5];
+const SEVENTH = SUMMER[6];
 
 // The tiles on a layer in a row, given in half tiles, by where each starts
 // across.
@@ -227,4 +228,40 @@ test("the beach ball's upper layer covers the ends of the rows under it, so that
   const free = g.freeTiles();
   equal([0, 1, 2].map((z) => free.filter((t) => BEACHBALL.z[t] === z).length).join(), '4,14,4', 'free from the start, on each layer');
   equal(free.filter((t) => BEACHBALL.z[t] === 0).map((t) => BEACHBALL.y[t]).join(), '16,16,18,18', 'free on the bottom layer, the sand');
+});
+
+test('the seventh chapter is the lighthouse: 132 tiles on four layers, nine across, the stairs in its tower running up and down', () => {
+  equal(SEVENTH.name, 'The seventh chapter', "the seventh chapter's name");
+  equal(SEVENTH.title, 'The lighthouse', "the seventh chapter's title");
+  equal(summerOf(LIGHTHOUSE), SEVENTH, "the lighthouse's chapter");
+  check(Object.keys(layouts).includes('LIGHTHOUSE'), 'the lighthouse plays by its address, #play/lighthouse');
+  equal(LIGHTHOUSE.count, 132, 'tiles');
+  equal(LIGHTHOUSE.width / 2, 9, 'tiles across');
+  equal(LIGHTHOUSE.height / 2, 11, 'tiles down');
+  equal(LIGHTHOUSE.depth, 4, 'layers');
+  check(LIGHTHOUSE.count > BEACHBALL.count, 'no more tiles than the beach ball');
+  equal(JSON.stringify(dayOptions(SEVENTH)), JSON.stringify({ treats: false, ghostsFloat: false }), 'rules beyond the stairs, which are the board\'s own');
+  const stairs = [...LIGHTHOUSE.x.keys()].filter((i) => LIGHTHOUSE.stairs[i]);
+  equal(`${stairs.length} ${stairs.every((i) => LIGHTHOUSE.y[i] >= 6 && LIGHTHOUSE.y[i] <= 14)}`, '72 true', 'the tiles on the stairs, the whole tower and nothing else');
+  check(['stairs run up and down', 'no tile above it or none below it', 'usual rule'].every((w) => SEVENTH.text.includes(w)), "the card doesn't tell the stairs");
+});
+
+test('the lighthouse reads as a lighthouse: its roof, the lamp raised in its lantern room, the gallery, the tower in bands of red and white, wider at its foot, its door there, standing on the rocks, the sea about them', () => {
+  equal([0, 2, 4, 6, 12, 16, 18].map((y) => at(LIGHTHOUSE, 0, y)).join(' | '), '8 | 6,8,10 | 4,6,8,10,12 | 6,8,10 | 4,6,8,10,12 | 2,4,6,8,10,12,14 | 0,2,4,6,8,10,12,14,16', 'the roof, the lantern room, the gallery, the tower, wider at its foot, and the rocks');
+  equal(at(LIGHTHOUSE, 2, 2), '8', 'the lamp, raised in its lantern room');
+  for (const y of [6, 8, 10, 12, 14]) equal(at(LIGHTHOUSE, 3, y), '6,8,10', `the tower's row ${y / 2 - 2}, four layers thick`);
+  const parts = {};
+  for (let i = 0; i < LIGHTHOUSE.count; i++) {
+    const p = lightPart(LIGHTHOUSE, i);
+    parts[p] = (parts[p] || 0) + 1;
+  }
+  equal(['light-roof', 'lamp', 'lantern', 'gallery', 'tower-red', 'tower-white', 'tower-door', 'rocks', 'sea'].map((p) => `${p} ${parts[p]}`).join(', '), 'light-roof 1, lamp 1, lantern 6, gallery 10, tower-red 38, tower-white 30, tower-door 4, rocks 31, sea 11', 'its parts, for its look');
+  equal(SEVENTH.look, lightPart, 'the lighthouse not tinted as its parts are');
+});
+
+test("the lighthouse's tower is free only at the ends of its columns, the stairs' top and foot, so that it opens from the gallery and the rocks", () => {
+  const g = new Game(LIGHTHOUSE, { seed: 1, ...dayOptions(SEVENTH) });
+  const free = g.freeTiles();
+  equal(`${free.length} ${free.filter((t) => LIGHTHOUSE.stairs[t]).length}`, '26 10', 'free from the start, and of them on the stairs');
+  equal(free.filter((t) => LIGHTHOUSE.stairs[t] && LIGHTHOUSE.z[t] === 3).map((t) => LIGHTHOUSE.y[t]).join(), '6,6,6,14,14,14', "free on the tower's top layer: its columns' tops and feet");
 });

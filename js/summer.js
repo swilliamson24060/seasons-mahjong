@@ -1,4 +1,4 @@
-import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM, BEACHBALL } from './engine/layouts.js';
+import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM, BEACHBALL, LIGHTHOUSE } from './engine/layouts.js';
 
 // The Summer Beach Season: a day at the beach, eight boards from a pail and
 // spade in the morning to the sun setting into the sea, to be reached in
@@ -16,8 +16,11 @@ import { SANDPAIL, SANDCASTLE, FOOTPRINTS, SAILBOAT, ICECREAM, BEACHBALL } from 
 // cream, the cherry on top, saved for the last pair, scores (engine/
 // cherry.js); on the sixth, a beach ball, a tile left free in the sun for
 // six matches burns, and a pair taken before either of its tiles does is a
-// cool pair, for points (engine/sunburn.js); the last, sunset, is planned
-// to turn over halfway as the sun sets into the sea, a tile left without a
+// cool pair, for points (engine/sunburn.js); on the seventh, the
+// lighthouse, the stairs in its tower run up and down, so that a tile there
+// is free when there's no tile above it or none below it, rather than to
+// its left or right (engine/stairs.js); the last, sunset, is planned to
+// turn over halfway as the sun sets into the sea, a tile left without a
 // partner a lost flip-flop.
 // Each chapter is as Thanksgiving's days are (thanksgiving.js says what each
 // part is for), and PLAN.md has its boards and twists. Until the beach
@@ -111,6 +114,21 @@ export function ballPart(L, i) {
   return PANELS[Math.floor(turn / 60) % 6];
 }
 
+// The lighthouse's look, each tile's part by where it is, in half tiles:
+// its roof, the lamp raised in the lantern room, the gallery round that,
+// the tower in bands of red and white from the top down, its door at its
+// foot, the rocks, and the sea about them.
+export function lightPart(L, i) {
+  const [x, y, z] = [L.x[i], L.y[i], L.z[i]];
+  if (y === 0) return 'light-roof';
+  if (y === 2) return z === 2 ? 'lamp' : 'lantern';
+  if (y === 4) return 'gallery';
+  if (y === 14 && x === 8) return 'tower-door';
+  if (y <= 14) return (y / 2) % 2 ? 'tower-red' : 'tower-white';
+  if (y === 20 || (y === 18 && (x === 0 || x === 16))) return 'sea';
+  return 'rocks';
+}
+
 export const SUMMER = [
   {
     name: 'The first chapter',
@@ -165,6 +183,15 @@ export const SUMMER = [
     look: ballPart,
     sky: ['#4ea2f5', '#0c3466'],
     text: "The sun's at its height, and the beach ball's out, bouncing on the sand. A tile that's free is out in the sun, and goes a little pinker with every match: left there six matches, it burns, going red. Take a pair before either of its tiles burns, a cool pair 😎, for 5 points. A sunburnt tile can still be taken, but only ever in a pair that's just a pair.",
+  },
+  {
+    name: 'The seventh chapter',
+    title: 'The lighthouse',
+    layout: LIGHTHOUSE,
+    rules: { treats: false, ghostsFloat: false },
+    look: lightPart,
+    sky: ['#7ea5d4', '#1b2e57'],
+    text: "The afternoon's drawing on, and the lighthouse stands on the rocks, its lamp ready for the night. In its tower the stairs run up and down: a tile in the tower, red or white, is free when there's no tile above it or none below it, and nothing lies on it, whatever's to its left and right. The lantern, the gallery, the rocks and the sea keep the usual rule.",
   },
 ];
 

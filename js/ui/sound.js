@@ -1738,6 +1738,16 @@ export class Sound {
     this.ping(3729, this.now + 0.07, { gain: 0.04, attack: 0.002, fall: 0.3, into: this.master });
   }
 
+  // On its lighthouse, a pair from the stairs: footsteps on the iron
+  // stairs, climbing, each step ringing faintly.
+  stairs() {
+    if (!this.on) return;
+    [0, 0.17, 0.34].forEach((t, k) => {
+      this.ping(150 + k * 20, this.now + t, { type: 'triangle', gain: 0.09, attack: 0.002, fall: 0.09, into: this.master });
+      this.ping(1900 + k * 120, this.now + t + 0.005, { gain: 0.012, attack: 0.002, fall: 0.25, into: this.master });
+    });
+  }
+
   // Tiles left in the sun too long burning: a sizzle, crackling as it goes.
   sunburn() {
     if (!this.on) return;

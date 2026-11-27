@@ -50,7 +50,7 @@ export function coolIn(L, present, sunAt, matches, burn, way) {
     if (isCool(at, a, b, matches + k, burn)) n++;
     p[a] = p[b] = 0;
     for (const t of [a, b]) {
-      for (const near of [L.below[t], L.left[t], L.right[t]]) {
+      for (const near of [L.below[t], L.opens[t]]) {
         for (const u of near) if (p[u] && at[u] < 0 && isFree(L, p, u)) at[u] = matches + k + 1;
       }
     }

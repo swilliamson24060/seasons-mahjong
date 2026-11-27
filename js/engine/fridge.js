@@ -26,6 +26,7 @@ export function withFridge(L, k) {
     below: [...L.below, ...none()],
     left: [...L.left, ...none()],
     right: [...L.right, ...none()],
+    opens: [...L.opens, ...none()],
     weight: extend(L.weight, 0),
   };
 }

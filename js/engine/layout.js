@@ -94,7 +94,8 @@ export function makeLayout(name, cells) {
   }
   // How much each tile holds up: the tiles under it and beside it. The solver
   // and the hints try first the pairs that hold up the most.
-  const weight = Int16Array.from(below, (b, i) => b.length + left[i].length + right[i].length);
+  const opens = opensOf(left, right);
+  const weight = Int16Array.from(below, (b, i) => b.length + opens[i].length);
   return {
     name,
     count,
@@ -105,11 +106,22 @@ export function makeLayout(name, cells) {
     below,
     left,
     right,
+    opens,
     weight,
     width: Math.max(...x) + 2,
     height: Math.max(...y) + 2,
     depth: Math.max(...z) + 1,
   };
+}
+
+// The tiles whose left or right side each tile is, which its going may
+// free: on most boards the tiles beside it, its own sides; but where a
+// tile's sides run another way, as on the lighthouse's stairs (stairs.js),
+// they're found from the sides of the tiles round it.
+export function opensOf(left, right) {
+  const opens = left.map(() => []);
+  for (const sides of [left, right]) sides.forEach((side, i) => side.forEach((j) => opens[j].push(i)));
+  return opens;
 }
 
 // A tile is free when no tile lies on it and its left or right side is open.

@@ -124,7 +124,7 @@ export function solve(L, position, { budget = 200000 } = {}) {
     const take = (t) => {
       rest[t] = 0;
       left--;
-      for (const near of [L.below[t], L.left[t], L.right[t]]) for (const u of near) if (rest[u]) queue.push(u);
+      for (const near of [L.below[t], L.opens[t]]) for (const u of near) if (rest[u]) queue.push(u);
       if (across) for (const u of across[t]) if (rest[u]) queue.push(u);
     };
     const freeRest = (t) => loose(t) || isFree(L, rest, t) || (wind !== null && WINDS.some((_, w) => inWind(wind.upwind, w, rest, t)));
@@ -150,7 +150,7 @@ export function solve(L, position, { budget = 200000 } = {}) {
     stamp++;
     present[a] = present[b] = 0;
     let score = 0;
-    for (const near of [L.below[a], L.below[b], L.left[a], L.right[a], L.left[b], L.right[b]]) {
+    for (const near of [L.below[a], L.below[b], L.opens[a], L.opens[b]]) {
       for (const t of near) {
         if (!present[t] || freeNow[t] || seen[t] === stamp) continue;
         seen[t] = stamp;
