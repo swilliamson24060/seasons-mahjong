@@ -43,6 +43,7 @@ import { firstCrab, afterPair, goBack, scuttling, startles } from './crab.js';
 import { waveTiles, rollIn } from './waves.js';
 import { cherryOf, savingCherry } from './cherry.js';
 import { sunLeft, isCool, keepingCool, coolIn } from './sunburn.js';
+import { numberOf, after, nextOf, layCount } from './countoff.js';
 import { SOON, RESTLESS, hidingPlaces, hidingOf } from './clover.js';
 import { rowsOf, nextRow, emptied, sweptIn, cleaning } from './sweep.js';
 import { isEquinox, balancing } from './equinox.js';
@@ -61,15 +62,16 @@ export const TREATS = ['candle', 'key', 'cat'];
 // raindrops, the splash zone, chasing colours, watering, the watering can,
 // busy bees, snowballs, the robin's song, the March wind, the four-leaf
 // clover, the clean sweep, day meeting night, the tide, the sand crab, the
-// waves, the cherry on top and sunburn. Nothing here touches the page; the
-// board listens with on() for what happens: 'match', 'thaw', 'list', 'checkout',
-// 'bought', 'grab', 'touchdown', 'lovebirds', 'flock', 'hatch', 'gold',
+// waves, the cherry on top, sunburn and counting off. Nothing here touches
+// the page; the board listens with on() for what happens: 'match', 'thaw',
+// 'list', 'checkout', 'bought', 'grab', 'touchdown', 'lovebirds', 'flock',
+// 'hatch', 'gold',
 // 'gosling', 'swan', 'milk', 'dance', 'leap', 'pipe', 'firework',
 // 'spotlight', 'balloon', 'coin', 'sparkler', 'confetti', 'star', 'toast',
 // 'arrow', 'message', 'rose', 'candlelight', 'chocolate', 'xoxo', 'rain',
 // 'splash', 'colour', 'garden', 'can', 'bee', 'snow', 'song', 'wind',
 // 'clover', 'sweep', 'equinox', 'tide', 'crab', 'wave', 'cherry', 'sun',
-// 'save', 'turn', 'treat', 'key', 'shuffle', 'undo', 'win' and 'stuck'.
+// 'count', 'save', 'turn', 'treat', 'key', 'shuffle', 'undo', 'win' and 'stuck'.
 //
 // Options: the seed for the deal; faces, or sides for a board that turns
 // over, to set the tiles instead of dealing them; turnAt, the number of
@@ -199,7 +201,9 @@ export const TREATS = ['candle', 'key', 'cat'];
 // saved for the last pair, for points (cherry.js); and on its beach ball,
 // sunburn: how many matches a tile can be left free in the sun before it
 // burns, going red, a pair taken while neither of its tiles is burnt a
-// cool pair, for points (sunburn.js).
+// cool pair, for points (sunburn.js); and on Independence Day's flag,
+// countOff: whether the marchers count off, one to nine, a pair of the
+// next number in turn, of any suit, counting off, for points (countoff.js).
 //
 // On a board with a fridge, the game's layout has the containers after the
 // table's tiles: tableCount is how many tiles the table has, and the places
@@ -207,7 +211,7 @@ export const TREATS = ['candle', 'key', 'cat'];
 export class Game {
   constructor(
     table,
-    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null, crab = null, waves = null, cherry = false, sunburn = 0 } = {},
+    { seed = 1, faces = null, sides = null, turnAt = Infinity, firstSide = 'day', ghostsFloat = true, soulsFloat = false, treats = true, treatFaces = [LANTERN], ice = null, list = null, fridge = 0, doorbusters = null, touchdown = 0, lovebirds = false, eggs = 0, flock = false, rings = null, goslings = 0, swans = 0, milk = null, dance = 0, lords = 0, pipers = 0, fireworks = 0, disco = 0, balloons = null, coin = null, sparklers = null, confetti = false, stars = 0, toast = null, sweets = null, arrows = 0, sweethearts = false, roses = null, candles = null, chocolates = false, xoxo = null, raindrops = null, splash = null, colours = null, watering = null, pour = null, bees = null, snowballs = null, song = false, wind = null, clover = null, sweep = false, equinox = false, tide = null, crab = null, waves = null, cherry = false, sunburn = 0, countOff = false } = {},
   ) {
     const n = table.count;
     const layout = fridge ? withFridge(table, fridge) : table;
@@ -435,6 +439,9 @@ export class Game {
         const left = kindsLeft(onTable, (t) => MATCH[dealt.sides[0][t]]);
         dealt.sides[0] = compose(dealt.order, dealt.sides[0], (f) => MATCH[f], firstSong(seed, left), seed, seeded(seed ^ 0x1b56c4e9));
       }
+      // On Independence Day's flag, the faces are laid along the deal's own
+      // order so that it counts off as its numbers allow (countoff.js).
+      if (countOff && !turns) dealt.sides[0] = layCount(dealt.order, dealt.sides[0], 1, seeded(seed ^ 0x5a3c9e1d));
       this.sides = dealt.sides;
       this.plan = dealt.order; // the order the deal was made in, which wins
     }
@@ -706,6 +713,12 @@ export class Game {
     this.coolPairs = 0;
     this.sunburns = 0;
     if (sunburn) this.sunUp();
+    // On Independence Day's flag, whether the marchers count off, the
+    // number they count next, 0 with none left to count, and the pairs
+    // counted off (countoff.js).
+    this.countOff = countOff;
+    this.countNext = countOff ? this.countFrom(1) : 0;
+    this.countOffs = 0;
   }
 
   // On Valentine's envelope, the message a tile still on the board carries
@@ -1301,6 +1314,42 @@ export class Game {
       }
     }
     return best;
+  }
+
+  // On Independence Day's flag, the number to count from n: n, or the first
+  // after it with a tile of it still on the board; 0 with none.
+  countFrom(n) {
+    return nextOf(n, (k) => {
+      for (let i = 0; i < this.layout.count; i++) if (this.present[i] && numberOf(this.faces[i]) === k) return true;
+      return false;
+    });
+  }
+
+  // Whether a tile still on the board is of the number to count off next.
+  countsNext(i) {
+    return this.countNext > 0 && this.present[i] === 1 && numberOf(this.faces[i]) === this.countNext;
+  }
+
+  // On its flag, the way mended to count off now, if it can be: a pair of
+  // the next number taken first, from further down the way, or else one of
+  // its own, put in where the way still wins.
+  countAlong(way) {
+    if (!way.length || this.countNext === 0 || numberOf(this.faces[way[0][0]]) === this.countNext) return way;
+    for (let k = 1; k < way.length; k++) {
+      const [a, b] = way[k];
+      if (numberOf(this.faces[a]) !== this.countNext || !this.isFree(a) || !this.isFree(b)) continue;
+      const tried = [way[k], ...way.slice(0, k), ...way.slice(k + 1)];
+      if (this.holds(tried)) return tried;
+    }
+    const free = this.freeTiles().filter((t) => this.countsNext(t));
+    for (let i = 0; i < free.length; i++) {
+      for (let j = i + 1; j < free.length; j++) {
+        if (MATCH[this.faces[free[i]]] !== MATCH[this.faces[free[j]]]) continue;
+        const made = wayWith(way, [free[i], free[j]], 1, (l) => this.holds(l));
+        if (made) return made;
+      }
+    }
+    return way;
   }
 
   // On the beach season's footprints, the way mended to startle the crab
@@ -2567,6 +2616,13 @@ export class Game {
     // On its beach ball, a pair taken while neither of its tiles is burnt is
     // a cool pair.
     const coolPair = this.sunAt !== null && isCool(this.sunAt, a, b, this.matches, this.burnAfter);
+    // On Independence Day's flag, a pair of the next number counts off.
+    const countedOff = this.countNext > 0 && numberOf(this.faces[a]) === this.countNext ? this.countNext : 0;
+    if (this.countOff) entry.count = this.countNext; // as it was, for an undo
+    if (countedOff) {
+      this.countOffs++;
+      entry.countedOff = true;
+    }
     if (this.sunAt) entry.sunAt = Int16Array.from(this.sunAt); // as it was, for an undo
     if (coolPair) {
       this.coolPairs++;
@@ -2764,6 +2820,8 @@ export class Game {
     // sun, and those left in it long enough burn.
     const sunned = this.sunAt ? this.sunUp() : [];
     const sunburnt = this.sunAt ? this.burning() : [];
+    // And on the flag, the count moves on, past any number with none left.
+    if (this.countOff) this.countNext = this.countFrom(countedOff ? after(countedOff) : this.countNext);
     if (sunburnt.length) {
       this.sunburns++;
       entry.sunburnt = true;
@@ -2872,6 +2930,7 @@ export class Game {
       coolPair,
       sunned,
       sunburnt,
+      countedOff,
     };
     this.emit('match', result);
     if (thawed.length) this.emit('thaw', result);
@@ -2921,6 +2980,7 @@ export class Game {
     if (cleaned && (cleaned.swept.length || cleaned.out.length)) this.emit('sweep', result);
     if (equinoxPair) this.emit('equinox', result);
     if (coolPair || sunburnt.length) this.emit('sun', result);
+    if (countedOff) this.emit('count', result);
     if (gaveIn || keptMonth) this.emit('resolution', result);
     if (turned) this.emit('turn', result);
     if (treat) this.emit('treat', result);
@@ -3015,6 +3075,8 @@ export class Game {
       if (last.sunAt) this.sunAt = last.sunAt;
       if (last.cool) this.coolPairs--;
       if (last.sunburnt) this.sunburns--;
+      if (last.count !== undefined) this.countNext = last.count;
+      if (last.countedOff) this.countOffs--;
       if (last.tideFrom !== undefined) this.tideFrom = last.tideFrom;
       if (last.crab) this.crab = last.crab;
       if (last.startled) this.crabsStartled--;
@@ -3114,6 +3176,7 @@ export class Game {
     if (this.line && this.crab) this.line = this.startleCrab(this.line);
     if (this.line && this.cherry >= 0 && this.present[this.cherry]) this.line = this.saveCherry(this.line);
     if (this.line && this.sunAt) this.line = this.keepCool(this.line);
+    if (this.line && this.countOff) this.line = this.countAlong(this.line);
     if (this.line && this.xoxo) this.line = this.carryOn(this.line);
     if (this.line && this.chocolates) {
       const free = (p, t) => p[t] === 1 && (this.loose(t) || isFree(this.layout, p, t));
@@ -3215,6 +3278,7 @@ export class Game {
     }
     if (!dealt) return false;
     if (this.robin && this.sides.length === 1) dealt.sides[this.side] = compose(dealt.order, dealt.sides[this.side], (f) => MATCH[f], this.robin, this.seed, this.r);
+    if (this.countOff && this.sides.length === 1) dealt.sides[this.side] = layCount(dealt.order, dealt.sides[this.side], this.countNext, this.r);
     const busterTiles = this.busters && this.busters.map((d) => d.tiles.slice());
     const pails = this.pails && this.pails.map((p) => ({ ...p, tiles: p.tiles.slice() }));
     this.history.push({ type: 'shuffle', sides: this.sides, line: this.line && this.line.slice(), outlook: this.outlook, busterTiles, swans: this.swans, pails, confetti: this.confetti, couple: this.couple, messages: this.messages, tideFrom: this.tideFrom, crab: this.crab });

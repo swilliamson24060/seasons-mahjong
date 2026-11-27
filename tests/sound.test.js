@@ -130,6 +130,21 @@ test("the beach season's music is all heard, and none too loud", async () => {
   return `peaks ${Math.min(...peaks).toFixed(2)} to ${Math.max(...peaks).toFixed(2)}`;
 });
 
+test("Independence Day's count is heard, and not too loud: a pair counted off, and the nine, a full count", async () => {
+  const sounds = {
+    'a pair counted off': [0.6, (s) => s.countOff(3)],
+    'the nine, a full count': [2.2, (s) => s.countOff(9)],
+  };
+  const peaks = [];
+  for (const [name, [seconds, play]] of Object.entries(sounds)) {
+    const peak = peakOf(await render('halloween', seconds, play));
+    peaks.push(peak);
+    check(peak > 0.02, `${name}: too quiet, at ${peak.toFixed(3)}`);
+    check(peak < 0.95, `${name}: too loud, at ${peak.toFixed(2)}`);
+  }
+  return `peaks ${peaks.map((p) => p.toFixed(2)).join(', ')}`;
+});
+
 test("Satie's first Gymnopédie keeps time: four bars of chords, then the tune's two phrases, twenty-one bars of 3/4, a bass and a chord to each", () => {
   const beats = (notes) => notes.reduce((n, [, b]) => n + b, 0);
   equal(beats(GYMNOPEDIE), 21 * 3, 'beats: twenty-one bars');

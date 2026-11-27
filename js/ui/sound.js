@@ -1830,6 +1830,22 @@ export class Sound {
     });
   }
 
+  // On Independence Day's flag, a pair counted off: a stroke on the snare
+  // drum, its rattle and its crack, a little higher as the count goes up;
+  // and at nine, a full count, a roll and a crash of the cymbal after it.
+  countOff(n = 1) {
+    if (!this.on) return;
+    const stroke = (at, gain) => {
+      this.rustle(at, 0.14, 3800, 2600, gain);
+      this.ping(185 + n * 6, at, { type: 'triangle', gain: gain * 0.9, attack: 0.002, fall: 0.08, into: this.master });
+    };
+    stroke(this.now, 0.16);
+    if (n === 9) {
+      for (let k = 0; k < 10; k++) stroke(this.now + 0.2 + k * 0.045, 0.07 + k * 0.006);
+      this.rustle(this.now + 0.68, 1.1, 6000, 3200, 0.09);
+    }
+  }
+
   // Tiles left in the sun too long burning: a sizzle, crackling as it goes.
   sunburn() {
     if (!this.on) return;

@@ -1773,6 +1773,113 @@ body.covered #board {
   --face-2: #e9b04c;
 }
 
+/* Independence Day's fife and drum: the drumsticks a turned wood, the
+   beads at their tips paler; the drum's hoops red, its shell a deep blue,
+   the rope laced round it cream, and the eagle on it gold; and the fife a
+   dark wood, its finger holes darker still. */
+.tile[data-look='drumstick'] {
+  --face-1: #f6e2c4;
+  --face-2: #b07a3e;
+}
+
+.tile[data-look='drumstick-tip'] {
+  --face-1: #fff3e0;
+  --face-2: #d8a868;
+}
+
+.tile[data-look='drum-hoop'] {
+  --face-1: #ffe0dc;
+  --face-2: #d23a32;
+}
+
+.tile[data-look='drum-shell'] {
+  --face-1: #e2ecfa;
+  --face-2: #2c5a9e;
+}
+
+.tile[data-look='drum-rope'] {
+  --face-1: #fffaf0;
+  --face-2: #e6d6b4;
+}
+
+.tile[data-look='drum-eagle'] {
+  --face-1: #fff4d6;
+  --face-2: #e0a83a;
+}
+
+.tile[data-look='fife'] {
+  --face-1: #f4e4cc;
+  --face-2: #8a5a30;
+}
+
+.tile[data-look='fife-hole'] {
+  --face-1: #efe0c8;
+  --face-2: #5a3a1e;
+}
+
+/* Its flag: the pole a pale steel, the gold ball on its top, its stand
+   dark; the canton a deep navy, the stars raised on it white; and the
+   stripes red and white by turns. A tile of the number to count off next
+   is ringed in the parade's red, and carries a drum on its corner. */
+.tile[data-look='finial'] {
+  --face-1: #fff4d6;
+  --face-2: #e0a83a;
+}
+
+.tile[data-look='flagpole'] {
+  --face-1: #f3ecdf;
+  --face-2: #a89a86;
+}
+
+.tile[data-look='flag-stand'] {
+  --face-1: #efe9e1;
+  --face-2: #7a7068;
+}
+
+.tile[data-look='canton'] {
+  --face-1: #e2ecfa;
+  --face-2: #22427e;
+}
+
+.tile[data-look='flag-star'] {
+  --face-1: #ffffff;
+  --face-2: #d8e2f0;
+}
+
+.tile[data-look='stripe-red'] {
+  --face-1: #ffe0dc;
+  --face-2: #cf3a30;
+}
+
+.tile[data-look='stripe-white'] {
+  --face-1: #ffffff;
+  --face-2: #e6e9ee;
+}
+
+.tile.count-next::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 calc(var(--tile-w) * 0.06) rgba(207, 58, 48, 0.85);
+  pointer-events: none;
+}
+
+.tile.count-next::after {
+  content: '🥁';
+  position: absolute;
+  top: -12%;
+  left: 6%;
+  padding: 0.08em 0.18em;
+  border-radius: 9px;
+  background: #fff4f2;
+  box-shadow:
+    0 0 5px rgba(207, 58, 48, 0.6),
+    inset 0 0 0 1px #e8a09a;
+  font: max(11px, calc(var(--tile-w) * 0.32)) / 1 system-ui, -apple-system, sans-serif;
+  pointer-events: none;
+}
+
 /* On April Showers' May Day, once the tiles turn over to May's side, the
    basket shows its colours: its handle and rim wicker, its body woven in
    two shades, the bow tied on its handle ribbon pink, and the flowers

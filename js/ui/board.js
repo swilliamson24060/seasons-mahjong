@@ -737,6 +737,7 @@ export class Board {
     if (sun <= 0) return `${name}, sunburnt: a pair with it is just a pair`;
     if (sun !== Infinity) return `${name}, out in the sun: it burns in ${sun} ${sun === 1 ? 'match' : 'matches'}; take it with a tile of its kind that isn't burnt, for a cool pair`;
     if (g.layout.stairs && g.layout.stairs[i]) return `${name}, on the lighthouse's stairs: free when there's no tile above it or none below it, and nothing lies on it`;
+    if (g.countsNext(i)) return `${name}, the next number to count off: take a pair of it, for points`;
     if (g.crabOn(i)) return `${name}, with a sand crab on it: it can't be taken while the crab is there; take a pair right beside it to send the crab back into its burrow`;
     if (g.rules.equinox) {
       const side = sideOf(g.layout, i);
@@ -938,6 +939,8 @@ export class Board {
       // On its lighthouse, a tile on the stairs is walled in at its left and
       // right, free by the tiles above and below it.
       el.classList.toggle('stair', here && Boolean(g.layout.stairs) && g.layout.stairs[i] === 1);
+      // On Independence Day's flag, a tile of the number to count off next.
+      el.classList.toggle('count-next', g.countsNext(i));
       // On its luck of the Irish, the tile a four-leaf clover shows on
       // carries it, with the matches it keeps for, deeper at the last.
       const lucky = g.hasClover(i);
@@ -961,7 +964,7 @@ export class Board {
       // On New Year's 4, the fleck of confetti a tile caught.
       if (g.confetti && here && g.confetti[i] >= 0) el.dataset.confetti = COLOURS[g.confetti[i]];
       else delete el.dataset.confetti;
-      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips || g.snowEvery || g.robin || g.windEvery || g.cloverWithin || g.sweepRows || g.rules.equinox || g.tideEvery || g.crabEvery || g.waveEvery || g.cherry >= 0 || g.sunAt) el.setAttribute('aria-label', this.label(i));
+      if (g.lords || g.pipers || g.rockets || g.rules.disco || g.balloons || g.coin >= 0 || g.sparklers || g.confetti || g.starEvery || g.path || g.sweets || g.arrowEvery || g.messages || g.roses || g.candles || g.chocolates || g.xoxo || g.rain || g.puddleEdge !== null || g.colourClouds !== null || g.garden || g.can || g.tulips || g.snowEvery || g.robin || g.windEvery || g.cloverWithin || g.sweepRows || g.rules.equinox || g.tideEvery || g.crabEvery || g.waveEvery || g.cherry >= 0 || g.sunAt || g.countOff) el.setAttribute('aria-label', this.label(i));
       el.tabIndex = free ? 0 : -1;
       el.setAttribute('aria-disabled', String(!free));
     }

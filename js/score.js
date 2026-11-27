@@ -49,7 +49,9 @@
 // each equinox pair, a tile from each half of the board; and on the beach
 // season's footprints in the sand, each crab startled back into its burrow,
 // on its ice cream, the cherry on top saved for the last pair, and on its
-// beach ball, each cool pair, taken before either tile burnt in the sun.
+// beach ball, each cool pair, taken before either tile burnt in the sun;
+// and on Independence Day's flag, each pair counted off, the next number
+// in turn, one to nine.
 // Treats are free, and so is undo, though a pair taken back takes its points
 // with it.
 
@@ -106,6 +108,7 @@ export const POINTS = {
   crab: 10, // on the beach season's footprints in the sand, each crab startled back into its burrow by a pair right beside it
   cherry: 50, // on its ice cream, the cherry on top saved for the board's last pair
   cool: 5, // on its beach ball, each cool pair: taken before either of its tiles burnt, left free in the sun too long
+  count: 10, // on Independence Day's flag, each pair counted off: a pair of the next number in turn, one to nine
 };
 
 // What the lucky coin is worth, found as the match given frees its tile.
@@ -210,6 +213,7 @@ export function scoreOf(game, seconds, words = TURN) {
   if (game.crabEvery) rows.push(['Crabs startled', times(game.crabsStartled, POINTS.crab), game.crabsStartled * POINTS.crab]);
   if (game.cherry >= 0) rows.push(['Cherry on top', game.cherrySaved ? 'saved for last' : game.cherryAt >= 0 ? 'eaten too soon' : 'still on top', game.cherrySaved ? POINTS.cherry : 0]);
   if (game.sunAt) rows.push(['Cool pairs', times(game.coolPairs, POINTS.cool), game.coolPairs * POINTS.cool]);
+  if (game.countOff) rows.push(['Counted off', times(game.countOffs, POINTS.count), game.countOffs * POINTS.count]);
   if (game.can) rows.push(['Pours', [`${game.pours} of ${game.dropPairs}`, game.dryPours && `${game.dryPours} dry`].filter(Boolean).join(', '), game.pours * POINTS.pour]);
   if (game.chocolates) {
     const n = game.chocolatesIn('savoured');

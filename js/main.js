@@ -9,6 +9,7 @@ import { LOVE_STORY, chapterOf } from './valentines.js';
 import { SHOWERS, showerOf } from './showers.js';
 import { SPRING, springOf } from './spring.js';
 import { SUMMER, summerOf } from './summer.js';
+import { independenceOf } from './independence.js';
 import { BANDS } from './engine/colours.js';
 import { WINDS } from './engine/wind.js';
 import { GIFTS, TURNS, wordsOf } from './words.js';
@@ -779,6 +780,15 @@ function play({ layout, options, seed, replay = [], playedFor = 0, at = -1, onDa
       if (game.sunburns === 1) toast(`Ouch! ${sunburnt.length === 1 ? 'A tile' : `${sunburnt.length} tiles`} left out in the sun for ${game.burnAfter} matches got sunburnt. A pair with a sunburnt tile is just a pair: take tiles soon after they come free to keep them cool.`);
     }
   });
+  // On Independence Day's flag: a pair of the next number counts off, and
+  // after the nine the count starts again at one.
+  game.on('count', ({ b, countedOff }) => {
+    sound.countOff(countedOff);
+    setTimeout(() => board.float(`+${POINTS.count} 🥁`, b), 450); // after the pair's own points
+    const next = COUNT_WORDS[game.countNext] || '';
+    if (game.countOffs === 1) toast(`${COUNT_WORDS[countedOff][0].toUpperCase()}${COUNT_WORDS[countedOff].slice(1)}! The marchers count off: take a pair of the next number, ${next}, of any suit, for ${POINTS.count} points each.`);
+    else if (countedOff === 9) toast(`Nine! A full count, and the marchers start again${game.countNext ? ` at ${next}` : ''}.`);
+  });
   // On its lighthouse: footsteps on the stairs, for a pair with a tile from
   // them.
   game.on('match', ({ a, b }) => {
@@ -895,8 +905,9 @@ function freePlay(key = turtleKey(), seed = newSeed(), turnAt = 0, keep = null) 
 // The holiday a board belongs to, which must be open for it to be played:
 // the night's are Halloween's, the week's Thanksgiving's, the twelve days'
 // Christmas's, the countdown's and New Year's Day's New Year's, the love
-// story's Valentine's Day's, the Start of Spring's and April Showers' their
-// own, and the turtle is no one's.
+// story's Valentine's Day's, the Start of Spring's, April Showers', the
+// beach season's and Independence Day's their own, and the turtle is no
+// one's.
 function holidayOf(layout) {
   if (HOURS.some((h) => h.layout === layout)) return theme('halloween');
   if (dayOf(layout)) return theme('thanksgiving');
@@ -906,15 +917,16 @@ function holidayOf(layout) {
   if (showerOf(layout)) return theme('showers');
   if (springOf(layout)) return theme('spring');
   if (summerOf(layout)) return theme('summer');
+  if (independenceOf(layout)) return theme('independence');
   return newYearOf(layout) ? theme('new-year') : null;
 }
 
 // The day a board is for, if it is one of Thanksgiving week's, one of
 // Christmas's twelve, one of New Year's, its countdown's or New Year's
 // Day's, a chapter of Valentine's love story, of the Start of Spring's, of
-// April Showers' or of the beach season's: played freely, it plays by that
-// day's rules.
-const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(layout) || groundhogOf(layout) || chapterOf(layout) || springOf(layout) || showerOf(layout) || summerOf(layout);
+// April Showers', of the beach season's or of Independence Day's: played
+// freely, it plays by that day's rules.
+const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(layout) || groundhogOf(layout) || chapterOf(layout) || springOf(layout) || showerOf(layout) || summerOf(layout) || independenceOf(layout);
 
 // ------------- Thanksgiving week, Christmas's twelve days, and New Year's boards
 
@@ -928,6 +940,9 @@ const dayFor = (layout) => dayOf(layout) || dayOfChristmas(layout) || newYearOf(
 // progress is kept in saved, as the night's is; and the words its card and
 // its end are told in. New Year's also has the ball on its card, dropping a notch with
 // each board of the countdown cleared, and words for each one cleared.
+// The numbers the marchers count off on Independence Day's flag, in words.
+const COUNT_WORDS = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+
 const RUNS = {
   thanksgiving: {
     days: DAYS,
@@ -1884,6 +1899,13 @@ function update() {
   if (g.sunAt) {
     $('sun').innerHTML = `😎 <b>${g.coolPairs}</b>`;
     $('sun').setAttribute('aria-label', `${g.coolPairs} cool ${g.coolPairs === 1 ? 'pair' : 'pairs'}, taken before either tile burnt in the sun`);
+  }
+  // On Independence Day's flag, the number to count off next, and the pairs
+  // counted off.
+  $('count').hidden = !g.countOff;
+  if (g.countOff) {
+    $('count').innerHTML = g.countNext ? `🥁 <b>${g.countNext}</b> next · ${g.countOffs}` : `🥁 ${g.countOffs}`;
+    $('count').setAttribute('aria-label', `${g.countNext ? `Count off: ${COUNT_WORDS[g.countNext]} next; ` : ''}${g.countOffs} counted off`);
   }
   // On its watering can, how full it is, and the pours made.
   $('can').hidden = !g.can;
