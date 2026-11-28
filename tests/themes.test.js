@@ -1,5 +1,5 @@
 import { test, check, equal } from './run.js';
-import { THEMES, theme, when, calendar, isOpen, opensOn, today, menuList } from '../js/themes.js';
+import { THEMES, theme, when, calendar, isOpen, opensOn, today, menuList, daysToGo } from '../js/themes.js';
 
 const day = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 const ids = (list) => list.map((e) => e.theme.id).join(' ');
@@ -55,7 +55,7 @@ test('the menu lists every holiday, those open first, then the rest, each saying
   equal(ids(november.filter((e) => e.open)), 'thanksgiving groundhog valentines spring showers summer halloween', 'open on the 18th of November, in the order they come round');
   equal(ids(november.slice(0, 7)), 'thanksgiving groundhog valentines spring showers summer halloween', 'listed first');
   const note = (id) => november.find((e) => e.theme.id === id).note;
-  equal(note('thanksgiving'), 'Nov 26', "an open holiday's day");
+  equal(note('thanksgiving'), 'Nov 26\n8 days left to play', "an open holiday's day, and the days left to play up to it");
   equal(note('christmas'), 'opens Dec 1', 'a holiday whose boards are made, not yet open');
   equal(note('valentines'), 'Feb 14', 'another, its day months off');
   equal(note('spring'), 'Mar 20', 'the Start of Spring, open, its day months off');
@@ -67,6 +67,21 @@ test('the menu lists every holiday, those open first, then the rest, each saying
   equal(ids(menuList(new Date(2027, 1, 5, 12)).filter((e) => e.open)), 'valentines groundhog', "from the 1st of February, Valentine's Day too");
   equal(ids(menuList(new Date(2027, 2, 5, 12)).filter((e) => e.open)), 'spring showers groundhog valentines', 'from the 1st of March, the Start of Spring and April Showers too, weeks ahead');
   equal(ids(menuList(new Date(2027, 4, 5, 12)).filter((e) => e.open)), 'showers summer groundhog valentines spring', 'from the 1st of May, the beach season too, weeks ahead');
+});
+
+test('an open holiday counts down to its day through its run-up, from the day it opens to the day before it, and not once its day has come and gone', () => {
+  const note = (date, id) => menuList(date).find((e) => e.theme.id === id).note;
+  equal(note(new Date(2027, 9, 1, 9), 'halloween'), 'Oct 31\n30 days left to play', 'Halloween, the day it opens');
+  equal(note(new Date(2027, 9, 12, 9), 'halloween'), 'Oct 31\n19 days left to play', 'Halloween, in the run-up');
+  equal(note(new Date(2027, 9, 30, 9), 'halloween'), 'Oct 31\n1 day left to play', "Halloween's eve");
+  equal(note(new Date(2027, 9, 31, 9), 'halloween'), 'today', 'Halloween itself');
+  equal(note(new Date(2026, 10, 18, 12), 'halloween'), 'Oct 31', 'Halloween, still open, its day come and gone');
+  equal(note(new Date(2026, 11, 10, 12), 'new-year'), 'Jan 1\n22 days left to play', "New Year's, open in the December before its day");
+  equal(note(new Date(2026, 11, 10, 12), 'christmas'), 'Dec 25\n15 days left to play', 'Christmas');
+  equal(note(new Date(2027, 4, 5, 12), 'summer'), 'May 31 – Sep 6\n26 days left to play', 'a season, to its first day');
+  equal(note(new Date(2027, 6, 10, 12), 'summer'), 'now, to Sep 6', 'a season, while it is on');
+  equal(daysToGo(theme('groundhog'), theme('groundhog').on(2027), new Date(2027, 0, 20)), 0, 'Groundhog Day, open all year, counting down to nothing');
+  equal(note(new Date(2027, 8, 30, 20), 'halloween'), 'opens Oct 1', 'Halloween, not yet open');
 });
 
 test('each holiday but Groundhog Day opens on the first of a month, weeks before its day', () => {

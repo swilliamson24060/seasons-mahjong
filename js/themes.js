@@ -96,14 +96,33 @@ export function dated({ theme: t, start, end, now }) {
   return t.until ? `${short(start)} – ${short(end)}` : short(start);
 }
 
+// The days left to play up to a holiday's next day, start, as when() gives
+// it, in the run-up to it: from the day its boards opened for it to the
+// day before it; 0 at any other time, and for a holiday always open. New
+// Year's opens in the December before its day; the rest in its own year.
+export function daysToGo(t, start, date = today()) {
+  if (t.always) return 0;
+  const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  if (start <= day) return 0;
+  const opens = t.opens(start.getFullYear());
+  const opening = opens <= start ? opens : t.opens(start.getFullYear() - 1);
+  return day >= opening ? Math.round((start - day) / (24 * 3600 * 1000)) : 0;
+}
+
 // The holidays as the menu lists them on `date`, to choose one: those open
 // first, then the rest, each in the order they come round, and with each,
-// whether it is open and what it says under its name: its day, or for one
-// not open, the day it opens, or soon for one whose boards are still to come.
+// whether it is open and what it says under its name: its day, and in the
+// run-up to it, on a line of its own, the days left to play, to build up
+// to it; or for one not open, the day it opens, or soon for one whose
+// boards are still to come.
 export function menuList(date = today()) {
   const all = calendar(date).map((e) => ({ ...e, open: isOpen(e.theme, date) }));
+  const counted = (e) => {
+    const n = daysToGo(e.theme, e.start, date);
+    return n ? `${dated(e)}\n${n} ${n === 1 ? 'day' : 'days'} left to play` : dated(e);
+  };
   return [...all.filter((e) => e.open), ...all.filter((e) => !e.open)].map((e) => ({
     ...e,
-    note: e.open ? dated(e) : e.theme.ready ? `opens ${short(opensOn(e.theme, date))}` : `${dated(e)} · soon`,
+    note: e.open ? counted(e) : e.theme.ready ? `opens ${short(opensOn(e.theme, date))}` : `${dated(e)} · soon`,
   }));
 }

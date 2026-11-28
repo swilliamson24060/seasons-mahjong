@@ -29,7 +29,7 @@ Then open http://localhost:8790 to play. `tools/serve.py` serves this folder wit
 | Thanksgiving | the fourth Thursday in November | November 1 |
 | Christmas | December 25 | December 1 |
 
-- The menu (☾) lists all twelve, to choose one: those open now first, then the rest, greyed out, each saying when it opens, or soon for one whose boards are still to come, and last the turtle, always there. On a first visit the menu comes up over a turtle.
+- The menu (☾) lists all twelve, to choose one: those open now first, each saying its day, and through the weeks before it, from the day it opens, the days left to play, to build up to it (Halloween's card in mid-October says Oct 31, with 19 days left to play on a line under it); then the rest, greyed out, each saying when it opens, or soon for one whose boards are still to come; and last the turtle, always there. On a first visit the menu comes up over a turtle.
 - Choosing a holiday goes back to its board in progress, if it has one. Otherwise its boards come up, to choose one: each board is reached by clearing the one before, and those not yet reached are greyed out. The menu also goes back to the board on the table, or gives it up, which brings its holiday's boards up again.
 - The game opens on the board left on the table, while its holiday is open.
 - Each holiday has its own look: its colour, its sky, and its lettering, with Halloween keeping Boneyard's. While the Long Night is on the table the page wears Halloween's, and otherwise the holiday chosen last's. The turtle, which can be played any time, wears tiles and music of its own, a turtle's pond, whatever holiday is chosen. The menu wears Seasons' own gold.
